@@ -470,3 +470,5 @@ if (cedisSelect && rutaSelect) {
         }, 100);
     }
 });
+    }
+});
