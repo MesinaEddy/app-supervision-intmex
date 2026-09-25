@@ -64,13 +64,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const cedisSelect = document.getElementById('cedis-select');
     const rutaSelect = document.getElementById('ruta-select');
 
-    const rutasPorCedis = {
+const rutasPorCedis = {
         "TIJUANA": generarRutas("TIJ", 1, 18).concat(generarRutas("TIJ", 301, 306)),
-        "MEXICALI": generarRutas("MXLI", 1, 18),
-        "HERMOSILLO": generarRutas("HILLO", 1, 18),
-        "MOCHIS": generarRutas("MOC", 1, 18),
-        "CULIACAN": generarRutas("CUL", 1, 18),
-        "MAZATLAN": generarRutas("MZT", 1, 18)
+        "MEXICALI": generarRutas("MXLI", 1, 18).concat(generarRutas("MXLI", 301, 306)),
+        "HERMOSILLO": generarRutas("HILLO", 1, 18).concat(generarRutas("HILLO", 301, 306)),
+        "MOCHIS": generarRutas("MOC", 1, 18).concat(generarRutas("MOC", 301, 306)),
+        "CULIACAN": generarRutas("CUL", 1, 18).concat(generarRutas("CUL", 301, 306)),
+        "MAZATLAN": generarRutas("MZT", 1, 18).concat(generarRutas("MZT", 301, 306))
     };
 
     function generarRutas(prefijo, inicio, fin) {
