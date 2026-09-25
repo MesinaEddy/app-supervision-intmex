@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUPERVISION INTMEX</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+
+    <main class="container">
+        <!-- Encabezado de la App -->
+        <header class="app-header">
+            <h1>SUPERVISION INTMEX</h1>
+            <p>Control de Campo y Auditoría</p>
+        </header>
+
+        <!-- 1. Sección de Estado GPS -->
+        <section class="card-section" id="gps-box-container">
+            <div class="gps-header">
+                <div class="gps-status-indicator">
+                    <span id="gps-dot" class="dot-loading"></span>
+                    <span id="gps-title">Buscando ubicación GPS...</span>
+                </div>
+                <span id="gps-obligation" class="badge-obligation">OBLIGATORIO</span>
+            </div>
+            <p id="gps-desc" class="gps-description">Esperando señal de satélite y permisos del dispositivo...</p>
+            <button type="button" id="retry-gps-btn" class="btn-retry" style="display: none;">🔄 Reintentar GPS</button>
+        </section>
+
+        <!-- 2. Datos de Ruta y Asesor -->
+        <section class="card-section">
+            <div class="section-header">
+                <h2>Datos de Ruta y Asesor</h2>
+            </div>
+            
+            <div class="form-grid">
+                <div class="input-group">
+                    <label for="ruta-select">Ruta</label>
+                    <select id="ruta-select" class="form-control">
+                        <option value="Seleccione Ruta" disabled selected>Seleccione Ruta</option>
+                        <option value="TIJ01">TIJ01</option>
+                        <option value="TIJ02">TIJ02</option>
+                        <option value="TIJ03">TIJ03</option>
+                        <option value="TIJ04">TIJ04</option>
+                        <option value="TIJ05">TIJ05</option>
+                        <option value="TIJ06">TIJ06</option>
+                        <option value="TIJ07">TIJ07</option>
+                        <option value="TIJ08">TIJ08</option>
+                        <option value="TIJ09">TIJ09</option>
+                        <option value="TIJ10">TIJ10</option>
+                        <option value="TIJ11">TIJ11</option>
+                        <option value="TIJ12">TIJ12</option>
+                        <option value="TIJ13">TIJ13</option>
+                        <option value="TIJ14">TIJ14</option>
+                        <option value="TIJ15">TIJ15</option>
+                        <option value="TIJ16">TIJ16</option>
+                        <option value="TIJ17">TIJ17</option>
+                        <option value="TIJ18">TIJ18</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Nombre del Asesor</label>
+                    <input type="text" class="form-control" placeholder="Ej. Carlos Gutiérrez">
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Datos Generales del Cliente -->
+        <section class="card-section">
+            <div class="section-header">
+                <h2>Datos Generales del Cliente</h2>
+            </div>
+
+            <div class="form-grid">
+                <div class="input-group">
+                    <label>Nombre del Cliente</label>
+                    <input type="text" class="form-control" placeholder="Ej. Mini Super Alex">
+                </div>
+
+                <div class="input-group">
+                    <label>Teléfono</label>
+                    <input type="tel" class="form-control" placeholder="10 dígitos">
+                </div>
+            </div>
+
+            <div class="input-group" style="margin-top: 15px;">
+                <label>Nombre de quien recibe</label>
+                <input type="text" class="form-control" placeholder="Persona que atiende la supervisión">
+            </div>
+        </section>
+
+        <!-- 4. Indicadores de Evaluación (Tabuladores) -->
+        <section class="card-section">
+            <div class="section-header">
+                <h2>Evaluación de Local</h2>
+            </div>
+
+            <div class="evaluation-item">
+                <label>Tipo de Cliente</label>
+                <div class="tab-row">
+                    <button type="button" class="option-btn active">A</button>
+                    <button type="button" class="option-btn">B</button>
+                    <button type="button" class="option-btn">C</button>
+                </div>
+            </div>
+
+            <div class="evaluation-item">
+                <label>Visibilidad Adecuada</label>
+                <div class="tab-row">
+                    <button type="button" class="option-btn active">✓ Sí</button>
+                    <button type="button" class="option-btn">✕ No</button>
+                </div>
+            </div>
+
+            <div class="evaluation-item">
+                <label>Accesibilidad</label>
+                <div class="tab-row">
+                    <button type="button" class="option-btn active">✓ Sí</button>
+                    <button type="button" class="option-btn">✕ No</button>
+                </div>
+            </div>
+
+            <div class="evaluation-item">
+                <label>Comprador Presente</label>
+                <div class="tab-row">
+                    <button type="button" class="option-btn active">✓ Sí</button>
+                    <button type="button" class="option-btn">✕ No</button>
+                </div>
+            </div>
+
+            <div class="evaluation-item">
+                <label>Promoción Activa</label>
+                <div class="tab-row">
+                    <button type="button" class="option-btn">✓ Sí</button>
+                    <button type="button" class="option-btn active">✕ No</button>
+                </div>
+            </div>
+
+            <div class="input-group" style="margin-top: 15px;">
+                <label>Códigos sin Impactar (SKU o Ninguno)</label>
+                <input type="text" class="form-control" placeholder="SKU separados por coma o Ninguno">
+            </div>
+
+            <div class="input-group" style="margin-top: 15px;">
+                <label>Notas / Observaciones</label>
+                <textarea class="form-control" rows="3" placeholder="Comentarios adicionales de la visita..."></textarea>
+            </div>
+        </section>
+
+        <!-- 5. Evidencia Obligatoria y Finalización -->
+        <section class="card-section highlight-border">
+            <div class="section-header">
+                <h2>Evidencia Obligatoria y Finalización</h2>
+                <span class="badge-muted">ELIGE UNA OPCIÓN</span>
+            </div>
+
+            <div class="evidencia-container" style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+                <!-- Botón Grande para Firma -->
+                <button type="button" id="btn-firma" class="btn-accion-evidencia active">
+                    ✍️ Abrir Lienzo y Firmar (Cliente)
+                </button>
+
+                <!-- Botón Grande para Foto -->
+                <button type="button" id="btn-foto" class="btn-accion-evidencia">
+                    📷 Tomar Foto de la Fachada
+                </button>
+            </div>
+
+            <button type="button" class="btn-action-main" style="margin-top: 15px;">
+                💾 Guardar Registro de Supervisión
+            </button>
+            <p class="footer-note">Al confirmar la evidencia se guardará el registro en el dispositivo, incluso sin conexión.</p>
+        </section>
+    </main>
+
+    <!-- Barra de navegación inferior -->
+<nav class="bottom-nav">
+    <a href="#" class="nav-item active" id="nav-registro">
+        <span class="nav-icon">📝</span>
+        <span class="nav-text">Registro</span>
+    </a>
+    <a href="#" class="nav-item" id="nav-historial">
+        <span class="nav-icon">📊</span>
+        <span class="nav-text">Historial</span>
+    </a>
+    <a href="#" class="nav-item" id="nav-mapa">
+        <span class="nav-icon">🗺️</span>
+        <span class="nav-text">Mapa</span>
+    </a>
+</nav>
+
+    <!-- Modal para el Lienzo de Firma Digital -->
+    <div id="modal-firma" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; padding: 20px;">
+        <div style="background: #1e293b; padding: 20px; border-radius: 12px; width: 100%; max-width: 450px; border: 1px solid #334155; text-align: center;">
+            <h3 style="color: #fff; margin-bottom: 10px;">✍️ Firma del Cliente</h3>
+            <p style="color: #94a3b8; font-size: 13px; margin-bottom: 15px;">Firme en el recuadro inferior:</p>
+            
+            <canvas id="signature-pad" width="380" height="200" style="background: #ffffff; border-radius: 8px; cursor: crosshair; width: 100%; max-width: 380px; touch-action: none;"></canvas>
+            
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button type="button" id="btn-limpiar-firma" style="flex: 1; background: #475569; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 600;">Limpiar</button>
+                <button type="button" id="btn-cancelar-firma" style="flex: 1; background: #ef4444; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 600;">Cancelar</button>
+                <button type="button" id="btn-guardar-firma" style="flex: 1; background: #3b82f6; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 600;">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input oculto para activar la cámara del celular -->
+    <input type="file" id="input-camara" accept="image/*" capture="environment" style="display: none;">
+
+    <script src="script.js"></script>
+</body>
+</html>
