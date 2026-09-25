@@ -1,70 +1,48 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Referencias del GPS
-    const gpsDot = document.getElementById('gps-dot');
-    const gpsTitle = document.getElementById('gps-title');
-    const gpsDesc = document.getElementById('gps-desc');
-    const gpsBadge = document.getElementById('gps-obligation');
-    const retryBtn = document.getElementById('retry-gps-btn');
-    const gpsBoxContainer = document.getElementById('gps-box-container');
+    // Referencias principales
+    const tabRegistro = document.getElementById('tab-registro');
+    const tabHistorial = document.getElementById('tab-historial');
+    const tabMapa = document.getElementById('tab-mapa');
+    
+    const viewRegistro = document.getElementById('view-registro');
+    const viewHistorial = document.getElementById('view-historial');
+    const viewMapa = document.getElementById('view-mapa');
 
-    window.gpsData = { lat: 0, lon: 0, accuracy: 0 };
+    // Cambiar entre pestañas
+    function cambiarVista(vistaActiva) {
+        [viewRegistro, viewHistorial, viewMapa].forEach(v => v.style.display = 'none');
+        [tabRegistro, tabHistorial, tabMapa].forEach(t => t.classList.remove('active'));
 
-    // 1. GEOLOCALIZACIÓN AUTOMÁTICA
-    function obtenerUbicacionAutomatica() {
-        if (!navigator.geolocation) {
-            actualizarEstadoGPS("error", "Geolocalización no soportada", "Tu dispositivo no soporta esta función.");
-            return;
-        }
-
-        actualizarEstadoGPS("loading", "Obteniendo ubicación automática...", "Buscando coordenadas exactas...");
-
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const lat = position.coords.latitude;
-                const lon = position.coords.longitude;
-                const accuracy = position.coords.accuracy.toFixed(1);
-
-                window.gpsData = { lat, lon, accuracy };
-
-                actualizarEstadoGPS("success", "GPS Capturado Correctamente", `Lat: ${lat.toFixed(5)}, Lon: ${lon.toFixed(5)} (Precisión: ${accuracy}m)`);
-                if (gpsBoxContainer) gpsBoxContainer.style.borderColor = "#059669";
-                if (retryBtn) retryBtn.style.display = "none";
-            },
-            (error) => {
-                let mensajeError = "No se pudo obtener la ubicación.";
-                if (error.code === error.PERMISSION_DENIED) {
-                    mensajeError = "Permisos de ubicación denegados.";
-                }
-                actualizarEstadoGPS("error", "GPS pendiente / Error", mensajeError);
-                if (retryBtn) retryBtn.style.display = "flex";
-            },
-            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-        );
-    }
-
-    function actualizarEstadoGPS(estado, titulo, descripcion) {
-        if (!gpsTitle || !gpsDesc) return;
-        gpsTitle.textContent = titulo;
-        gpsDesc.textContent = descripcion;
-        if (estado === "loading" && gpsDot) gpsDot.style.backgroundColor = "#f59e0b";
-        if (estado === "success" && gpsDot) {
-            gpsDot.style.backgroundColor = "#10b981";
-            if (gpsBadge) { gpsBadge.textContent = "OBTENIDO"; gpsBadge.style.color = "#34d399"; }
-        }
-        if (estado === "error" && gpsDot) {
-            gpsDot.style.backgroundColor = "#ef4444";
-            if (gpsBadge) { gpsBadge.textContent = "ERROR GPS"; gpsBadge.style.color = "#f87171"; }
+        if (vistaActiva === 'registro') {
+            viewRegistro.style.display = 'block';
+            tabRegistro.classList.add('active');
+        } else if (vistaActiva === 'historial') {
+            viewHistorial.style.display = 'block';
+            tabHistorial.classList.add('active');
+            mostrarHistorialEnContenedor(viewHistorial);
+        } else if (vistaActiva === 'mapa') {
+            viewMapa.style.display = 'block';
+            tabMapa.classList.add('active');
+            mostrarMapaEnContenedor(viewMapa);
         }
     }
 
-    obtenerUbicacionAutomatica();
-    if (retryBtn) retryBtn.addEventListener('click', obtenerUbicacionAutomatica);
+    tabRegistro.addEventListener('click', () => cambiarVista('registro'));
+    tabHistorial.addEventListener('click', () => cambiarVista('historial'));
+    tabMapa.addEventListener('click', () => cambiarVista('mapa'));
 
-    // 1.1 LÓGICA DE CEDIS Y RUTAS DINÁMICAS
-    const cedisSelect = document.getElementById('cedis-select');
-    const rutaSelect = document.getElementById('ruta-select');
+    // Configuración de CEDIS y Rutas Dinámicas (Del 01 al 18 y bloque 301 a 306 para TODOS)
+    function generarRutas(prefijo, inicio, fin) {
+        let rutas = [];
+        for (let i = inicio; i <= fin; i++) {
+            let numStr = i < 10 ? '0' + i : i;
+            if (i >= 301) numStr = i; // Mantener 301, 302...
+            rutas.push(prefijo + numStr);
+        }
+        return rutas;
+    }
 
-const rutasPorCedis = {
+    const rutasPorCedis = {
         "TIJUANA": generarRutas("TIJ", 1, 18).concat(generarRutas("TIJ", 301, 306)),
         "MEXICALI": generarRutas("MXLI", 1, 18).concat(generarRutas("MXLI", 301, 306)),
         "HERMOSILLO": generarRutas("HILLO", 1, 18).concat(generarRutas("HILLO", 301, 306)),
@@ -73,26 +51,20 @@ const rutasPorCedis = {
         "MAZATLAN": generarRutas("MZT", 1, 18).concat(generarRutas("MZT", 301, 306))
     };
 
-    function generarRutas(prefijo, inicio, fin) {
-        let lista = [];
-        for (let i = inicio; i <= fin; i++) {
-            let numeroFormateado = i < 10 ? "0" + i : i;
-            lista.push(prefijo + numeroFormateado);
-        }
-        return lista;
-    }
+    const cedisSelect = document.getElementById('cedis-select');
+    const rutaSelect = document.getElementById('ruta-select');
 
     if (cedisSelect && rutaSelect) {
         cedisSelect.addEventListener('change', (e) => {
             const cedisSeleccionado = e.target.value;
-            rutaSelect.innerHTML = '<option value="">Seleccione Ruta</option>';
-
+            rutaSelect.innerHTML = '<option value="">Seleccione una Ruta</option>';
+            
             if (cedisSeleccionado && rutasPorCedis[cedisSeleccionado]) {
                 rutasPorCedis[cedisSeleccionado].forEach(ruta => {
-                    const option = document.createElement('option');
-                    option.value = ruta;
-                    option.textContent = ruta;
-                    rutaSelect.appendChild(option);
+                    const opt = document.createElement('option');
+                    opt.value = ruta;
+                    opt.textContent = ruta;
+                    rutaSelect.appendChild(opt);
                 });
             } else {
                 rutaSelect.innerHTML = '<option value="">Primero seleccione un CEDIS</option>';
@@ -100,249 +72,106 @@ const rutasPorCedis = {
         });
     }
 
-    // 2. TABULADOR DINÁMICO
-    document.addEventListener('click', (e) => {
-        const boton = e.target.closest('.option-btn');
-        if (!boton) return;
-        e.preventDefault();
-        const grupoPadre = boton.closest('.tab-row') || boton.parentElement;
-        if (grupoPadre) {
-            grupoPadre.querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
-        }
-        boton.classList.add('active');
-    });
+    // Captura de GPS automática al cargar
+    let gpsData = { lat: 0, lon: 0, accuracy: 0 };
+    const gpsStatusDiv = document.getElementById('gps-status');
 
-    // 3. EVIDENCIAS (Firma / Foto)
-    let evidenciaTipo = 'firma';
-    let firmaRealizada = false;
-    let fotoCapturada = false;
-    let datosFirmaBase64 = "";
-    let fotoFachadaBase64 = "";
-
-    const btnFirma = document.getElementById('btn-firma');
-    const btnFoto = document.getElementById('btn-foto');
-    const modalFirma = document.getElementById('modal-firma');
-    const canvas = document.getElementById('signature-pad');
-    const inputCamara = document.getElementById('input-camara');
-    let ctx = canvas ? canvas.getContext('2d') : null;
-
-    if (btnFirma && btnFoto) {
-        btnFirma.addEventListener('click', () => {
-            evidenciaTipo = 'firma';
-            btnFirma.classList.add('active');
-            btnFoto.classList.remove('active');
-            if (!firmaRealizada && modalFirma) {
-                modalFirma.style.display = 'flex';
-                if (ctx && canvas) ctx.clearRect(0, 0, canvas.width, canvas.height);
-            }
-        });
-
-        btnFoto.addEventListener('click', () => {
-            evidenciaTipo = 'foto';
-            btnFoto.classList.add('active');
-            btnFirma.classList.remove('active');
-            if (!fotoCapturada && inputCamara) inputCamara.click();
-        });
-    }
-
-    let dibujando = false;
-    function obtenerPosicionCanvas(e) {
-        if (!canvas) return { x: 0, y: 0 };
-        const rect = canvas.getBoundingClientRect();
-        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-        return { x: clientX - rect.left, y: clientY - rect.top };
-    }
-
-    if (canvas && ctx) {
-        canvas.addEventListener('mousedown', (e) => { dibujando = true; const p = obtenerPosicionCanvas(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
-        canvas.addEventListener('mousemove', (e) => { if (!dibujando) return; const p = obtenerPosicionCanvas(e); ctx.lineTo(p.x, p.y); ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.stroke(); });
-        window.addEventListener('mouseup', () => { dibujando = false; });
-        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); dibujando = true; const p = obtenerPosicionCanvas(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
-        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (!dibujando) return; const p = obtenerPosicionCanvas(e); ctx.lineTo(p.x, p.y); ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.stroke(); });
-        canvas.addEventListener('touchend', (e) => { e.preventDefault(); dibujando = false; });
-    }
-
-    const btnLimpiar = document.getElementById('btn-limpiar-firma');
-    const btnCancelar = document.getElementById('btn-cancelar-firma');
-    const btnGuardarFirma = document.getElementById('btn-guardar-firma');
-
-    if (btnLimpiar) btnLimpiar.addEventListener('click', () => { if (ctx && canvas) ctx.clearRect(0, 0, canvas.width, canvas.height); firmaRealizada = false; datosFirmaBase64 = ""; });
-    if (btnCancelar) btnCancelar.addEventListener('click', () => { if (modalFirma) modalFirma.style.display = 'none'; });
-    if (btnGuardarFirma) btnGuardarFirma.addEventListener('click', () => {
-        if (!canvas || !ctx) return;
-        const pixelBuffer = new Uint32Array(ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer);
-        if (!pixelBuffer.some(color => color !== 0)) { alert("⚠️ Capture la firma antes de aceptar."); return; }
-        datosFirmaBase64 = canvas.toDataURL('image/png');
-        firmaRealizada = true;
-        if (modalFirma) modalFirma.style.display = 'none';
-        if (btnFirma) { btnFirma.innerHTML = '✍️ Firma Registrada Correctamente ✓'; btnFirma.style.borderColor = '#10b981'; btnFirma.style.color = '#10b981'; }
-    });
-
-    if (inputCamara) {
-        inputCamara.addEventListener('change', function(e) {
-            const archivo = e.target.files[0];
-            if (archivo) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    fotoFachadaBase64 = event.target.result;
-                    fotoCapturada = true;
-                    if (btnFoto) { btnFoto.innerHTML = '📷 Foto Capturada Correctamente ✓'; btnFoto.style.borderColor = '#10b981'; btnFoto.style.color = '#10b981'; }
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                gpsData = {
+                    lat: position.coords.latitude,
+                    lon: position.coords.longitude,
+                    accuracy: position.coords.accuracy
                 };
-                reader.readAsDataURL(archivo);
-            }
-        });
+                if (gpsStatusDiv) {
+                    gpsStatusDiv.innerHTML = `
+                        <div style="background: #065f46; color: #d1fae5; padding: 10px; border-radius: 6px;">
+                            <b>GPS Capturado Correctamente</b><br>
+                            <small>Lat: ${gpsData.lat.toFixed(5)}, Lon: ${gpsData.lon.toFixed(5)} (Precisión: ${gpsData.accuracy.toFixed(1)}m)</small>
+                        </div>
+                    `;
+                }
+            },
+            (error) => {
+                if (gpsStatusDiv) {
+                    gpsStatusDiv.innerHTML = `
+                        <div style="background: #991b1b; color: #fee2e2; padding: 10px; border-radius: 6px;">
+                            <b>⚠️ Error de GPS:</b> Active la ubicación en su dispositivo.
+                        </div>
+                    `;
+                }
+            },
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
     }
 
-    // 4. GUARDADO Y VALIDACIÓN CON PERSISTENCIA SEGURA
-    const btnAccion = document.querySelector('.btn-action-main');
-    if (btnAccion) {
-        btnAccion.addEventListener('click', (e) => {
+    // Guardar Formulario de Supervisión
+    const formSupervision = document.getElementById('form-supervision');
+    if (formSupervision) {
+        formSupervision.addEventListener('submit', (e) => {
             e.preventDefault();
-            const cedisVal = cedisSelect ? cedisSelect.value : "";
-            const ruta = rutaSelect ? rutaSelect.value : "";
-            const asesorInput = document.querySelector('input[placeholder*="Carlos Gutiérrez"]');
-            const clienteInput = document.querySelector('input[placeholder*="Mini Super Alex"]');
-            const quienRecibeInput = document.querySelector('input[placeholder*="Persona que atiende"]');
-            const codigosInput = document.querySelector('input[placeholder*="SKU"]');
 
-            if (!cedisVal || !ruta || ruta === "Seleccione Ruta" || !asesorInput?.value.trim() || !clienteInput?.value.trim() || !quienRecibeInput?.value.trim() || !codigosInput?.value.trim()) {
-                alert("⚠️ Complete todos los campos obligatorios (CEDIS y Ruta incluidos).");
-                return;
-            }
-            if (!window.gpsData || window.gpsData.lat === 0) {
-                alert("⚠️ Se requiere la ubicación GPS.");
-                return;
-            }
-            if (evidenciaTipo === 'firma' && !firmaRealizada) {
-                alert("❌ Evidencia requerida: Debe registrar la firma del cliente.");
-                if (modalFirma) modalFirma.style.display = 'flex';
-                return;
-            }
-            if (evidenciaTipo === 'foto' && !fotoCapturada) {
-                alert("❌ Evidencia requerida: Debe tomar la foto de la fachada.");
-                if (inputCamara) inputCamara.click();
-                return;
-            }
+            const nuevoRegistro = {
+                id: 'INT-' + Date.now(),
+                fecha: new Date().toLocaleString(),
+                cedis: cedisSelect ? cedisSelect.value : '',
+                ruta: rutaSelect ? rutaSelect.value : '',
+                asesor: document.getElementById('asesor-input')?.value || '',
+                cliente: document.getElementById('cliente-input')?.value || '',
+                telefono: document.getElementById('telefono-input')?.value || '',
+                quienRecibe: document.getElementById('quien-recibe-input')?.value || '',
+                tipoCte: document.getElementById('tipo-cte-input')?.value || 'A',
+                codigosSinImpactar: document.getElementById('codigos-input')?.value || 'Ninguno',
+                notas: document.getElementById('notas-input')?.value || '',
+                evidencia: document.getElementById('evidencia-preview')?.src || 'Firma del Cliente',
+                gps: gpsData
+            };
 
-            ejecutarGuardadoFinal(evidenciaTipo === 'firma' ? "Firma del Cliente (Registrada)" : "Foto de la Fachada (Capturada)");
+            let historial = JSON.parse(localStorage.getItem('registros_intmex') || '[]');
+            historial.push(nuevoRegistro);
+            localStorage.setItem('registros_intmex', JSON.stringify(historial));
+
+            alert("✅ ¡Supervisión guardada localmente con éxito!");
+            formSupervision.reset();
+            if (rutaSelect) rutaSelect.innerHTML = '<option value="">Primero seleccione un CEDIS</option>';
+            cambiarVista('historial');
         });
     }
 
-    function ejecutarGuardadoFinal(detalleEvidencia) {
-        const asesorInput = document.querySelector('input[placeholder*="Carlos Gutiérrez"]');
-        const clienteInput = document.querySelector('input[placeholder*="Mini Super Alex"]');
-        const telefonoInput = document.querySelector('input[placeholder*="10 dígitos"]');
-        const quienRecibeInput = document.querySelector('input[placeholder*="Persona que atiende"]');
-        const notasInput = document.querySelector('textarea');
-        const codigosInput = document.querySelector('input[placeholder*="SKU"]');
-        const tabRows = document.querySelectorAll('.tab-row');
-
-        const nuevoRegistro = {
-            id: 'SUP-' + Date.now(),
-            fecha: new Date().toLocaleString(),
-            gps: window.gpsData,
-            cedis: cedisSelect ? cedisSelect.value : "",
-            ruta: rutaSelect ? rutaSelect.value : "",
-            asesor: asesorInput ? asesorInput.value.trim() : "",
-            cliente: clienteInput ? clienteInput.value.trim() : "",
-            telefono: telefonoInput ? telefonoInput.value.trim() : "",
-            quienRecibe: quienRecibeInput ? quienRecibeInput.value.trim() : "",
-            tipoCte: tabRows[0]?.querySelector('.option-btn.active')?.textContent || 'A',
-            notas: notasInput ? notasInput.value.trim() : "",
-            codigosSinImpactar: codigosInput ? codigosInput.value.trim() : "",
-            evidencia: detalleEvidencia,
-            firmaImagen: datosFirmaBase64,
-            fotoImagen: fotoFachadaBase64
-        };
-
-        let historial = JSON.parse(localStorage.getItem('registros_intmex') || '[]');
-        historial.push(nuevoRegistro);
-        localStorage.setItem('registros_intmex', JSON.stringify(historial));
-
-        alert("✅ ¡Supervisión guardada exitosamente y respaldada localmente!");
-        if (clienteInput) clienteInput.value = "";
-        if (telefonoInput) telefonoInput.value = "";
-        if (quienRecibeInput) quienRecibeInput.value = "";
-        if (notasInput) notasInput.value = "";
-        if (codigosInput) codigosInput.value = "";
-        datosFirmaBase64 = "";
-        fotoFachadaBase64 = "";
-        firmaRealizada = false;
-        fotoCapturada = false;
-        if (btnFirma) { btnFirma.innerHTML = '✍️ Abrir Lienzo y Firmar (Cliente)'; btnFirma.style.borderColor = ''; btnFirma.style.color = ''; }
-        if (btnFoto) { btnFoto.innerHTML = '📷 Tomar Foto de la Fachada'; btnFoto.style.borderColor = ''; btnFoto.style.color = ''; }
-    }
-
-    // 5. NAVEGACIÓN ENTRE VISTAS
-    const navRegistro = document.getElementById('nav-registro');
-    const navHistorial = document.getElementById('nav-historial');
-    const navMapa = document.getElementById('nav-mapa');
-    
-    let mainContainer = document.querySelector('main') || document.querySelector('.container') || document.body;
-    
-    let historialView = document.getElementById('vista-historial-dinamica');
-    if (!historialView) {
-        historialView = document.createElement('div');
-        historialView.id = 'vista-historial-dinamica';
-        historialView.style.display = 'none';
-        mainContainer.parentNode.insertBefore(historialView, mainContainer.nextSibling);
-    }
-
-    let mapaView = document.getElementById('vista-mapa-dinamica');
-    if (!mapaView) {
-        mapaView = document.createElement('div');
-        mapaView.id = 'vista-mapa-dinamica';
-        mapaView.style.display = 'none';
-        mainContainer.parentNode.insertBefore(mapaView, mainContainer.nextSibling);
-    }
-
-    if (navRegistro && navHistorial && navMapa) {
-        navRegistro.addEventListener('click', (e) => {
-            e.preventDefault();
-            navRegistro.classList.add('active');
-            navHistorial.classList.remove('active');
-            navMapa.classList.remove('active');
-            mainContainer.style.display = 'block';
-            historialView.style.display = 'none';
-            mapaView.style.display = 'none';
-        });
-
-        navHistorial.addEventListener('click', (e) => {
-            e.preventDefault();
-            navHistorial.classList.add('active');
-            navRegistro.classList.remove('active');
-            navMapa.classList.remove('active');
-            mainContainer.style.display = 'none';
-            historialView.style.display = 'block';
-            mapaView.style.display = 'none';
-            mostrarHistorialEnContenedor(historialView);
-        });
-
-        navMapa.addEventListener('click', (e) => {
-            e.preventDefault();
-            navMapa.classList.add('active');
-            navRegistro.classList.remove('active');
-            navHistorial.classList.remove('active');
-            mainContainer.style.display = 'none';
-            historialView.style.display = 'none';
-            mapaView.style.display = 'block';
-            mostrarMapaEnContenedor(mapaView);
-        });
-    }
-
+    // Vista de Historial, Base de Datos y Expedientes por Ruta
     function mostrarHistorialEnContenedor(contenedor) {
         let historialHTML = JSON.parse(localStorage.getItem('registros_intmex') || '[]');
+        let rutasUnicas = [...new Set(historialHTML.map(reg => reg.ruta))].filter(Boolean);
 
         let html = `
             <div style="padding: 20px; color: #fff; max-width: 800px; margin: 0 auto; padding-bottom: 90px;">
-                <h2>📊 Historial de Visitas Guardadas</h2>
+                <h2>📊 Historial, Base de Datos y Expedientes</h2>
                 <p>Registros almacenados localmente (${historialHTML.length}):</p>
                 
+                <div style="background: #1e293b; padding: 15px; border-radius: 8px; margin: 15px 0; border: 1px solid #334155;">
+                    <h3 style="margin-top: 0; color: #38bdf8; font-size: 16px;">📈 Estadísticas Generales</h3>
+                    <p style="font-size: 14px; margin: 5px 0;">Total de supervisiones: <b>${historialHTML.length}</b></p>
+                    <p style="font-size: 14px; margin: 5px 0;">Rutas auditadas: <b>${rutasUnicas.join(', ') || 'Ninguna'}</b></p>
+                </div>
+
                 <div style="display: flex; gap: 10px; margin: 15px 0; flex-wrap: wrap;">
-                    <button id="btn-exportar-csv" style="background: #059669; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: 600;">📥 Exportar a CSV (Google My Maps)</button>
+                    <button id="btn-exportar-csv" style="background: #059669; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: 600;">📥 Descargar Base de Datos (CSV)</button>
                     <button id="btn-limpiar-historial" style="background: #dc2626; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: 600;">🗑️ Borrar Historial</button>
                 </div>
+
+                <div style="background: #1e293b; padding: 15px; border-radius: 8px; margin: 15px 0; border: 1px solid #334155;">
+                    <h3 style="margin-top: 0; color: #38bdf8; font-size: 16px;">📑 Expediente Ejecutivo de Supervisión (Excel por Ruta)</h3>
+                    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 10px;">Genera un reporte gerencial con estadísticas y detalle de visitas exclusivo para la ruta seleccionada.</p>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <select id="select-ruta-reporte" style="flex: 1; padding: 8px; border-radius: 6px; background: #0f172a; color: #fff; border: 1px solid #334155;">
+                            <option value="">Seleccione Ruta para Expediente</option>
+                            ${rutasUnicas.map(r => `<option value="${r}">${r}</option>`).join('')}
+                        </select>
+                        <button id="btn-exportar-excel-ruta" style="background: #2563eb; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: 600;">📊 Descargar Expediente Excel</button>
+                    </div>
+                </div>
+
                 <hr style="border-color: #333; margin-bottom: 20px;">
         `;
 
@@ -369,46 +198,35 @@ const rutasPorCedis = {
         html += `</div>`;
         contenedor.innerHTML = html;
 
+        // Evento botón exportar CSV general
         const btnExportarCsv = document.getElementById('btn-exportar-csv');
         if (btnExportarCsv) {
             btnExportarCsv.addEventListener('click', () => {
                 if (historialHTML.length === 0) { alert("⚠️ No hay registros para exportar."); return; }
-
-                let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
-                csvContent += "ID,Fecha,CEDIS,Ruta,Cliente,Asesor,Atendio,TipoCliente,Latitud,Longitud,PrecisionGPS,Evidencia,Notas\n";
-
-                historialHTML.forEach(reg => {
-                    let evLimpia = reg.evidencia || "Firma del Cliente";
-                    if (evLimpia.includes("undefined")) evLimpia = "Firma del Cliente";
-
-                    const fila = [
-                        reg.id,
-                        `"${reg.fecha}"`,
-                        `"${reg.cedis || ''}"`,
-                        `"${reg.ruta || ''}"`,
-                        `"${reg.cliente || ''}"`,
-                        `"${reg.asesor || ''}"`,
-                        `"${reg.quienRecibe || ''}"`,
-                        `"${reg.tipoCte || ''}"`,
-                        reg.gps ? reg.gps.lat : 0,
-                        reg.gps ? reg.gps.lon : 0,
-                        reg.gps ? `${reg.gps.accuracy}m` : '0m',
-                        `"${evLimpia}"`,
-                        `"${(reg.notas || '').replace(/"/g, '""')}"`
-                    ];
-                    csvContent += fila.join(",") + "\n";
-                });
-
-                const encodedUri = encodeURI(csvContent);
-                const downloadAnchor = document.createElement('a');
-                downloadAnchor.setAttribute("href", encodedUri);
-                downloadAnchor.setAttribute("download", `visitas_google_maps_${Date.now()}.csv`);
-                document.body.appendChild(downloadAnchor);
-                downloadAnchor.click();
-                downloadAnchor.remove();
+                exportarCSVGeneral(historialHTML);
             });
         }
 
+        // Evento botón exportar Expediente Excel por ruta
+        const btnExportarExcelRuta = document.getElementById('btn-exportar-excel-ruta');
+        const selectRutaReporte = document.getElementById('select-ruta-reporte');
+        if (btnExportarExcelRuta && selectRutaReporte) {
+            btnExportarExcelRuta.addEventListener('click', () => {
+                const rutaSeleccionada = selectRutaReporte.value;
+                if (!rutaSeleccionada) {
+                    alert("⚠️ Por favor seleccione una ruta para generar su expediente.");
+                    return;
+                }
+                const filtrados = historialHTML.filter(reg => reg.ruta === rutaSeleccionada);
+                if (filtrados.length === 0) {
+                    alert("⚠️ No hay registros para la ruta seleccionada.");
+                    return;
+                }
+                exportarReporteExcelIndividual(rutaSeleccionada, filtrados);
+            });
+        }
+
+        // Evento limpiar historial
         const btnLimpiarHistorial = document.getElementById('btn-limpiar-historial');
         if (btnLimpiarHistorial) {
             btnLimpiarHistorial.addEventListener('click', () => {
@@ -420,67 +238,168 @@ const rutasPorCedis = {
         }
     }
 
-    function mostrarMapaEnContenedor(contenedor) {
-        let historialHTML = JSON.parse(localStorage.getItem('registros_intmex') || '[]');
+    function exportarCSVGeneral(datos) {
+        let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
+        csvContent += "ID,Fecha,CEDIS,Ruta,Cliente,Asesor,Atendio,TipoCliente,Latitud,Longitud,PrecisionGPS,Evidencia,SKU_No_Impactados,Notas\n";
 
+        datos.forEach(reg => {
+            let evLimpia = reg.evidencia || "Firma del Cliente";
+            if (evLimpia.includes("undefined")) evLimpia = "Firma del Cliente";
+
+            const fila = [
+                reg.id,
+                `"${reg.fecha}"`,
+                `"${reg.cedis || ''}"`,
+                `"${reg.ruta || ''}"`,
+                `"${reg.cliente || ''}"`,
+                `"${reg.asesor || ''}"`,
+                `"${reg.quienRecibe || ''}"`,
+                `"${reg.tipoCte || ''}"`,
+                reg.gps ? reg.gps.lat : 0,
+                reg.gps ? reg.gps.lon : 0,
+                reg.gps ? `${reg.gps.accuracy}m` : '0m',
+                `"${evLimpia}"`,
+                `"${reg.codigosSinImpactar || ''}"`,
+                `"${(reg.notas || '').replace(/"/g, '""')}"`
+            ];
+            csvContent += fila.join(",") + "\n";
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", encodedUri);
+        downloadAnchor.setAttribute("download", `base_datos_universo_clientes_${Date.now()}.csv`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+    }
+
+    function exportarReporteExcelIndividual(ruta, datosRuta) {
+        const totalVisitas = datosRuta.length;
+        const cedisActual = datosRuta[0].cedis || 'N/D';
+        const asesorActual = datosRuta[0].asesor || 'N/D';
+        const tiposConteo = datosRuta.reduce((acc, curr) => {
+            acc[curr.tipoCte] = (acc[curr.tipoCte] || 0) + 1;
+            return acc;
+        }, {});
+
+        let excelHtml = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head><meta charset="UTF-8"></head>
+            <body>
+                <h2 style="color: #1e3a8a;">EXPEDIENTE DE SUPERVISIÓN DE RUTA</h2>
+                <table border="1" style="border-collapse: collapse; width: 100%;">
+                    <tr style="background-color: #f3f4f6;">
+                        <th style="padding: 8px;">CEDIS</th>
+                        <th style="padding: 8px;">Ruta</th>
+                        <th style="padding: 8px;">Asesor Asignado</th>
+                        <th style="padding: 8px;">Total Visitas</th>
+                        <th style="padding: 8px;">Desglose Tipos (A/B/C)</th>
+                    </tr>
+                    <tr>
+                        <td style="padding: 8px; text-align: center;">${cedisActual}</td>
+                        <td style="padding: 8px; text-align: center; font-weight: bold;">${ruta}</td>
+                        <td style="padding: 8px; text-align: center;">${asesorActual}</td>
+                        <td style="padding: 8px; text-align: center;">${totalVisitas}</td>
+                        <td style="padding: 8px; text-align: center;">A: ${tiposConteo['A'] || 0} | B: ${tiposConteo['B'] || 0} | C: ${tiposConteo['C'] || 0}</td>
+                    </tr>
+                </table>
+
+                <br>
+                <h3 style="color: #1e3a8a;">DETALLE DE VISITAS Y AUDITORÍA</h3>
+                <table border="1" style="border-collapse: collapse; width: 100%;">
+                    <thead>
+                        <tr style="background-color: #2563eb; color: #ffffff;">
+                            <th style="padding: 8px;">ID Visita</th>
+                            <th style="padding: 8px;">Fecha y Hora</th>
+                            <th style="padding: 8px;">Cliente</th>
+                            <th style="padding: 8px;">Teléfono</th>
+                            <th style="padding: 8px;">Persona que Atiende</th>
+                            <th style="padding: 8px;">Tipo Cliente</th>
+                            <th style="padding: 8px;">Coordenadas GPS</th>
+                            <th style="padding: 8px;">Evidencia</th>
+                            <th style="padding: 8px;">SKU No Impactados</th>
+                            <th style="padding: 8px;">Observaciones / Notas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        datosRuta.forEach(reg => {
+            let evLimpia = reg.evidencia || "Firma del Cliente";
+            if (evLimpia.includes("undefined")) evLimpia = "Firma del Cliente";
+
+            excelHtml += `
+                <tr>
+                    <td style="padding: 6px;">${reg.id}</td>
+                    <td style="padding: 6px;">${reg.fecha}</td>
+                    <td style="padding: 6px;">${reg.cliente}</td>
+                    <td style="padding: 6px;">${reg.telefono || 'N/D'}</td>
+                    <td style="padding: 6px;">${reg.quienRecibe}</td>
+                    <td style="padding: 6px; text-align: center;">${reg.tipoCte}</td>
+                    <td style="padding: 6px;">Lat: ${reg.gps.lat.toFixed(5)}, Lon: ${reg.gps.lon.toFixed(5)}</td>
+                    <td style="padding: 6px;">${evLimpia}</td>
+                    <td style="padding: 6px;">${reg.codigosSinImpactar || 'Ninguno'}</td>
+                    <td style="padding: 6px;">${reg.notas || 'Sin notas'}</td>
+                </tr>
+            `;
+        });
+
+        excelHtml += `
+                    </tbody>
+                </table>
+            </body>
+            </html>
+        `;
+
+        const blob = new Blob([excelHtml], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.href = url;
+        downloadAnchor.download = `expediente_ruta_${ruta}_${Date.now()}.xls`;
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+        URL.revokeObjectURL(url);
+    }
+
+    // Mapa Leaflet (Libre de API Keys)
+    let map = null;
+    function mostrarMapaEnContenedor(contenedor) {
         contenedor.innerHTML = `
-            <div style="padding: 20px; color: #fff; max-width: 900px; margin: 0 auto; padding-bottom: 90px;">
-                <h2>🗺️ Mapa en Tiempo Real (${historialHTML.length} visitas)</h2>
-                <p>Pines diferenciados por color según la ruta auditada:</p>
-                <div id="leaflet-map" style="width: 100%; height: 450px; border-radius: 8px; border: 2px solid #334155; margin-top: 15px; z-index: 1;"></div>
+            <div style="padding: 20px; color: #fff; max-width: 800px; margin: 0 auto; padding-bottom: 90px;">
+                <h2>🗺️ Mapa de Visitas y Auditoría</h2>
+                <p>Pines diferenciados por ubicación GPS recopilada:</p>
+                <div id="leaflet-map" style="height: 450px; width: 100%; border-radius: 8px; border: 1px solid #334155; margin-top: 15px;"></div>
             </div>
         `;
 
         setTimeout(() => {
-            let latInicial = 32.4279;
-            let lonInicial = -117.0147;
-
-            if (historialHTML.length > 0 && historialHTML[0].gps) {
-                latInicial = historialHTML[historialHTML.length - 1].gps.lat;
-                lonInicial = historialHTML[historialHTML.length - 1].gps.lon;
+            if (!map) {
+                map = L.map('leaflet-map').setView([32.5149, -117.0382], 12); // Centro base
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+            } else {
+                map.invalidateSize();
             }
 
-            const map = L.map('leaflet-map').setView([latInicial, lonInicial], 13);
+            // Cargar pines del historial
+            let historial = JSON.parse(localStorage.getItem('registros_intmex') || '[]');
+            let bounds = [];
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19,
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
-
-            // Generador de colores automáticos basados en el nombre de la ruta para distinguir varias rutas el mismo día
-            function obtenerColorPorRuta(ruta) {
-                let hash = 0;
-                for (let i = 0; i < ruta.length; i++) {
-                    hash = ruta.charCodeAt(i) + ((hash << 5) - hash);
-                }
-                const colores = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
-                return colores[Math.abs(hash) % colores.length];
-            }
-
-            historialHTML.forEach(reg => {
-                if (reg.gps && reg.gps.lat !== 0) {
-                    const colorRuta = obtenerColorPorRuta(reg.ruta || 'GENERAL');
-
-                    // Usamos CircleMarker para pintar puntos personalizados por color
-                    const circleMarker = L.circleMarker([reg.gps.lat, reg.gps.lon], {
-                        radius: 8,
-                        fillColor: colorRuta,
-                        color: '#fff',
-                        weight: 2,
-                        opacity: 1,
-                        fillOpacity: 0.9
-                    }).addTo(map);
-
-                    circleMarker.bindPopup(`
-                        <div style="color: #000;">
-                            <strong style="color: ${colorRuta};">Ruta: ${reg.ruta}</strong> (${reg.cedis || 'CEDIS'})<br>
-                            <b>Cliente:</b> ${reg.cliente}<br>
-                            <small>📅 ${reg.fecha}</small><br>
-                            <small>👤 Asesor: ${reg.asesor} | Atendió: ${reg.quienRecibe}</small>
-                        </div>
-                    `);
+            historial.forEach(reg => {
+                if (reg.gps && reg.gps.lat && reg.gps.lon) {
+                    const marker = L.marker([reg.gps.lat, reg.gps.lon]).addTo(map);
+                    marker.bindPopup(`<b>${reg.cliente}</b><br>Ruta: ${reg.ruta}<br>Asesor: ${reg.asesor}`);
+                    bounds.push([reg.gps.lat, reg.gps.lon]);
                 }
             });
-        }, 100);
+
+            if (bounds.length > 0) {
+                map.fitBounds(bounds, { padding: [50, 50] });
+            }
+        }, 200);
     }
 });
