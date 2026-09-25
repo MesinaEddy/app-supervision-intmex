@@ -442,9 +442,9 @@ const rutasPorCedis = {
 
             const map = L.map('leaflet-map').setView([latInicial, lonInicial], 13);
 
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
-                attribution: '© OpenStreetMap contributors & CARTO'
+                attribution: '© OpenStreetMap contributors'
             }).addTo(map);
 
             // Generador de colores automáticos basados en el nombre de la ruta para distinguir varias rutas el mismo día
