@@ -38,11 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 actualizarEstadoGPS("error", "GPS pendiente / Error", mensajeError);
                 if (retryBtn) retryBtn.style.display = "flex";
             },
-            { 
-                enableHighAccuracy: true, // Forzar uso del chip GPS real del teléfono
-                timeout: 15000,           // Darle un poco más de tiempo (15 seg) para conectar con satélites
-                maximumAge: 0             // No permitir ubicaciones guardadas en caché, exigir lectura en tiempo real
-            }
+            { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
         );
     }
 
@@ -63,6 +59,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
     obtenerUbicacionAutomatica();
     if (retryBtn) retryBtn.addEventListener('click', obtenerUbicacionAutomatica);
+
+    // 1.1 LÓGICA DE CEDIS Y RUTAS DINÁMICAS
+    const cedisSelect = document.getElementById('cedis-select');
+    const rutaSelect = document.getElementById('ruta-select');
+
+    const rutasPorCedis = {
+        "TIJUANA": generarRutas("TIJ", 1, 18).concat(generarRutas("TIJ", 301, 306)),
+        "MEXICALI": generarRutas("MXLI", 1, 18),
+        "HERMOSILLO": generarRutas("HILLO", 1, 18),
+        "MOCHIS": generarRutas("MOC", 1, 18),
+        "CULIACAN": generarRutas("CUL", 1, 18),
+        "MAZATLAN": generarRutas("MZT", 1, 18)
+    };
+
+    function generarRutas(prefijo, inicio, fin) {
+        let lista = [];
+        for (let i = inicio; i <= fin; i++) {
+            let numeroFormateado = i < 10 ? "0" + i : i;
+            lista.push(prefijo + numeroFormateado);
+        }
+        return lista;
+    }
+
+    if (cedisSelect && rutaSelect) {
+        cedisSelect.addEventListener('change', (e) => {
+            const cedisSeleccionado = e.target.value;
+            rutaSelect.innerHTML = '<option value="">Seleccione Ruta</option>';
+
+            if (cedisSeleccionado && rutasPorCedis[cedisSeleccionado]) {
+                rutasPorCedis[cedisSeleccionado].forEach(ruta => {
+                    const option = document.createElement('option');
+                    option.value = ruta;
+                    option.textContent = ruta;
+                    rutaSelect.appendChild(option);
+                });
+            } else {
+                rutaSelect.innerHTML = '<option value="">Primero seleccione un CEDIS</option>';
+            }
+        });
+    }
 
     // 2. TABULADOR DINÁMICO
     document.addEventListener('click', (e) => {
@@ -109,7 +145,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Dibujo en Canvas
     let dibujando = false;
     function obtenerPosicionCanvas(e) {
         if (!canvas) return { x: 0, y: 0 };
@@ -159,20 +194,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 4. GUARDADO Y VALIDACIÓN
+    // 4. GUARDADO Y VALIDACIÓN CON PERSISTENCIA SEGURA
     const btnAccion = document.querySelector('.btn-action-main');
     if (btnAccion) {
         btnAccion.addEventListener('click', (e) => {
             e.preventDefault();
-            const selectRuta = document.getElementById('ruta-select');
-            const ruta = selectRuta ? selectRuta.value : "Seleccione Ruta";
+            const cedisVal = cedisSelect ? cedisSelect.value : "";
+            const ruta = rutaSelect ? rutaSelect.value : "";
             const asesorInput = document.querySelector('input[placeholder*="Carlos Gutiérrez"]');
             const clienteInput = document.querySelector('input[placeholder*="Mini Super Alex"]');
             const quienRecibeInput = document.querySelector('input[placeholder*="Persona que atiende"]');
             const codigosInput = document.querySelector('input[placeholder*="SKU"]');
 
-            if (ruta === "Seleccione Ruta" || !asesorInput?.value.trim() || !clienteInput?.value.trim() || !quienRecibeInput?.value.trim() || !codigosInput?.value.trim()) {
-                alert("⚠️ Complete todos los campos obligatorios.");
+            if (!cedisVal || !ruta || ruta === "Seleccione Ruta" || !asesorInput?.value.trim() || !clienteInput?.value.trim() || !quienRecibeInput?.value.trim() || !codigosInput?.value.trim()) {
+                alert("⚠️ Complete todos los campos obligatorios (CEDIS y Ruta incluidos).");
                 return;
             }
             if (!window.gpsData || window.gpsData.lat === 0) {
@@ -193,49 +228,8 @@ document.addEventListener('DOMContentLoaded', () => {
             ejecutarGuardadoFinal(evidenciaTipo === 'firma' ? "Firma del Cliente (Registrada)" : "Foto de la Fachada (Capturada)");
         });
     }
-    // LÓGICA DE CEDIS Y RUTAS DINÁMICAS
-const cedisSelect = document.getElementById('cedis-select');
-const rutaSelect = document.getElementById('ruta-select');
-
-const rutasPorCedis = {
-    "TIJUANA": generarRutas("TIJ", 1, 18).concat(generarRutas("TIJ", 301, 306)),
-    "MEXICALI": generarRutas("MXLI", 1, 18), // Ajusta el rango final si lo requieres
-    "HERMOSILLO": generarRutas("HILLO", 1, 18),
-    "MOCHIS": generarRutas("MOC", 1, 18),
-    "CULIACAN": generarRutas("CUL", 1, 18),
-    "MAZATLAN": generarRutas("MZT", 1, 18)
-};
-
-function generarRutas(prefijo, inicio, fin) {
-    let lista = [];
-    for (let i = inicio; i <= fin; i++) {
-        // Formatea con ceros a la izquierda si es menor a 10 (ej. TIJ01)
-        let numeroFormateado = i < 10 ? "0" + i : i;
-        lista.push(prefijo + numeroFormateado);
-    }
-    return lista;
-}
-
-if (cedisSelect && rutaSelect) {
-    cedisSelect.addEventListener('change', (e) => {
-        const cedisSeleccionado = e.target.value;
-        rutaSelect.innerHTML = '<option value="">Seleccione Ruta</option>';
-
-        if (cedisSeleccionado && rutasPorCedis[cedisSeleccionado]) {
-            rutasPorCedis[cedisSeleccionado].forEach(ruta => {
-                const option = document.createElement('option');
-                option.value = ruta;
-                option.textContent = ruta;
-                rutaSelect.appendChild(option);
-            });
-        } else {
-            rutaSelect.innerHTML = '<option value="">Primero seleccione un CEDIS</option>';
-        }
-    });
-}
 
     function ejecutarGuardadoFinal(detalleEvidencia) {
-        const selectRuta = document.getElementById('ruta-select');
         const asesorInput = document.querySelector('input[placeholder*="Carlos Gutiérrez"]');
         const clienteInput = document.querySelector('input[placeholder*="Mini Super Alex"]');
         const telefonoInput = document.querySelector('input[placeholder*="10 dígitos"]');
@@ -248,7 +242,8 @@ if (cedisSelect && rutaSelect) {
             id: 'SUP-' + Date.now(),
             fecha: new Date().toLocaleString(),
             gps: window.gpsData,
-            ruta: selectRuta ? selectRuta.value : "",
+            cedis: cedisSelect ? cedisSelect.value : "",
+            ruta: rutaSelect ? rutaSelect.value : "",
             asesor: asesorInput ? asesorInput.value.trim() : "",
             cliente: clienteInput ? clienteInput.value.trim() : "",
             telefono: telefonoInput ? telefonoInput.value.trim() : "",
@@ -265,7 +260,7 @@ if (cedisSelect && rutaSelect) {
         historial.push(nuevoRegistro);
         localStorage.setItem('registros_intmex', JSON.stringify(historial));
 
-        alert("✅ ¡Supervisión guardada exitosamente!");
+        alert("✅ ¡Supervisión guardada exitosamente y respaldada localmente!");
         if (clienteInput) clienteInput.value = "";
         if (telefonoInput) telefonoInput.value = "";
         if (quienRecibeInput) quienRecibeInput.value = "";
@@ -279,14 +274,13 @@ if (cedisSelect && rutaSelect) {
         if (btnFoto) { btnFoto.innerHTML = '📷 Tomar Foto de la Fachada'; btnFoto.style.borderColor = ''; btnFoto.style.color = ''; }
     }
 
-    // 5. NAVEGACIÓN ENTRE VISTAS (REGISTRO, HISTORIAL Y MAPA)
+    // 5. NAVEGACIÓN ENTRE VISTAS
     const navRegistro = document.getElementById('nav-registro');
     const navHistorial = document.getElementById('nav-historial');
     const navMapa = document.getElementById('nav-mapa');
     
     let mainContainer = document.querySelector('main') || document.querySelector('.container') || document.body;
     
-    // Contenedor Historial
     let historialView = document.getElementById('vista-historial-dinamica');
     if (!historialView) {
         historialView = document.createElement('div');
@@ -295,7 +289,6 @@ if (cedisSelect && rutaSelect) {
         mainContainer.parentNode.insertBefore(historialView, mainContainer.nextSibling);
     }
 
-    // Contenedor Mapa
     let mapaView = document.getElementById('vista-mapa-dinamica');
     if (!mapaView) {
         mapaView = document.createElement('div');
@@ -362,7 +355,7 @@ if (cedisSelect && rutaSelect) {
 
                 html += `
                     <div style="background: #1e293b; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #334155;">
-                        <strong style="color: #38bdf8;">${reg.cliente}</strong> (${reg.ruta})<br>
+                        <strong style="color: #38bdf8;">${reg.cliente}</strong> (CEDIS: ${reg.cedis || 'N/D'} | Ruta: ${reg.ruta})<br>
                         <small style="color: #94a3b8;">📅 ${reg.fecha} | Asesor: ${reg.asesor}</small><br>
                         <p style="margin: 8px 0 0 0; font-size: 14px;">
                             📍 GPS: Lat: ${reg.gps.lat.toFixed(4)}, Lon: ${reg.gps.lon.toFixed(4)}<br>
@@ -382,7 +375,7 @@ if (cedisSelect && rutaSelect) {
                 if (historialHTML.length === 0) { alert("⚠️ No hay registros para exportar."); return; }
 
                 let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
-                csvContent += "ID,Fecha,Cliente,Ruta,Asesor,Atendio,TipoCliente,Latitud,Longitud,PrecisionGPS,Evidencia,Notas\n";
+                csvContent += "ID,Fecha,CEDIS,Ruta,Cliente,Asesor,Atendio,TipoCliente,Latitud,Longitud,PrecisionGPS,Evidencia,Notas\n";
 
                 historialHTML.forEach(reg => {
                     let evLimpia = reg.evidencia || "Firma del Cliente";
@@ -391,8 +384,9 @@ if (cedisSelect && rutaSelect) {
                     const fila = [
                         reg.id,
                         `"${reg.fecha}"`,
-                        `"${reg.cliente || ''}"`,
+                        `"${reg.cedis || ''}"`,
                         `"${reg.ruta || ''}"`,
+                        `"${reg.cliente || ''}"`,
                         `"${reg.asesor || ''}"`,
                         `"${reg.quienRecibe || ''}"`,
                         `"${reg.tipoCte || ''}"`,
@@ -432,14 +426,13 @@ if (cedisSelect && rutaSelect) {
         contenedor.innerHTML = `
             <div style="padding: 20px; color: #fff; max-width: 900px; margin: 0 auto; padding-bottom: 90px;">
                 <h2>🗺️ Mapa en Tiempo Real (${historialHTML.length} visitas)</h2>
-                <p>Visualización interactiva de los puntos geolocalizados en este dispositivo:</p>
+                <p>Pines diferenciados por color según la ruta auditada:</p>
                 <div id="leaflet-map" style="width: 100%; height: 450px; border-radius: 8px; border: 2px solid #334155; margin-top: 15px; z-index: 1;"></div>
             </div>
         `;
 
-        // Inicializar el mapa con Leaflet
         setTimeout(() => {
-            let latInicial = 32.4279; // Coordenada por defecto (ej. Tijuana o centro genérico)
+            let latInicial = 32.4279;
             let lonInicial = -117.0147;
 
             if (historialHTML.length > 0 && historialHTML[0].gps) {
@@ -449,26 +442,45 @@ if (cedisSelect && rutaSelect) {
 
             const map = L.map('leaflet-map').setView([latInicial, lonInicial], 13);
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                 maxZoom: 19,
                 attribution: '© OpenStreetMap contributors & CARTO'
             }).addTo(map);
 
+            // Generador de colores automáticos basados en el nombre de la ruta para distinguir varias rutas el mismo día
+            function obtenerColorPorRuta(ruta) {
+                let hash = 0;
+                for (let i = 0; i < ruta.length; i++) {
+                    hash = ruta.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                const colores = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
+                return colores[Math.abs(hash) % colores.length];
+            }
+
             historialHTML.forEach(reg => {
                 if (reg.gps && reg.gps.lat !== 0) {
-                    const marker = L.marker([reg.gps.lat, reg.gps.lon]).addTo(map);
-                    marker.bindPopup(`
+                    const colorRuta = obtenerColorPorRuta(reg.ruta || 'GENERAL');
+
+                    // Usamos CircleMarker para pintar puntos personalizados por color
+                    const circleMarker = L.circleMarker([reg.gps.lat, reg.gps.lon], {
+                        radius: 8,
+                        fillColor: colorRuta,
+                        color: '#fff',
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.9
+                    }).addTo(map);
+
+                    circleMarker.bindPopup(`
                         <div style="color: #000;">
-                            <strong>${reg.cliente}</strong><br>
-                            <small>Ruta: ${reg.ruta} | Asesor: ${reg.asesor}</small><br>
-                            <span>📅 ${reg.fecha}</span><br>
-                            <span>👤 Atendió: ${reg.quienRecibe}</span>
+                            <strong style="color: ${colorRuta};">Ruta: ${reg.ruta}</strong> (${reg.cedis || 'CEDIS'})<br>
+                            <b>Cliente:</b> ${reg.cliente}<br>
+                            <small>📅 ${reg.fecha}</small><br>
+                            <small>👤 Asesor: ${reg.asesor} | Atendió: ${reg.quienRecibe}</small>
                         </div>
                     `);
                 }
             });
         }, 100);
-    }
-});
     }
 });
