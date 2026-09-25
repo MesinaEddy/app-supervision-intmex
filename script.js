@@ -193,6 +193,46 @@ document.addEventListener('DOMContentLoaded', () => {
             ejecutarGuardadoFinal(evidenciaTipo === 'firma' ? "Firma del Cliente (Registrada)" : "Foto de la Fachada (Capturada)");
         });
     }
+    // LÓGICA DE CEDIS Y RUTAS DINÁMICAS
+const cedisSelect = document.getElementById('cedis-select');
+const rutaSelect = document.getElementById('ruta-select');
+
+const rutasPorCedis = {
+    "TIJUANA": generarRutas("TIJ", 1, 18).concat(generarRutas("TIJ", 301, 306)),
+    "MEXICALI": generarRutas("MXLI", 1, 18), // Ajusta el rango final si lo requieres
+    "HERMOSILLO": generarRutas("HILLO", 1, 18),
+    "MOCHIS": generarRutas("MOC", 1, 18),
+    "CULIACAN": generarRutas("CUL", 1, 18),
+    "MAZATLAN": generarRutas("MZT", 1, 18)
+};
+
+function generarRutas(prefijo, inicio, fin) {
+    let lista = [];
+    for (let i = inicio; i <= fin; i++) {
+        // Formatea con ceros a la izquierda si es menor a 10 (ej. TIJ01)
+        let numeroFormateado = i < 10 ? "0" + i : i;
+        lista.push(prefijo + numeroFormateado);
+    }
+    return lista;
+}
+
+if (cedisSelect && rutaSelect) {
+    cedisSelect.addEventListener('change', (e) => {
+        const cedisSeleccionado = e.target.value;
+        rutaSelect.innerHTML = '<option value="">Seleccione Ruta</option>';
+
+        if (cedisSeleccionado && rutasPorCedis[cedisSeleccionado]) {
+            rutasPorCedis[cedisSeleccionado].forEach(ruta => {
+                const option = document.createElement('option');
+                option.value = ruta;
+                option.textContent = ruta;
+                rutaSelect.appendChild(option);
+            });
+        } else {
+            rutaSelect.innerHTML = '<option value="">Primero seleccione un CEDIS</option>';
+        }
+    });
+}
 
     function ejecutarGuardadoFinal(detalleEvidencia) {
         const selectRuta = document.getElementById('ruta-select');
