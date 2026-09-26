@@ -1,214 +1,227 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SUPERVISION INTMEX</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet CSS para el mapa -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            text-align: center;
+            padding: 15px 10px;
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 15px;
+            padding-bottom: 90px; /* Espacio para la barra inferior */
+        }
+        .section-title {
+            font-size: 16px;
+            color: #38bdf8;
+            margin-bottom: 8px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-size: 14px;
+            color: #cbd5e1;
+            margin-bottom: 5px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #38bdf8;
+        }
+        button.btn-primary {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        button.btn-primary:hover {
+            background: #1d4ed8;
+        }
+        /* Barra de navegación inferior */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #1e293b;
+            border-top: 1px solid #334155;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 1000;
+        }
+        .nav-item {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        .nav-item.active {
+            color: #38bdf8;
+        }
+        .nav-item span.icon {
+            font-size: 20px;
+        }
+        .view-section {
+            display: none;
+        }
+        .view-section.active-view {
+            display: block;
+        }
+    </style>
 </head>
 <body>
 
-    <main class="container">
-        <!-- Encabezado de la App -->
-        <header style="text-align: center; padding: 15px; background: #0f172a; border-bottom: 1px solid #334155;">
-    <!-- Logotipo oficial de INTMEX -->
-    <img src="https://intmex.com.mx/wp-content/uploads/2023/..." alt="Logo INTMEX" style="max-height: 50px; margin-bottom: 10px; object-fit: contain;">
-    
-    <h1 style="font-size: 18px; color: #fff; margin: 0;">SUPERVISION INTMEX</h1>
-    <p style="font-size: 13px; color: #94a3b8; margin: 3px 0 0 0;">Control de Campo y Auditoría</p>
-</header>
+    <!-- Cabecera sin imagen rota -->
+    <div class="header">
+        <h2 style="color: #38bdf8; margin: 0; font-size: 20px; letter-spacing: 1px;">INTMEX</h2>
+        <h1 style="font-size: 15px; color: #fff; margin: 4px 0 0 0;">SUPERVISION INTMEX</h1>
+        <p style="font-size: 11px; color: #94a3b8; margin: 2px 0 0 0;">Control de Campo y Auditoría</p>
+    </div>
 
-        <!-- 1. Sección de Estado GPS -->
-        <section class="card-section" id="gps-box-container">
-            <div class="gps-header">
-                <div class="gps-status-indicator">
-                    <span id="gps-dot" class="dot-loading"></span>
-                    <span id="gps-title">Buscando ubicación GPS...</span>
+    <!-- VISTA 1: REGISTRO -->
+    <div id="view-registro" class="view-section active-view">
+        <div class="container">
+            <!-- Estado del GPS -->
+            <div id="gps-status" style="margin-bottom: 15px;">
+                <div style="background: #1e293b; color: #38bdf8; padding: 10px; border-radius: 6px; border: 1px solid #334155;">
+                    <b>Buscando ubicación GPS...</b><br><small>Esperando señal de satélite...</small>
                 </div>
-                <span id="gps-obligation" class="badge-obligation">OBLIGATORIO</span>
             </div>
-            <p id="gps-desc" class="gps-description">Esperando señal de satélite y permisos del dispositivo...</p>
-            <button type="button" id="retry-gps-btn" class="btn-retry" style="display: none;">🔄 Reintentar GPS</button>
-        </section>
 
-        <!-- 2. Datos de Ruta y Asesor -->
-        <section class="card-section">
-            <div class="section-header">
-                <h2>Datos de Ruta y Asesor</h2>
-            </div>
-            
-<div class="form-group">
-    <label>CEDIS</label>
-    <select id="cedis-select" style="width: 100%; padding: 10px; border-radius: 6px; background: #1e293b; color: #fff; border: 1px solid #334155;">
-        <option value="">Seleccione CEDIS</option>
-        <option value="TIJUANA">Tijuana</option>
-        <option value="MEXICALI">Mexicali</option>
-        <option value="HERMOSILLO">Hermosillo</option>
-        <option value="MOCHIS">Mochis</option>
-        <option value="CULIACAN">Culiacán</option>
-        <option value="MAZATLAN">Mazatlán</option>
-    </select>
-</div>
+            <form id="form-supervision">
+                <div class="section-title">Datos de Ruta y Asesor</div>
+                
+                <div class="form-group">
+                    <label>CEDIS</label>
+                    <select id="cedis-select" required>
+                        <option value="">Seleccione CEDIS</option>
+                        <option value="TIJUANA">TIJUANA</option>
+                        <option value="MEXICALI">MEXICALI</option>
+                        <option value="HERMOSILLO">HERMOSILLO</option>
+                        <option value="MOCHIS">MOCHIS</option>
+                        <option value="CULIACAN">CULIACAN</option>
+                        <option value="MAZATLAN">MAZATLAN</option>
+                    </select>
+                </div>
 
-<div class="form-group" style="margin-top: 15px;">
-    <label>Ruta</label>
-    <select id="ruta-select" style="width: 100%; padding: 10px; border-radius: 6px; background: #1e293b; color: #fff; border: 1px solid #334155;">
-        <option value="">Primero seleccione un CEDIS</option>
-    </select>
-</div>
+                <div class="form-group">
+                    <label>Ruta</label>
+                    <select id="ruta-select" required>
+                        <option value="">Primero seleccione un CEDIS</option>
+                    </select>
+                </div>
 
-                <div class="input-group">
+                <div class="form-group">
                     <label>Nombre del Asesor</label>
-                    <input type="text" class="form-control" placeholder="Ej. Carlos Gutiérrez">
+                    <input type="text" id="asesor-input" placeholder="Ej. Carlos Gutiérrez" required>
                 </div>
-            </div>
-        </section>
 
-        <!-- 3. Datos Generales del Cliente -->
-        <section class="card-section">
-            <div class="section-header">
-                <h2>Datos Generales del Cliente</h2>
-            </div>
-
-            <div class="form-grid">
-                <div class="input-group">
+                <div class="section-title">Datos Generales del Cliente</div>
+                
+                <div class="form-group">
                     <label>Nombre del Cliente</label>
-                    <input type="text" class="form-control" placeholder="Ej. Mini Super Alex">
+                    <input type="text" id="cliente-input" placeholder="Ej. Mini Super Alex" required>
                 </div>
 
-                <div class="input-group">
+                <div class="form-group">
                     <label>Teléfono</label>
-                    <input type="tel" class="form-control" placeholder="10 dígitos">
+                    <input type="tel" id="telefono-input" placeholder="Ej. 6641234567">
                 </div>
-            </div>
 
-            <div class="input-group" style="margin-top: 15px;">
-                <label>Nombre de quien recibe</label>
-                <input type="text" class="form-control" placeholder="Persona que atiende la supervisión">
-            </div>
-        </section>
-
-        <!-- 4. Indicadores de Evaluación (Tabuladores) -->
-        <section class="card-section">
-            <div class="section-header">
-                <h2>Evaluación de Local</h2>
-            </div>
-
-            <div class="evaluation-item">
-                <label>Tipo de Cliente</label>
-                <div class="tab-row">
-                    <button type="button" class="option-btn active">A</button>
-                    <button type="button" class="option-btn">B</button>
-                    <button type="button" class="option-btn">C</button>
+                <div class="form-group">
+                    <label>¿Quién Recibe?</label>
+                    <input type="text" id="quien-recibe-input" placeholder="Nombre de la persona que atiende">
                 </div>
-            </div>
 
-            <div class="evaluation-item">
-                <label>Visibilidad Adecuada</label>
-                <div class="tab-row">
-                    <button type="button" class="option-btn active">✓ Sí</button>
-                    <button type="button" class="option-btn">✕ No</button>
+                <div class="form-group">
+                    <label>Tipo de Cliente</label>
+                    <select id="tipo-cte-input">
+                        <option value="A">Tipo A</option>
+                        <option value="B">Tipo B</option>
+                        <option value="C">Tipo C</option>
+                    </select>
                 </div>
-            </div>
 
-            <div class="evaluation-item">
-                <label>Accesibilidad</label>
-                <div class="tab-row">
-                    <button type="button" class="option-btn active">✓ Sí</button>
-                    <button type="button" class="option-btn">✕ No</button>
+                <div class="form-group">
+                    <label>Códigos sin Impactar / Comentarios</label>
+                    <textarea id="codigos-input" rows="2" placeholder="Ninguno"></textarea>
                 </div>
-            </div>
 
-            <div class="evaluation-item">
-                <label>Comprador Presente</label>
-                <div class="tab-row">
-                    <button type="button" class="option-btn active">✓ Sí</button>
-                    <button type="button" class="option-btn">✕ No</button>
+                <div class="form-group">
+                    <label>Notas de Auditoría</label>
+                    <textarea id="notas-input" rows="3" placeholder="Observaciones adicionales..."></textarea>
                 </div>
-            </div>
 
-            <div class="evaluation-item">
-                <label>Promoción Activa</label>
-                <div class="tab-row">
-                    <button type="button" class="option-btn">✓ Sí</button>
-                    <button type="button" class="option-btn active">✕ No</button>
-                </div>
-            </div>
-
-            <div class="input-group" style="margin-top: 15px;">
-                <label>Códigos sin Impactar (SKU o Ninguno)</label>
-                <input type="text" class="form-control" placeholder="SKU separados por coma o Ninguno">
-            </div>
-
-            <div class="input-group" style="margin-top: 15px;">
-                <label>Notas / Observaciones</label>
-                <textarea class="form-control" rows="3" placeholder="Comentarios adicionales de la visita..."></textarea>
-            </div>
-        </section>
-
-        <!-- 5. Evidencia Obligatoria y Finalización -->
-        <section class="card-section highlight-border">
-            <div class="section-header">
-                <h2>Evidencia Obligatoria y Finalización</h2>
-                <span class="badge-muted">ELIGE UNA OPCIÓN</span>
-            </div>
-
-            <div class="evidencia-container" style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
-                <!-- Botón Grande para Firma -->
-                <button type="button" id="btn-firma" class="btn-accion-evidencia active">
-                    ✍️ Abrir Lienzo y Firmar (Cliente)
-                </button>
-
-                <!-- Botón Grande para Foto -->
-                <button type="button" id="btn-foto" class="btn-accion-evidencia">
-                    📷 Tomar Foto de la Fachada
-                </button>
-            </div>
-
-            <button type="button" class="btn-action-main" style="margin-top: 15px;">
-                💾 Guardar Registro de Supervisión
-            </button>
-            <p class="footer-note">Al confirmar la evidencia se guardará el registro en el dispositivo, incluso sin conexión.</p>
-        </section>
-    </main>
-
-    <!-- Barra de navegación inferior -->
-<nav class="bottom-nav">
-    <a href="#" class="nav-item active" id="nav-registro">
-        <span class="nav-icon">📝</span>
-        <span class="nav-text">Registro</span>
-    </a>
-    <a href="#" class="nav-item" id="nav-historial">
-        <span class="nav-icon">📊</span>
-        <span class="nav-text">Historial</span>
-    </a>
-    <a href="#" class="nav-item" id="nav-mapa">
-        <span class="nav-icon">🗺️</span>
-        <span class="nav-text">Mapa</span>
-    </a>
-</nav>
-
-    <!-- Modal para el Lienzo de Firma Digital -->
-    <div id="modal-firma" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; padding: 20px;">
-        <div style="background: #1e293b; padding: 20px; border-radius: 12px; width: 100%; max-width: 450px; border: 1px solid #334155; text-align: center;">
-            <h3 style="color: #fff; margin-bottom: 10px;">✍️ Firma del Cliente</h3>
-            <p style="color: #94a3b8; font-size: 13px; margin-bottom: 15px;">Firme en el recuadro inferior:</p>
-            
-            <canvas id="signature-pad" width="380" height="200" style="background: #ffffff; border-radius: 8px; cursor: crosshair; width: 100%; max-width: 380px; touch-action: none;"></canvas>
-            
-            <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <button type="button" id="btn-limpiar-firma" style="flex: 1; background: #475569; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 600;">Limpiar</button>
-                <button type="button" id="btn-cancelar-firma" style="flex: 1; background: #ef4444; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 600;">Cancelar</button>
-                <button type="button" id="btn-guardar-firma" style="flex: 1; background: #3b82f6; color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 600;">Aceptar</button>
-            </div>
+                <button type="submit" class="btn-primary">Guardar Registro</button>
+            </form>
         </div>
     </div>
 
-    <!-- Input oculto para activar la cámara del celular -->
-    <input type="file" id="input-camara" accept="image/*" capture="environment" style="display: none;">
+    <!-- VISTA 2: HISTORIAL -->
+    <div id="view-historial" class="view-section"></div>
 
+    <!-- VISTA 3: MAPA -->
+    <div id="view-mapa" class="view-section"></div>
+
+    <!-- BARRA DE NAVEGACIÓN INFERIOR -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" id="tab-registro">
+            <span class="icon">📝</span>
+            <span>Registro</span>
+        </button>
+        <button class="nav-item" id="tab-historial">
+            <span class="icon">📊</span>
+            <span>Historial</span>
+        </button>
+        <button class="nav-item" id="tab-mapa">
+            <span class="icon">🗺️</span>
+            <span>Mapa</span>
+        </button>
+    </nav>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <!-- Tu archivo script.js -->
     <script src="script.js"></script>
 </body>
 </html>
