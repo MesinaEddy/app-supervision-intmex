@@ -287,7 +287,11 @@ document.addEventListener('DOMContentLoaded', () => {
             <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
             <head><meta charset="UTF-8"></head>
             <body>
-                <h2 style="color: #1e3a8a;">EXPEDIENTE DE SUPERVISIÓN DE RUTA</h2>
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h2 style="color: #1e3a8a; margin: 0;">EXPEDIENTE DE SUPERVISIÓN DE RUTA</h2>
+                    <p style="color: #555; font-size: 12px;">Sistema de Control de Campo y Auditoría INTMEX</p>
+                </div>
+
                 <table border="1" style="border-collapse: collapse; width: 100%;">
                     <tr style="background-color: #f3f4f6;">
                         <th style="padding: 8px;">CEDIS</th>
@@ -376,7 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setTimeout(() => {
             if (!map) {
-                map = L.map('leaflet-map').setView([32.5149, -117.0382], 12); // Centro base
+                map = L.map('leaflet-map').setView([32.5149, -117.0382], 12);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 19,
                     attribution: '© OpenStreetMap contributors'
@@ -385,7 +389,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 map.invalidateSize();
             }
 
-            // Cargar pines del historial
             let historial = JSON.parse(localStorage.getItem('registros_intmex') || '[]');
             let bounds = [];
 
