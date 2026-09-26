@@ -23,6 +23,7 @@
         body { background-color: var(--bg-main); color: var(--text-main); padding-bottom: 70px; }
 
         header { background: #0f172a; padding: 15px; text-align: center; border-bottom: 1px solid var(--border-color); }
+        header img { max-height: 45px; width: auto; margin-bottom: 5px; object-fit: contain; }
         header h1 { font-size: 16px; color: var(--text-main); margin-top: 5px; }
         header p { font-size: 11px; color: var(--text-muted); }
 
@@ -87,6 +88,10 @@
 <body>
 
     <header>
+        <!-- Logotipo local -->
+        <img src="logo.png" alt="Logo INTMEX" onerror="this.style.display='none'; document.getElementById('fallback-logo').style.display='block';">
+        <div id="fallback-logo" style="display:none; color: #38bdf8; font-weight: bold; font-size: 18px; margin-bottom: 2px;">INTMEX</div>
+        
         <h1>SUPERVISION INTMEX</h1>
         <p>Control de Campo y Auditoría</p>
     </header>
@@ -606,7 +611,6 @@
                 initMap();
             });
 
-            // Renderizar Historial y Dashboard Ejecutivo Visual con Gráficos Integrados
             function renderHistorial() {
                 const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
                 
@@ -621,14 +625,12 @@
                 let html = `
                     <div class="section-title">📊 Panel Ejecutivo Gerencial de Supervisión</div>
                     
-                    <!-- Botones de Reportes Separados -->
                     <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
                         <button onclick="exportarCSVBaseDatos()" style="background: #2563eb; color: white; border: none; padding: 12px 18px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1;">📥 Descargar CSV Base de Datos</button>
                         <button onclick="exportarReporteEjecutivoHTML()" style="background: #10b981; color: white; border: none; padding: 12px 18px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1;">📈 Ver / Descargar Reporte Ejecutivo Visual</button>
                         <button onclick="localStorage.removeItem('registros_supervision'); renderHistorial();" style="background: #ef4444; color: white; border: none; padding: 12px 18px; border-radius: 6px; font-weight: bold; cursor: pointer;">🗑️ Borrar Todo</button>
                     </div>
 
-                    <!-- Tarjetas KPIs Gerenciales -->
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px;">
                         <div class="kpi-card"><div class="kpi-label">Total Visitas</div><div class="kpi-value">${total}</div></div>
                         <div class="kpi-card" style="border-left-color: #10b981;"><div class="kpi-label">% Clientes Abiertos</div><div class="kpi-value" style="color: #34d399;">${pctAbiertos}%</div></div>
@@ -636,7 +638,6 @@
                         <div class="kpi-card" style="border-left-color: #38bdf8;"><div class="kpi-label">Calificados OK</div><div class="kpi-value" style="color: #38bdf8;">${okCount}</div></div>
                     </div>
 
-                    <!-- Gráficas de Barras Visuales Simuladas -->
                     <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 25px;">
                         <h3 style="font-size: 14px; color: var(--accent); margin-bottom: 15px;">RENDIMIENTO DE VISITAS Y CUMPLIMIENTO</h3>
                         <div style="margin-bottom: 10px; font-size: 12px;">Clientes Abiertos vs Cerrados</div>
@@ -686,7 +687,6 @@
             }
         });
 
-        // 1. Reporte CSV Base de Datos (Puro y estructurado)
         window.exportarCSVBaseDatos = function() {
             const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
             if (registros.length === 0) { alert("No hay datos para exportar"); return; }
@@ -704,7 +704,6 @@
             a.click();
         };
 
-        // 2. Reporte Ejecutivo Visual (Estilo Corporativo con Gráficos y Tablas Detalladas)
         window.exportarReporteEjecutivoHTML = function() {
             const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
             if (registros.length === 0) { alert("No hay datos para generar el reporte ejecutivo"); return; }
@@ -723,20 +722,22 @@
                     <meta charset="UTF-8">
                     <title>Reporte Ejecutivo Gerencial - INTMEX</title>
                     <style>
-                        body { font-family: Arial, sans-serif; padding: 20px; color: #111; background: #fff; }
-                        h1 { color: #0f172a; text-align: center; margin-bottom: 5px; }
-                        .subtitle { text-align: center; color: #64748b; font-size: 13px; margin-bottom: 25px; }
+                        body { font-family: Arial, sans-serif; padding: 20px; color: #111; background: #fff; text-align: center; }
+                        .logo { max-height: 50px; margin-bottom: 10px; }
+                        h1 { color: #0f172a; margin-bottom: 5px; font-size: 20px; }
+                        .subtitle { color: #64748b; font-size: 12px; margin-bottom: 25px; }
                         .metrics { display: flex; justify-content: space-around; margin-bottom: 30px; text-align: center; }
                         .metric-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 8px; width: 22%; }
-                        .metric-val { font-size: 20px; font-weight: bold; color: #0284c7; margin-top: 5px; }
-                        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 20px; }
-                        th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; }
+                        .metric-val { font-size: 18px; font-weight: bold; color: #0284c7; margin-top: 5px; }
+                        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 20px; text-align: left; }
+                        th, td { border: 1px solid #cbd5e1; padding: 8px; }
                         th { background: #0f172a; color: #fff; }
-                        .bar-container { background: #e2e8f0; border-radius: 4px; height: 16px; width: 100%; margin: 5px 0 15px 0; overflow: hidden; display: flex; }
-                        .bar-fill { background: #10b981; height: 100%; text-align: center; color: white; font-size: 10px; line-height: 16px; }
+                        .bar-container { background: #e2e8f0; border-radius: 4px; height: 16px; width: 100%; margin: 5px 0 15px 0; overflow: hidden; display: flex; text-align: left; }
+                        .bar-fill { background: #10b981; height: 100%; color: white; font-size: 10px; line-height: 16px; text-align: center; }
                     </style>
                 </head>
                 <body>
+                    <img src="logo.png" alt="Logo INTMEX" class="logo" onerror="this.style.display='none';">
                     <h1>REPORTE EJECUTIVO DE SUPERVISIÓN</h1>
                     <div class="subtitle">Generado el ${new Date().toLocaleString()} - INTMEX</div>
 
@@ -747,11 +748,13 @@
                         <div class="metric-box"><div>Efectividad Global</div><div class="metric-val">${((efectivos/total)*100).toFixed(1)}%</div></div>
                     </div>
 
-                    <h3>Desempeño General de Operación</h3>
-                    <div>Tasa de Clientes Abiertos</div>
-                    <div class="bar-container"><div class="bar-fill" style="width: ${pctAbiertos}%;">${pctAbiertos}%</div></div>
+                    <div style="text-align: left;">
+                        <h3>Desempeño General de Operación</h3>
+                        <div>Tasa de Clientes Abiertos</div>
+                        <div class="bar-container"><div class="bar-fill" style="width: ${pctAbiertos}%;">${pctAbiertos}%</div></div>
 
-                    <h3>Detalle de Visitas y Auditoría</h3>
+                        <h3>Detalle de Visitas y Auditoría</h3>
+                    </div>
                     <table>
                         <thead>
                             <tr>
