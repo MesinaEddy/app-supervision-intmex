@@ -28,19 +28,20 @@
 
         .container { max-width: 950px; margin: 0 auto; padding: 15px; }
 
-        .gps-banner { background: #064e3b; color: #34d399; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 12px; border: 1px solid #059669; text-align: center; grid-column: 1 / -1; }
+        .gps-banner { background: #064e3b; color: #34d399; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 12px; border: 1px solid #059669; text-align: center; }
 
-        .section-title { font-size: 15px; font-weight: bold; color: var(--accent); margin: 25px 0 12px 0; border-bottom: 2px solid var(--border-color); padding-bottom: 5px; text-transform: uppercase; grid-column: 1 / -1; }
+        .section-title { font-size: 15px; font-weight: bold; color: var(--accent); margin: 25px 0 12px 0; border-bottom: 2px solid var(--border-color); padding-bottom: 5px; text-transform: uppercase; }
 
-        /* Estructura de 2 columnas adaptable */
+        /* Adaptabilidad: 1 columna en celulares, 2 columnas en tablets/PC */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 15px;
+            gap: 12px;
         }
         @media (min-width: 768px) {
             .form-grid {
                 grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
             }
         }
         .full-width { grid-column: 1 / -1; }
@@ -51,6 +52,11 @@
             width: 100%; padding: 10px; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px;
         }
         textarea { resize: vertical; height: 75px; }
+
+        /* Lienzo de Firma Digital */
+        .signature-container { background: #ffffff; border-radius: 6px; border: 1px solid var(--border-color); width: 100%; height: 160px; position: relative; touch-action: none; }
+        canvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
+        .btn-clear { background: #64748b; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-top: 5px; }
 
         /* Checklist interactivo */
         .checklist-item { display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 8px; }
@@ -83,12 +89,12 @@
     <div class="container">
         <!-- VISTA REGISTRO -->
         <div id="view-registro" class="view-section active-view">
+            <div id="gps-status" class="gps-banner">📍 Obteniendo ubicación GPS...</div>
+
             <form id="form-supervision" class="form-grid">
                 
-                <div id="gps-status" class="gps-banner">📍 Obteniendo ubicación GPS...</div>
-
                 <!-- Bloque 1: Datos de Ruta y Asesor -->
-                <div class="section-title">Datos de Ruta y Asesor</div>
+                <div class="section-title full-width">Datos de Ruta y Asesor</div>
                 
                 <div class="form-group">
                     <label>CEDIS</label>
@@ -141,9 +147,9 @@
                 </div>
 
                 <!-- Bloque 2: Datos del Cliente -->
-                <div class="section-title">Datos del Cliente</div>
+                <div class="section-title full-width">Datos del Cliente</div>
 
-                <div class="form-group">
+                <div class="form-group full-width">
                     <label>¿Cliente Abierto?</label>
                     <select id="cliente-abierto-select" class="form-control" required>
                         <option value="SI">SÍ</option>
@@ -151,13 +157,11 @@
                     </select>
                 </div>
 
-                <!-- Campo Nombre del Cliente (Siempre visible para poder escribirlo) -->
                 <div class="form-group">
                     <label>Nombre del Cliente</label>
                     <input type="text" id="cliente-input" placeholder="Ej. Mini Super Alex" required>
                 </div>
 
-                <!-- Submenú condicional cuando el cliente está CERRADO (NO) -->
                 <div class="form-group full-width" id="subopcion-cerrado-container" style="display: none;">
                     <label>Tipo de Cierre / Visita</label>
                     <select id="tipo-cierre-select" class="form-control">
@@ -166,7 +170,7 @@
                     </select>
                 </div>
 
-                <!-- Campos adicionales de cliente abierto (se ocultan si es NO) -->
+                <!-- Campos adicionales de cliente abierto -->
                 <div id="campos-cliente-abierto-extra" class="full-width" style="display: contents;">
                     <div class="form-group">
                         <label>Teléfono</label>
@@ -189,6 +193,14 @@
                     </div>
 
                     <div class="form-group">
+                        <label>Impacto de Prioridades</label>
+                        <select id="impacto-prioridades-select" class="form-control">
+                            <option value="SI">SÍ</option>
+                            <option value="NO">NO</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
                         <label>¿Compra Efectiva?</label>
                         <select id="compra-efectiva-select" class="form-control">
                             <option value="SI">SÍ</option>
@@ -206,8 +218,8 @@
                     </div>
                 </div>
 
-                <!-- Bloque 3: Pasos de la Visita (Checklist) - Se oculta si el cliente está cerrado -->
-                <div class="section-title" id="titulo-checklist">Pasos de la Visita (Checklist)</div>
+                <!-- Bloque 3: Pasos de la Visita (Checklist) -->
+                <div class="section-title full-width" id="titulo-checklist">Pasos de la Visita (Checklist)</div>
                 
                 <div id="checklist-container" class="full-width" style="display: grid; grid-template-columns: 1fr; gap: 8px;">
                     <!-- Generado por JS -->
@@ -224,15 +236,18 @@
                 </div>
 
                 <!-- Bloque 4: Evidencias -->
-                <div class="section-title">Evidencias</div>
+                <div class="section-title full-width">Evidencias</div>
 
-                <div class="form-group" id="grupo-firma">
-                    <label>Firma del Cliente</label>
-                    <input type="file" id="firma-cliente" accept="image/*">
+                <div class="form-group full-width" id="grupo-firma">
+                    <label>Firma del Cliente (Opcional - Dibuje dentro del recuadro)</label>
+                    <div class="signature-container">
+                        <canvas id="signature-canvas"></canvas>
+                    </div>
+                    <button type="button" class="btn-clear" id="clear-signature">Limpiar Firma</button>
                 </div>
 
-                <div class="form-group">
-                    <label>Foto de Fachada / Establecimiento</label>
+                <div class="form-group full-width">
+                    <label>Foto de Fachada / Establecimiento (Obligatorio)</label>
                     <input type="file" id="foto-fachada" accept="image/*" capture="environment" required>
                 </div>
 
@@ -269,35 +284,96 @@
         document.addEventListener("DOMContentLoaded", () => {
             const cedisSelect = document.getElementById("cedis-select");
             const rutaSelect = document.getElementById("ruta-select");
+            const asesorInput = document.getElementById("asesor-input");
+            const tipoRutaInput = document.getElementById("tipo-ruta-input");
+            const objetivoPrincipal = document.getElementById("objetivo-principal");
+            const objetivoDetalle = document.getElementById("objetivo-detalle");
+            const subobjetivoContainer = document.getElementById("subobjetivo-container");
 
-            cedisSelect.addEventListener("change", function() {
-                const prefijo = this.value;
+            // Configuración del Lienzo de Firma Digital
+            const canvas = document.getElementById('signature-canvas');
+            const ctx = canvas.getContext('2d');
+            let isDrawing = false;
+
+            function resizeCanvas() {
+                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                ctx.scale(ratio, ratio);
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+            }
+            window.addEventListener('load', resizeCanvas);
+            window.addEventListener('resize', resizeCanvas);
+
+            canvas.addEventListener('mousedown', (e) => { isDrawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); });
+            canvas.addEventListener('mousemove', (e) => { if (!isDrawing) return; ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); });
+            canvas.addEventListener('mouseup', () => { isDrawing = false; });
+            canvas.addEventListener('mouseleave', () => { isDrawing = false; });
+
+            canvas.addEventListener('touchstart', (e) => {
+                isDrawing = true;
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches[0];
+                ctx.beginPath();
+                ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+                e.preventDefault();
+            });
+            canvas.addEventListener('touchmove', (e) => {
+                if (!isDrawing) return;
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches[0];
+                ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+                ctx.stroke();
+                e.preventDefault();
+            });
+            canvas.addEventListener('touchend', () => { isDrawing = false; });
+
+            document.getElementById('clear-signature').addEventListener('click', () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            });
+
+            function poblarRutas(cedisVal, rutaSeleccionada = "") {
                 rutaSelect.innerHTML = '<option value="">Seleccione una Ruta</option>';
-                if (!prefijo) return;
+                if (!cedisVal) return;
 
                 for (let i = 1; i <= 18; i++) {
                     const num = i < 10 ? '0' + i : i;
-                    const val = `${prefijo}${num}`;
+                    const val = `${cedisVal}${num}`;
                     const opt = document.createElement("option");
                     opt.value = val;
                     opt.textContent = val;
+                    if (val === rutaSeleccionada) opt.selected = true;
                     rutaSelect.appendChild(opt);
                 }
                 for (let i = 301; i <= 306; i++) {
-                    const val = `${prefijo}${i}`;
+                    const val = `${cedisVal}${i}`;
                     const opt = document.createElement("option");
                     opt.value = val;
                     opt.textContent = val;
+                    if (val === rutaSeleccionada) opt.selected = true;
                     rutaSelect.appendChild(opt);
                 }
-            });
+            }
 
-            const objetivoPrincipal = document.getElementById("objetivo-principal");
-            const subobjetivoContainer = document.getElementById("subobjetivo-container");
-            const objetivoDetalle = document.getElementById("objetivo-detalle");
+            function cargarMemoriaBloque1() {
+                const mem = JSON.parse(localStorage.getItem("intmex_bloque1"));
+                if (mem) {
+                    if (mem.cedis) {
+                        cedisSelect.value = mem.cedis;
+                        poblarRutas(mem.cedis, mem.ruta);
+                    }
+                    if (mem.asesor) asesorInput.value = mem.asesor;
+                    if (mem.tipoRuta) tipoRutaInput.value = mem.tipoRuta;
+                    if (mem.objetivoPrincipal) {
+                        objetivoPrincipal.value = mem.objetivoPrincipal;
+                        actualizarSubobjetivos(mem.objetivoPrincipal, mem.objetivoDetalle);
+                    }
+                }
+            }
 
-            objetivoPrincipal.addEventListener("change", function() {
-                const val = this.value;
+            function actualizarSubobjetivos(val, detalleSeleccionado = "") {
                 objetivoDetalle.innerHTML = "";
                 if (val === "Venta") {
                     subobjetivoContainer.style.display = "block";
@@ -305,6 +381,7 @@
                         const opt = document.createElement("option");
                         opt.value = sub;
                         opt.textContent = sub;
+                        if (sub === detalleSeleccionado) opt.selected = true;
                         objetivoDetalle.appendChild(opt);
                     });
                 } else if (val === "Capacitación" || val === "Territorio") {
@@ -313,12 +390,41 @@
                         const opt = document.createElement("option");
                         opt.value = sub;
                         opt.textContent = sub;
+                        if (sub === detalleSeleccionado) opt.selected = true;
                         objetivoDetalle.appendChild(opt);
                     });
                 } else {
                     subobjetivoContainer.style.display = "none";
                 }
+            }
+
+            cedisSelect.addEventListener("change", function() {
+                poblarRutas(this.value);
+                guardarMemoriaBloque1();
             });
+
+            [rutaSelect, asesorInput, tipoRutaInput, objetivoPrincipal, objetivoDetalle].forEach(el => {
+                el.addEventListener("change", guardarMemoriaBloque1);
+                el.addEventListener("input", guardarMemoriaBloque1);
+            });
+
+            objetivoPrincipal.addEventListener("change", function() {
+                actualizarSubobjetivos(this.value);
+            });
+
+            function guardarMemoriaBloque1() {
+                const data = {
+                    cedis: cedisSelect.value,
+                    ruta: rutaSelect.value,
+                    asesor: asesorInput.value,
+                    tipoRuta: tipoRutaInput.value,
+                    objetivoPrincipal: objetivoPrincipal.value,
+                    objetivoDetalle: objetivoDetalle.value
+                };
+                localStorage.setItem("intmex_bloque1", JSON.stringify(data));
+            }
+
+            cargarMemoriaBloque1();
 
             const clienteAbiertoSelect = document.getElementById("cliente-abierto-select");
             const camposClienteAbiertoExtra = document.getElementById("campos-cliente-abierto-extra");
@@ -331,7 +437,6 @@
 
             clienteAbiertoSelect.addEventListener("change", function() {
                 if (this.value === "NO") {
-                    // Ocultar elementos de checklist y mostrar submenú de cierre
                     camposClienteAbiertoExtra.style.display = "none";
                     subopcionCerradoContainer.style.display = "block";
                     checklistContainer.style.display = "none";
@@ -340,7 +445,6 @@
                     grupoNotas.style.display = "none";
                     grupoFirma.style.display = "none";
                 } else {
-                    // Mostrar todo el flujo normal de cliente abierto
                     camposClienteAbiertoExtra.style.display = "contents";
                     subopcionCerradoContainer.style.display = "none";
                     checklistContainer.style.display = "grid";
@@ -409,8 +513,16 @@
             const form = document.getElementById("form-supervision");
             form.addEventListener("submit", e => {
                 e.preventDefault();
+
+                // Validar que se haya adjuntado la foto de fachada obligatoriamente
+                const fotoInput = document.getElementById("foto-fachada");
+                if (!fotoInput.files || fotoInput.files.length === 0) {
+                    alert("⚠️ Es obligatorio tomar o adjuntar la foto de la fachada antes de guardar el registro.");
+                    fotoInput.focus();
+                    return;
+                }
+
                 const abierto = clienteAbiertoSelect.value;
-                
                 let puntaje = 0;
                 let calificacion = "N/A (CERRADO)";
                 let tipoCierre = "-";
@@ -430,8 +542,8 @@
                     fecha: new Date().toLocaleString(),
                     cedis: cedisSelect.value,
                     ruta: rutaSelect.value,
-                    asesor: document.getElementById("asesor-input").value,
-                    tipoRuta: document.getElementById("tipo-ruta-input").value,
+                    asesor: asesorInput.value,
+                    tipoRuta: tipoRutaInput.value,
                     objetivo: objetivoPrincipal.value + (subobjetivoContainer.style.display !== 'none' ? ` (${objetivoDetalle.value})` : ''),
                     clienteAbierto: abierto,
                     tipoCierre: tipoCierre,
@@ -439,6 +551,7 @@
                     telefono: abierto === "SI" ? document.getElementById("telefono-input").value : "",
                     quienRecibe: abierto === "SI" ? document.getElementById("quien-recibe-input").value : "",
                     tipoCliente: abierto === "SI" ? document.getElementById("tipo-cte-input").value : "-",
+                    impactoPrioridades: abierto === "SI" ? document.getElementById("impacto-prioridades-select").value : "-",
                     compraEfectiva: abierto === "SI" ? compraEfectivaSelect.value : "NO",
                     motivoNoCompra: abierto === "SI" && compraEfectivaSelect.value === "NO" ? document.getElementById("motivo-no-compra").value : "-",
                     codigos: abierto === "SI" ? document.getElementById("codigos-input").value : "-",
@@ -446,7 +559,9 @@
                     puntaje: puntaje,
                     calificacion: calificacion,
                     lat: currentLat,
-                    lng: currentLng
+                    lng: currentLng,
+                    tieneFoto: "Sí",
+                    tieneFirma: !isCanvasBlank(canvas) ? "Sí" : "No"
                 };
 
                 let registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
@@ -454,15 +569,31 @@
                 localStorage.setItem("registros_supervision", JSON.stringify(registros));
 
                 alert(`¡Registro guardado con éxito! ${abierto === 'SI' ? 'Calificación: ' + calificacion : 'Estado: ' + tipoCierre}`);
-                form.reset();
-                camposClienteAbiertoExtra.style.display = "contents";
-                subopcionCerradoContainer.style.display = "none";
-                checklistContainer.style.display = "grid";
-                tituloChecklist.style.display = "block";
-                grupoCodigos.style.display = "block";
-                grupoNotas.style.display = "block";
-                grupoFirma.style.display = "block";
+                
+                // Limpiar campos del cliente manteniendo el Bloque 1
+                document.getElementById("cliente-input").value = "";
+                document.getElementById("telefono-input").value = "";
+                document.getElementById("quien-recibe-input").value = "";
+                document.getElementById("codigos-input").value = "";
+                document.getElementById("notas-input").value = "";
+                document.getElementById("foto-fachada").value = "";
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                document.querySelectorAll('.check-btn').forEach(b => b.classList.remove('active-ok', 'active-no'));
+                window.checklistEstado = {};
+
+                if(clienteAbiertoSelect.value === "NO") {
+                    clienteAbiertoSelect.value = "SI";
+                    clienteAbiertoSelect.dispatchEvent(new Event('change'));
+                }
             });
+
+            function isCanvasBlank(cvs) {
+                const blank = document.createElement('canvas');
+                blank.width = cvs.width;
+                blank.height = cvs.height;
+                return cvs.toDataURL() === blank.toDataURL();
+            }
 
             const tabReg = document.getElementById("tab-registro");
             const tabHist = document.getElementById("tab-historial");
@@ -501,7 +632,7 @@
                         html += `<div style="background:var(--bg-card); padding:12px; border-radius:8px; margin-bottom:10px; border-left:4px solid ${r.clienteAbierto==='SI'?'#10b981':'#ef4444'}">
                             <b>${r.cliente}</b> (${r.cedis} - ${r.ruta})<br>
                             <small>Fecha: ${r.fecha} | Asesor: ${r.asesor}</small><br>
-                            <small>Estado: <b>${r.clienteAbierto === 'SI' ? 'Abierto (' + r.calificacion + ')' : 'Cerrado (' + r.tipoCierre + ')'}</b></small>
+                            <small>Estado: <b>${r.clienteAbierto === 'SI' ? 'Abierto (' + r.calificacion + ')' : 'Cerrado (' + r.tipoCierre + ')'}</b> | Impacto Prioridades: <b>${r.impactoPrioridades}</b></small>
                         </div>`;
                     });
                 }
@@ -535,9 +666,9 @@
             const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
             if (registros.length === 0) { alert("No hay datos para exportar"); return; }
 
-            let csv = "\uFEFFFecha,CEDIS,Ruta,Asesor,Tipo Ruta,Objetivo,Cliente Abierto,Tipo Cierre,Cliente,Teléfono,Atiende,Segmento,Compra Efectiva,Motivo No Compra,Puntaje,Calificación,Códigos,Notas\n";
+            let csv = "\uFEFFFecha,CEDIS,Ruta,Asesor,Tipo Ruta,Objetivo,Cliente Abierto,Tipo Cierre,Cliente,Teléfono,Atiende,Segmento,Impacto Prioridades,Compra Efectiva,Motivo No Compra,Puntaje,Calificación,Códigos,Notas,Foto Fachada,Firma Cliente\n";
             registros.forEach(r => {
-                csv += `"${r.fecha}","${r.cedis}","${r.ruta}","${r.asesor}","${r.tipoRuta}","${r.objetivo}","${r.clienteAbierto}","${r.tipoCierre}","${r.cliente}","${r.telefono}","${r.quienRecibe}","${r.tipoCliente}","${r.compraEfectiva}","${r.motivoNoCompra}",${r.puntaje},"${r.calificacion}","${r.codigos}","${r.notas}"\n`;
+                csv += `"${r.fecha}","${r.cedis}","${r.ruta}","${r.asesor}","${r.tipoRuta}","${r.objetivo}","${r.clienteAbierto}","${r.tipoCierre}","${r.cliente}","${r.telefono}","${r.quienRecibe}","${r.tipoCliente}","${r.impactoPrioridades}","${r.compraEfectiva}","${r.motivoNoCompra}",${r.puntaje},"${r.calificacion}","${r.codigos}","${r.notas}","${r.tieneFoto}","${r.tieneFirma}"\n`;
             });
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
