@@ -33,7 +33,6 @@
 
         .section-title { font-size: 15px; font-weight: bold; color: var(--accent); margin: 25px 0 12px 0; border-bottom: 2px solid var(--border-color); padding-bottom: 5px; text-transform: uppercase; }
 
-        /* Adaptabilidad: 1 columna en celulares, 2 columnas en tablets/PC */
         .form-grid {
             display: grid;
             grid-template-columns: 1fr;
@@ -54,12 +53,10 @@
         }
         textarea { resize: vertical; height: 75px; }
 
-        /* Lienzo de Firma Digital */
         .signature-container { background: #ffffff; border-radius: 6px; border: 1px solid var(--border-color); width: 100%; height: 160px; position: relative; touch-action: none; }
         canvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
         .btn-clear { background: #64748b; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-top: 5px; }
 
-        /* Checklist interactivo */
         .checklist-item { display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 8px; }
         .checklist-item span { font-size: 13px; }
         .checklist-options { display: flex; gap: 5px; }
@@ -70,12 +67,10 @@
         .btn-submit { background: var(--accent); color: #0f172a; border: none; width: 100%; padding: 14px; font-weight: bold; font-size: 15px; border-radius: 8px; cursor: pointer; margin-top: 20px; grid-column: 1 / -1; }
         .btn-submit:hover { opacity: 0.9; }
 
-        /* Estilo para los reportes gerenciales */
         .kpi-card { background: #1e293b; padding: 15px; border-radius: 8px; border-left: 4px solid var(--accent); text-align: center; }
         .kpi-value { font-size: 22px; font-weight: bold; color: var(--text-main); margin-top: 5px; }
         .kpi-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
 
-        /* Barra de Navegación Inferior */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #0f172a; border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; }
         .nav-item { background: none; border: none; color: var(--text-muted); font-size: 11px; cursor: pointer; text-align: center; }
         .nav-item.active { color: var(--accent); }
@@ -88,10 +83,8 @@
 <body>
 
     <header>
-        <!-- Logotipo local -->
         <img src="logo.png" alt="Logo INTMEX" onerror="this.style.display='none'; document.getElementById('fallback-logo').style.display='block';">
         <div id="fallback-logo" style="display:none; color: #38bdf8; font-weight: bold; font-size: 18px; margin-bottom: 2px;">INTMEX</div>
-        
         <h1>SUPERVISION INTMEX</h1>
         <p>Control de Campo y Auditoría</p>
     </header>
@@ -103,7 +96,6 @@
 
             <form id="form-supervision" class="form-grid">
                 
-                <!-- Bloque 1: Datos de Ruta y Asesor -->
                 <div class="section-title full-width">Datos de Ruta y Asesor</div>
                 
                 <div class="form-group">
@@ -154,7 +146,6 @@
                     <select id="objetivo-detalle" class="form-control"></select>
                 </div>
 
-                <!-- Bloque 2: Datos del Cliente -->
                 <div class="section-title full-width">Datos del Cliente</div>
 
                 <div class="form-group full-width">
@@ -225,7 +216,6 @@
                     </div>
                 </div>
 
-                <!-- Bloque 3: Pasos de la Visita (Checklist) -->
                 <div class="section-title full-width" id="titulo-checklist">Pasos de la Visita (Checklist)</div>
                 
                 <div id="checklist-container" class="full-width" style="display: grid; grid-template-columns: 1fr; gap: 8px;"></div>
@@ -240,7 +230,6 @@
                     <textarea id="notas-input" placeholder="Observaciones adicionales..."></textarea>
                 </div>
 
-                <!-- Bloque 4: Evidencias -->
                 <div class="section-title full-width">Evidencias</div>
 
                 <div class="form-group full-width" id="grupo-firma">
@@ -515,69 +504,77 @@
                     return;
                 }
 
-                const abierto = clienteAbiertoSelect.value;
-                let puntaje = 0;
-                let calificacion = "N/A (CERRADO)";
-                let tipoCierre = "-";
+                // Leer imagen de fachada en Base64 para guardarla en localStorage y mostrarla en el reporte de Excel
+                const reader = new FileReader();
+                reader.readAsDataURL(fotoInput.files[0]);
+                reader.onload = function() {
+                    const fotoBase64 = reader.result;
+                    const firmaBase64 = !isCanvasBlank(canvas) ? canvas.toDataURL() : "";
 
-                if (abierto === "SI") {
-                    Object.values(window.checklistEstado).forEach(v => {
-                        if (v === "SI") puntaje += 10;
-                    });
-                    if (puntaje >= 70) calificacion = "OK";
-                    else if (puntaje >= 50) calificacion = "OCUPA REFUERZO";
-                    else calificacion = "OCUPA CAPACITACION";
-                } else {
-                    tipoCierre = document.getElementById("tipo-cierre-select").value;
-                }
+                    const abierto = clienteAbiertoSelect.value;
+                    let puntaje = 0;
+                    let calificacion = "N/A (CERRADO)";
+                    let tipoCierre = "-";
 
-                const registro = {
-                    fecha: new Date().toLocaleString(),
-                    cedis: cedisSelect.value,
-                    ruta: rutaSelect.value,
-                    asesor: asesorInput.value,
-                    tipoRuta: tipoRutaInput.value,
-                    objetivo: objetivoPrincipal.value + (subobjetivoContainer.style.display !== 'none' ? ` (${objetivoDetalle.value})` : ''),
-                    clienteAbierto: abierto,
-                    tipoCierre: tipoCierre,
-                    cliente: document.getElementById("cliente-input").value,
-                    telefono: abierto === "SI" ? document.getElementById("telefono-input").value : "",
-                    quienRecibe: abierto === "SI" ? document.getElementById("quien-recibe-input").value : "",
-                    tipoCliente: abierto === "SI" ? document.getElementById("tipo-cte-input").value : "-",
-                    impactoPrioridades: abierto === "SI" ? document.getElementById("impacto-prioridades-select").value : "-",
-                    compraEfectiva: abierto === "SI" ? compraEfectivaSelect.value : "NO",
-                    motivoNoCompra: abierto === "SI" && compraEfectivaSelect.value === "NO" ? document.getElementById("motivo-no-compra").value : "-",
-                    codigos: abierto === "SI" ? document.getElementById("codigos-input").value : "-",
-                    notas: abierto === "SI" ? document.getElementById("notas-input").value : `Cierre: ${tipoCierre}`,
-                    puntaje: puntaje,
-                    calificacion: calificacion,
-                    lat: currentLat,
-                    lng: currentLng,
-                    tieneFoto: "Sí",
-                    tieneFirma: !isCanvasBlank(canvas) ? "Sí" : "No"
+                    if (abierto === "SI") {
+                        Object.values(window.checklistEstado).forEach(v => {
+                            if (v === "SI") puntaje += 10;
+                        });
+                        if (puntaje >= 70) calificacion = "OK";
+                        else if (puntaje >= 50) calificacion = "OCUPA REFUERZO";
+                        else calificacion = "OCUPA CAPACITACION";
+                    } else {
+                        tipoCierre = document.getElementById("tipo-cierre-select").value;
+                    }
+
+                    const registro = {
+                        fecha: new Date().toLocaleString(),
+                        cedis: cedisSelect.value,
+                        ruta: rutaSelect.value,
+                        asesor: asesorInput.value,
+                        tipoRuta: tipoRutaInput.value,
+                        objetivo: objetivoPrincipal.value + (subobjetivoContainer.style.display !== 'none' ? ` (${objetivoDetalle.value})` : ''),
+                        clienteAbierto: abierto,
+                        tipoCierre: tipoCierre,
+                        cliente: document.getElementById("cliente-input").value,
+                        telefono: abierto === "SI" ? document.getElementById("telefono-input").value : "",
+                        quienRecibe: abierto === "SI" ? document.getElementById("quien-recibe-input").value : "",
+                        tipoCliente: abierto === "SI" ? document.getElementById("tipo-cte-input").value : "-",
+                        impactoPrioridades: abierto === "SI" ? document.getElementById("impacto-prioridades-select").value : "-",
+                        compraEfectiva: abierto === "SI" ? compraEfectivaSelect.value : "NO",
+                        motivoNoCompra: abierto === "SI" && compraEfectivaSelect.value === "NO" ? document.getElementById("motivo-no-compra").value : "-",
+                        codigos: abierto === "SI" ? document.getElementById("codigos-input").value : "-",
+                        notas: abierto === "SI" ? document.getElementById("notas-input").value : `Cierre: ${tipoCierre}`,
+                        puntaje: puntaje,
+                        calificacion: calificacion,
+                        lat: currentLat,
+                        lng: currentLng,
+                        foto: fotoBase64,
+                        firma: firmaBase64
+                    };
+
+                    let registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
+                    registros.push(registro);
+                    localStorage.setItem("registros_supervision", JSON.stringify(registros));
+
+                    alert(`¡Guardado con éxito! Calificación: ${calificacion}`);
+                    
+                    document.getElementById("cliente-input").value = "";
+                    document.getElementById("telefono-input").value = "";
+                    document.getElementById("quien-recibe-input").value = "";
+                    document.getElementById("codigos-input").value = "";
+                    document.getElementById("notas-input").value = "";
+                    document.getElementById("foto-fachada").value = "";
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    document.querySelectorAll('.check-btn').forEach(b => b.classList.remove('active-ok', 'active-no'));
+                    window.checklistEstado = {};
+
+                    if(clienteAbiertoSelect.value === "NO") {
+                        clienteAbiertoSelect.value = "SI";
+                        clienteAbiertoSelect.dispatchEvent(new Event('change'));
+                    }
                 };
-
-                let registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
-                registros.push(registro);
-                localStorage.setItem("registros_supervision", JSON.stringify(registros));
-
-                alert(`¡Guardado con éxito! Calificación: ${calificacion}`);
-                
-                document.getElementById("cliente-input").value = "";
-                document.getElementById("telefono-input").value = "";
-                document.getElementById("quien-recibe-input").value = "";
-                document.getElementById("codigos-input").value = "";
-                document.getElementById("notas-input").value = "";
-                document.getElementById("foto-fachada").value = "";
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-                document.querySelectorAll('.check-btn').forEach(b => b.classList.remove('active-ok', 'active-no'));
-                window.checklistEstado = {};
-
-                if(clienteAbiertoSelect.value === "NO") {
-                    clienteAbiertoSelect.value = "SI";
-                    clienteAbiertoSelect.dispatchEvent(new Event('change'));
-                }
             });
 
             function isCanvasBlank(cvs) {
@@ -615,35 +612,64 @@
                 const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
                 
                 const total = registros.length;
-                let abiertos = registros.filter(r => r.clienteAbierto === 'SI').length;
-                let efectivos = registros.filter(r => r.compraEfectiva === 'SI').length;
-                let okCount = registros.filter(r => r.calificacion === 'OK').length;
-                
-                let pctAbiertos = total > 0 ? ((abiertos / total) * 100).toFixed(1) : 0;
-                let pctEfectivos = abiertos > 0 ? ((efectivos / abiertos) * 100).toFixed(1) : 0;
+                let abiertos = registros.filter(r => r.clienteAbierto === 'SI');
+                let efectivos = abiertos.filter(r => r.compraEfectiva === 'SI').length;
+                let impactoSi = abiertos.filter(r => r.impactoPrioridades === 'SI').length;
+
+                let pctAbiertos = total > 0 ? ((abiertos.length / total) * 100).toFixed(1) : 0;
+                let pctEfectivos = abiertos.length > 0 ? ((efectivos / abiertos.length) * 100).toFixed(1) : 0;
+                let pctImpacto = abiertos.length > 0 ? ((impactoSi / abiertos.length) * 100).toFixed(1) : 0;
+
+                let segA = abiertos.filter(r => r.tipoCliente === 'Tipo A').length;
+                let segB = abiertos.filter(r => r.tipoCliente === 'Tipo B').length;
+                let segC = abiertos.filter(r => r.tipoCliente === 'Tipo C').length;
+                let segD = abiertos.filter(r => r.tipoCliente === 'Tipo D').length;
+
+                let sumaPuntajes = abiertos.reduce((acc, r) => acc + r.puntaje, 0);
+                let promedioPuntaje = abiertos.length > 0 ? (sumaPuntajes / abiertos.length).toFixed(1) : 0;
+
+                let calificacionAsesor = "EXCELENTE (OK)";
+                let colorAsesor = "#10b981";
+                if (promedioPuntaje < 50) {
+                    calificacionAsesor = "REQUIERE CAPACITACIÓN";
+                    colorAsesor = "#ef4444";
+                } else if (promedioPuntaje < 70) {
+                    calificacionAsesor = "REQUIERE REFUERZO";
+                    colorAsesor = "#f59e0b";
+                }
 
                 let html = `
                     <div class="section-title">📊 Panel Ejecutivo Gerencial de Supervisión</div>
                     
                     <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
-                        <button onclick="exportarCSVBaseDatos()" style="background: #2563eb; color: white; border: none; padding: 12px 18px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1;">📥 Descargar CSV Base de Datos</button>
-                        <button onclick="exportarReporteEjecutivoHTML()" style="background: #10b981; color: white; border: none; padding: 12px 18px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1;">📈 Ver / Descargar Reporte Ejecutivo Visual</button>
-                        <button onclick="localStorage.removeItem('registros_supervision'); renderHistorial();" style="background: #ef4444; color: white; border: none; padding: 12px 18px; border-radius: 6px; font-weight: bold; cursor: pointer;">🗑️ Borrar Todo</button>
+                        <button onclick="exportarCSVBaseDatos()" style="background: #2563eb; color: white; border: none; padding: 12px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1;">📥 CSV Base de Datos</button>
+                        <button onclick="exportarReporteEjecutivoHTML()" style="background: #10b981; color: white; border: none; padding: 12px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1;">📈 Ver Reporte Visual</button>
+                        <button onclick="exportarReporteExcelConFotos()" style="background: #f59e0b; color: #0f172a; border: none; padding: 12px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1;">📑 Descargar Excel con Fotos</button>
+                        <button onclick="localStorage.removeItem('registros_supervision'); renderHistorial();" style="background: #ef4444; color: white; border: none; padding: 12px 15px; border-radius: 6px; font-weight: bold; cursor: pointer;">🗑️ Borrar</button>
                     </div>
 
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px;">
                         <div class="kpi-card"><div class="kpi-label">Total Visitas</div><div class="kpi-value">${total}</div></div>
                         <div class="kpi-card" style="border-left-color: #10b981;"><div class="kpi-label">% Clientes Abiertos</div><div class="kpi-value" style="color: #34d399;">${pctAbiertos}%</div></div>
                         <div class="kpi-card" style="border-left-color: #f59e0b;"><div class="kpi-label">% Compra Efectiva</div><div class="kpi-value" style="color: #fbbf24;">${pctEfectivos}%</div></div>
-                        <div class="kpi-card" style="border-left-color: #38bdf8;"><div class="kpi-label">Calificados OK</div><div class="kpi-value" style="color: #38bdf8;">${okCount}</div></div>
+                        <div class="kpi-card" style="border-left-color: #38bdf8;"><div class="kpi-label">% Impacto Prioridades</div><div class="kpi-value" style="color: #38bdf8;">${pctImpacto}%</div></div>
                     </div>
 
                     <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 25px;">
-                        <h3 style="font-size: 14px; color: var(--accent); margin-bottom: 15px;">RENDIMIENTO DE VISITAS Y CUMPLIMIENTO</h3>
-                        <div style="margin-bottom: 10px; font-size: 12px;">Clientes Abiertos vs Cerrados</div>
-                        <div style="background: #0f172a; border-radius: 4px; height: 20px; width: 100%; overflow: hidden; display: flex;">
-                            <div style="background: #10b981; width: ${pctAbiertos}%; height: 100%; text-align: center; font-size: 10px; line-height: 20px; font-weight: bold;">Abiertos (${pctAbiertos}%)</div>
-                            <div style="background: #ef4444; width: ${100 - pctAbiertos}%; height: 100%; text-align: center; font-size: 10px; line-height: 20px; font-weight: bold;">Cerrados</div>
+                        <h3 style="font-size: 14px; color: var(--accent); margin-bottom: 10px;">EVALUACIÓN Y CALIFICACIÓN DEL ASESOR</h3>
+                        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">Promedio General de Checklist: <b style="color: #fff; font-size: 16px;">${promedioPuntaje} pts / 100</b></div>
+                        <div style="padding: 10px; background: #0f172a; border-radius: 6px; border-left: 4px solid ${colorAsesor}; font-size: 14px;">
+                            Estatus de Desempeño: <b style="color: ${colorAsesor};">${calificacionAsesor}</b>
+                        </div>
+                    </div>
+
+                    <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 25px;">
+                        <h3 style="font-size: 14px; color: var(--accent); margin-bottom: 15px;">DISTRIBUCIÓN DE CLIENTES SEGMENTADOS</h3>
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; font-size: 12px;">
+                            <div style="background: #0f172a; padding: 10px; border-radius: 6px;"><div style="color:var(--text-muted)">Tipo A</div><div style="font-size:16px; font-weight:bold; color:#38bdf8">${segA}</div></div>
+                            <div style="background: #0f172a; padding: 10px; border-radius: 6px;"><div style="color:var(--text-muted)">Tipo B</div><div style="font-size:16px; font-weight:bold; color:#34d399">${segB}</div></div>
+                            <div style="background: #0f172a; padding: 10px; border-radius: 6px;"><div style="color:var(--text-muted)">Tipo C</div><div style="font-size:16px; font-weight:bold; color:#fbbf24">${segC}</div></div>
+                            <div style="background: #0f172a; padding: 10px; border-radius: 6px;"><div style="color:var(--text-muted)">Tipo D</div><div style="font-size:16px; font-weight:bold; color:#f87171">${segD}</div></div>
                         </div>
                     </div>
 
@@ -656,8 +682,8 @@
                     registros.forEach(r => {
                         html += `<div style="background:var(--bg-card); padding:12px; border-radius:8px; margin-bottom:10px; border-left:4px solid ${r.clienteAbierto==='SI'?'#10b981':'#ef4444'}">
                             <b>${r.cliente}</b> (${r.cedis} - ${r.ruta})<br>
-                            <small>Fecha: ${r.fecha} | Asesor: ${r.asesor} | Objetivo: ${r.objetivo}</small><br>
-                            <small>Estado: <b>${r.clienteAbierto === 'SI' ? 'Abierto (' + r.calificacion + ')' : 'Cerrado (' + r.tipoCierre + ')'}</b> | Compra: <b>${r.compraEfectiva}</b></small>
+                            <small>Fecha: ${r.fecha} | Asesor: ${r.asesor} | Segmento: ${r.tipoCliente}</small><br>
+                            <small>Estado: <b>${r.clienteAbierto === 'SI' ? 'Abierto (' + r.calificacion + ')' : 'Cerrado'}</b> | Compra: <b>${r.compraEfectiva}</b> | Impacto Prioridades: <b>${r.impactoPrioridades}</b></small>
                         </div>`;
                     });
                 }
@@ -708,86 +734,78 @@
             const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
             if (registros.length === 0) { alert("No hay datos para generar el reporte ejecutivo"); return; }
 
-            const total = registros.length;
-            const abiertos = registros.filter(r => r.clienteAbierto === 'SI').length;
-            const efectivos = registros.filter(r => r.compraEfectiva === 'SI').length;
-            const pctAbiertos = ((abiertos / total) * 100).toFixed(1);
-            const pctEfectivos = abiertos > 0 ? ((efectivos / abiertos) * 100).toFixed(1) : 0;
-
             let win = window.open('', '_blank');
-            let html = `
-                <!DOCTYPE html>
-                <html lang="es">
-                <head>
-                    <meta charset="UTF-8">
-                    <title>Reporte Ejecutivo Gerencial - INTMEX</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; padding: 20px; color: #111; background: #fff; text-align: center; }
-                        .logo { max-height: 50px; margin-bottom: 10px; }
-                        h1 { color: #0f172a; margin-bottom: 5px; font-size: 20px; }
-                        .subtitle { color: #64748b; font-size: 12px; margin-bottom: 25px; }
-                        .metrics { display: flex; justify-content: space-around; margin-bottom: 30px; text-align: center; }
-                        .metric-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 8px; width: 22%; }
-                        .metric-val { font-size: 18px; font-weight: bold; color: #0284c7; margin-top: 5px; }
-                        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 20px; text-align: left; }
-                        th, td { border: 1px solid #cbd5e1; padding: 8px; }
-                        th { background: #0f172a; color: #fff; }
-                        .bar-container { background: #e2e8f0; border-radius: 4px; height: 16px; width: 100%; margin: 5px 0 15px 0; overflow: hidden; display: flex; text-align: left; }
-                        .bar-fill { background: #10b981; height: 100%; color: white; font-size: 10px; line-height: 16px; text-align: center; }
-                    </style>
-                </head>
-                <body>
-                    <img src="logo.png" alt="Logo INTMEX" class="logo" onerror="this.style.display='none';">
-                    <h1>REPORTE EJECUTIVO DE SUPERVISIÓN</h1>
-                    <div class="subtitle">Generado el ${new Date().toLocaleString()} - INTMEX</div>
-
-                    <div class="metrics">
-                        <div class="metric-box"><div>Total Visitas</div><div class="metric-val">${total}</div></div>
-                        <div class="metric-box"><div>Clientes Abiertos</div><div class="metric-val">${abiertos} (${pctAbiertos}%)</div></div>
-                        <div class="metric-box"><div>Compra Efectiva</div><div class="metric-val">${efectivos} (${pctEfectivos}%)</div></div>
-                        <div class="metric-box"><div>Efectividad Global</div><div class="metric-val">${((efectivos/total)*100).toFixed(1)}%</div></div>
-                    </div>
-
-                    <div style="text-align: left;">
-                        <h3>Desempeño General de Operación</h3>
-                        <div>Tasa de Clientes Abiertos</div>
-                        <div class="bar-container"><div class="bar-fill" style="width: ${pctAbiertos}%;">${pctAbiertos}%</div></div>
-
-                        <h3>Detalle de Visitas y Auditoría</h3>
-                    </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Fecha</th>
-                                <th>CEDIS / Ruta</th>
-                                <th>Asesor</th>
-                                <th>Cliente</th>
-                                <th>Estado</th>
-                                <th>Segmento</th>
-                                <th>Compra</th>
-                                <th>Calificación</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
-
+            let html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Reporte Ejecutivo Gerencial</title><style>body{font-family:Arial,sans-serif;padding:20px;text-align:center;}table{width:100%;border-collapse:collapse;font-size:11px;margin-top:20px;text-align:left;}th,td{border:1px solid #cbd5e1;padding:6px;}th{background:#0f172a;color:#fff;}.foto-min{max-height:60px;width:auto;}</style></head><body><h1>REPORTE EJECUTIVO CON EVIDENCIAS</h1><table><thead><tr><th>Fecha</th><th>Ruta</th><th>Asesor</th><th>Cliente</th><th>Calificación</th><th>Foto Fachada</th><th>Firma</th></tr></thead><tbody>`;
             registros.forEach(r => {
-                html += `<tr>
-                    <td>${r.fecha}</td>
-                    <td><b>${r.cedis}</b> - ${r.ruta}</td>
-                    <td>${r.asesor}</td>
-                    <td>${r.cliente}</td>
-                    <td>${r.clienteAbierto === 'SI' ? 'Abierto' : 'Cerrado (' + r.tipoCierre + ')'}</td>
-                    <td>${r.tipoCliente}</td>
-                    <td>${r.compraEfectiva}</td>
-                    <td><b>${r.calificacion}</b></td>
-                </tr>`;
+                html += `<tr><td>${r.fecha}</td><td>${r.ruta}</td><td>${r.asesor}</td><td>${r.cliente}</td><td><b>${r.calificacion}</b></td><td>${r.foto ? '<img src="'+r.foto+'" class="foto-min">' : 'Sin foto'}</td><td>${r.firma ? '<img src="'+r.firma+'" class="foto-min">' : 'Sin firma'}</td></tr>`;
             });
-
             html += `</tbody></table></body></html>`;
             win.document.write(html);
             win.document.close();
             win.print();
+        };
+
+        // Reporte Ejecutivo Exportable a Excel (con fotos integradas en celdas)
+        window.exportarReporteExcelConFotos = function() {
+            const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
+            if (registros.length === 0) { alert("No hay datos para exportar"); return; }
+
+            let excelContent = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head><meta charset="UTF-8"><title>Reporte Ejecutivo Excel</title>
+                <style>table{border-collapse:collapse;}th,td{border:1px solid black;padding:8px;vertical-align:middle;text-align:center;}th{background:#0f172a;color:white;}.foto-celda{max-width:100px;max-height:80px;}</style>
+                </head>
+                <body>
+                <h2>REPORTE EJECUTIVO DE SUPERVISIÓN CON FOTOGRAFÍAS</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>CEDIS</th>
+                            <th>Ruta</th>
+                            <th>Asesor</th>
+                            <th>Cliente</th>
+                            <th>Estado</th>
+                            <th>Segmento</th>
+                            <th>Impacto Prioridades</th>
+                            <th>Compra</th>
+                            <th>Calificación</th>
+                            <th>Foto de Fachada</th>
+                            <th>Firma del Cliente</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            registros.forEach(r => {
+                excelContent += `
+                    <tr>
+                        <td>${r.fecha}</td>
+                        <td>${r.cedis}</td>
+                        <td>${r.ruta}</td>
+                        <td>${r.asesor}</td>
+                        <td>${r.cliente}</td>
+                        <td>${r.clienteAbierto === 'SI' ? 'Abierto' : 'Cerrado'}</td>
+                        <td>${r.tipoCliente}</td>
+                        <td>${r.impactoPrioridades}</td>
+                        <td>${r.compraEfectiva}</td>
+                        <td><b>${r.calificacion}</b> (${r.puntaje} pts)</td>
+                        <td>${r.foto ? `<img src="${r.foto}" class="foto-celda">` : 'Sin foto'}</td>
+                        <td>${r.firma ? `<img src="${r.firma}" class="foto-celda">` : 'Sin firma'}</td>
+                    </tr>
+                `;
+            });
+
+            excelContent += `</tbody></table></body></html>`;
+
+            const blob = new Blob([excelContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `Reporte_Ejecutivo_Con_Fotos_${new Date().toISOString().slice(0,10)}.xls`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         };
     </script>
 </body>
