@@ -104,7 +104,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Ruta (01-18 y 301-306)</label>
+                    <label>RUTA</label>
                     <select id="ruta-select" required class="form-control">
                         <option value="">Primero seleccione un CEDIS</option>
                     </select>
@@ -151,7 +151,16 @@
                     </select>
                 </div>
 
-                <!-- Campos condicionales de cliente abierto (distribuidos en 2 columnas) -->
+                <!-- Submenú condicional cuando el cliente está CERRADO (NO) -->
+                <div class="form-group full-width" id="subopcion-cerrado-container" style="display: none;">
+                    <label>Motivo de Cierre / Visita</label>
+                    <select id="tipo-cierre-select" class="form-control">
+                        <option value="Solo esta visita">Solo esta visita</option>
+                        <option value="Cerrado definitivo">Cerrado definitivo</option>
+                    </select>
+                </div>
+
+                <!-- Campos de cliente abierto (se ocultan si es NO) -->
                 <div id="campos-cliente-abierto" class="full-width" style="display: contents;">
                     <div class="form-group">
                         <label>Nombre del Cliente</label>
@@ -196,19 +205,19 @@
                     </div>
                 </div>
 
-                <!-- Bloque 3: Pasos de la Visita (Checklist) -->
-                <div class="section-title">Pasos de la Visita (Checklist)</div>
+                <!-- Bloque 3: Pasos de la Visita (Checklist) - Se oculta si el cliente está cerrado -->
+                <div class="section-title" id="titulo-checklist">Pasos de la Visita (Checklist)</div>
                 
                 <div id="checklist-container" class="full-width" style="display: grid; grid-template-columns: 1fr; gap: 8px;">
                     <!-- Generado por JS -->
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="grupo-codigos">
                     <label>Códigos sin Impactar / Comentarios</label>
                     <textarea id="codigos-input" placeholder="Ninguno"></textarea>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="grupo-notas">
                     <label>Notas de Auditoría</label>
                     <textarea id="notas-input" placeholder="Observaciones adicionales..."></textarea>
                 </div>
@@ -216,7 +225,7 @@
                 <!-- Bloque 4: Evidencias -->
                 <div class="section-title">Evidencias</div>
 
-                <div class="form-group">
+                <div class="form-group" id="grupo-firma">
                     <label>Firma del Cliente</label>
                     <input type="file" id="firma-cliente" accept="image/*">
                 </div>
@@ -312,13 +321,35 @@
 
             const clienteAbiertoSelect = document.getElementById("cliente-abierto-select");
             const camposClienteAbierto = document.getElementById("campos-cliente-abierto");
+            const subopcionCerradoContainer = document.getElementById("subopcion-cerrado-container");
+            const checklistContainer = document.getElementById("checklist-container");
+            const tituloChecklist = document.getElementById("titulo-checklist");
+            const grupoCodigos = document.getElementById("grupo-codigos");
+            const grupoNotas = document.getElementById("grupo-notas");
+            const grupoFirma = document.getElementById("grupo-firma");
 
             clienteAbiertoSelect.addEventListener("change", function() {
                 if (this.value === "NO") {
+                    // Ocultar campos innecesarios y mostrar submenú de cierre
                     camposClienteAbierto.style.display = "none";
+                    subopcionCerradoContainer.style.display = "block";
+                    checklistContainer.style.display = "none";
+                    tituloChecklist.style.display = "none";
+                    grupoCodigos.style.display = "none";
+                    grupoNotas.style.display = "none";
+                    grupoFirma.style.display = "none";
+                    
                     document.getElementById("cliente-input").removeAttribute("required");
                 } else {
+                    // Mostrar todo el flujo normal de cliente abierto
                     camposClienteAbierto.style.display = "contents";
+                    subopcionCerradoContainer.style.display = "none";
+                    checklistContainer.style.display = "grid";
+                    tituloChecklist.style.display = "block";
+                    grupoCodigos.style.display = "block";
+                    grupoNotas.style.display = "block";
+                    grupoFirma.style.display = "block";
+                    
                     document.getElementById("cliente-input").setAttribute("required", "true");
                 }
             });
@@ -343,7 +374,7 @@
                 "Despedida"
             ];
 
-            const checklistContainer = document.getElementById("checklist-container");
+            const checklistEl = document.getElementById("checklist-container");
             pasosChecklist.forEach((paso, index) => {
                 const div = document.createElement("div");
                 div.className = "checklist-item";
@@ -354,7 +385,7 @@
                         <button type="button" class="check-btn" onclick="marcarCheck(${index}, 'NO', this)">NO</button>
                     </div>
                 `;
-                checklistContainer.appendChild(div);
+                checklistEl.appendChild(div);
             });
 
             window.checklistEstado = {};
@@ -384,15 +415,19 @@
                 const abierto = clienteAbiertoSelect.value;
                 
                 let puntaje = 0;
+                let calificacion = "N/A (CERRADO)";
+                let tipoCierre = "-";
+
                 if (abierto === "SI") {
                     Object.values(window.checklistEstado).forEach(v => {
                         if (v === "SI") puntaje += 10;
                     });
+                    if (puntaje >= 70) calificacion = "OK";
+                    else if (puntaje >= 50) calificacion = "OCUPA REFUERZO";
+                    else calificacion = "OCUPA CAPACITACION";
+                } else {
+                    tipoCierre = document.getElementById("tipo-cierre-select").value;
                 }
-
-                let calificacion = "OCUPA CAPACITACION";
-                if (puntaje >= 70) calificacion = "OK";
-                else if (puntaje >= 50) calificacion = "OCUPA REFUERZO";
 
                 const registro = {
                     fecha: new Date().toLocaleString(),
@@ -402,14 +437,15 @@
                     tipoRuta: document.getElementById("tipo-ruta-input").value,
                     objetivo: objetivoPrincipal.value + (subobjetivoContainer.style.display !== 'none' ? ` (${objetivoDetalle.value})` : ''),
                     clienteAbierto: abierto,
-                    cliente: abierto === "SI" ? document.getElementById("cliente-input").value : "CERRADO / NO DISPONIBLE",
+                    tipoCierre: tipoCierre,
+                    cliente: abierto === "SI" ? document.getElementById("cliente-input").value : prompt("Ingrese el nombre del cliente cerrado:") || "Cliente Cerrado",
                     telefono: abierto === "SI" ? document.getElementById("telefono-input").value : "",
                     quienRecibe: abierto === "SI" ? document.getElementById("quien-recibe-input").value : "",
                     tipoCliente: abierto === "SI" ? document.getElementById("tipo-cte-input").value : "-",
                     compraEfectiva: abierto === "SI" ? compraEfectivaSelect.value : "NO",
                     motivoNoCompra: abierto === "SI" && compraEfectivaSelect.value === "NO" ? document.getElementById("motivo-no-compra").value : "-",
                     codigos: abierto === "SI" ? document.getElementById("codigos-input").value : "-",
-                    notas: abierto === "SI" ? document.getElementById("notas-input").value : "Cliente Cerrado",
+                    notas: abierto === "SI" ? document.getElementById("notas-input").value : `Cierre: ${tipoCierre}`,
                     puntaje: puntaje,
                     calificacion: calificacion,
                     lat: currentLat,
@@ -420,9 +456,15 @@
                 registros.push(registro);
                 localStorage.setItem("registros_supervision", JSON.stringify(registros));
 
-                alert(`¡Registro guardado con éxito! Calificación: ${calificacion} (${puntaje} pts)`);
+                alert(`¡Registro guardado con éxito! ${abierto === 'SI' ? 'Calificación: ' + calificacion : 'Estado: ' + tipoCierre}`);
                 form.reset();
                 camposClienteAbierto.style.display = "contents";
+                subopcionCerradoContainer.style.display = "none";
+                checklistContainer.style.display = "grid";
+                tituloChecklist.style.display = "block";
+                grupoCodigos.style.display = "block";
+                grupoNotas.style.display = "block";
+                grupoFirma.style.display = "block";
             });
 
             const tabReg = document.getElementById("tab-registro");
@@ -459,10 +501,10 @@
                     html += `<p style="color:var(--text-muted)">No hay registros guardados.</p>`;
                 } else {
                     registros.forEach(r => {
-                        html += `<div style="background:var(--bg-card); padding:12px; border-radius:8px; margin-bottom:10px; border-left:4px solid ${r.calificacion==='OK'?'#10b981':'#f59e0b'}">
+                        html += `<div style="background:var(--bg-card); padding:12px; border-radius:8px; margin-bottom:10px; border-left:4px solid ${r.clienteAbierto==='SI'?'#10b981':'#ef4444'}">
                             <b>${r.cliente}</b> (${r.cedis} - ${r.ruta})<br>
                             <small>Fecha: ${r.fecha} | Asesor: ${r.asesor}</small><br>
-                            <small>Calificación: <b>${r.calificacion}</b> (${r.puntaje} pts) | Compra Efectiva: <b>${r.compraEfectiva}</b></small>
+                            <small>Estado: <b>${r.clienteAbierto === 'SI' ? 'Abierto (' + r.calificacion + ')' : 'Cerrado (' + r.tipoCierre + ')'}</b></small>
                         </div>`;
                     });
                 }
@@ -486,7 +528,7 @@
                 registros.forEach(r => {
                     if(r.lat && r.lng) {
                         L.marker([r.lat, r.lng]).addTo(leafletMap)
-                          .bindPopup(`<b>${r.cliente}</b><br>Ruta: ${r.ruta}<br>Calificación: ${r.calificacion}`);
+                          .bindPopup(`<b>${r.cliente}</b><br>Ruta: ${r.ruta}<br>Estado: ${r.clienteAbierto === 'SI' ? 'Abierto' : 'Cerrado'}`);
                     }
                 });
             }
@@ -496,9 +538,9 @@
             const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
             if (registros.length === 0) { alert("No hay datos para exportar"); return; }
 
-            let csv = "\uFEFFFecha,CEDIS,Ruta,Asesor,Tipo Ruta,Objetivo,Cliente Abierto,Cliente,Teléfono,Atiende,Segmento,Compra Efectiva,Motivo No Compra,Puntaje,Calificación,Códigos,Notas\n";
+            let csv = "\uFEFFFecha,CEDIS,Ruta,Asesor,Tipo Ruta,Objetivo,Cliente Abierto,Tipo Cierre,Cliente,Teléfono,Atiende,Segmento,Compra Efectiva,Motivo No Compra,Puntaje,Calificación,Códigos,Notas\n";
             registros.forEach(r => {
-                csv += `"${r.fecha}","${r.cedis}","${r.ruta}","${r.asesor}","${r.tipoRuta}","${r.objetivo}","${r.clienteAbierto}","${r.cliente}","${r.telefono}","${r.quienRecibe}","${r.tipoCliente}","${r.compraEfectiva}","${r.motivoNoCompra}",${r.puntaje},"${r.calificacion}","${r.codigos}","${r.notas}"\n`;
+                csv += `"${r.fecha}","${r.cedis}","${r.ruta}","${r.asesor}","${r.tipoRuta}","${r.objetivo}","${r.clienteAbierto}","${r.tipoCierre}","${r.cliente}","${r.telefono}","${r.quienRecibe}","${r.tipoCliente}","${r.compraEfectiva}","${r.motivoNoCompra}",${r.puntaje},"${r.calificacion}","${r.codigos}","${r.notas}"\n`;
             });
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
