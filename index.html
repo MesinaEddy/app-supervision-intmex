@@ -69,6 +69,11 @@
         .btn-submit { background: var(--accent); color: #0f172a; border: none; width: 100%; padding: 14px; font-weight: bold; font-size: 15px; border-radius: 8px; cursor: pointer; margin-top: 20px; grid-column: 1 / -1; }
         .btn-submit:hover { opacity: 0.9; }
 
+        /* Estilo para los reportes gerenciales */
+        .kpi-card { background: #1e293b; padding: 15px; border-radius: 8px; border-left: 4px solid var(--accent); text-align: center; }
+        .kpi-value { font-size: 22px; font-weight: bold; color: var(--text-main); margin-top: 5px; }
+        .kpi-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
+
         /* Barra de Navegación Inferior */
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #0f172a; border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; }
         .nav-item { background: none; border: none; color: var(--text-muted); font-size: 11px; cursor: pointer; text-align: center; }
@@ -141,9 +146,7 @@
 
                 <div class="form-group" id="subobjetivo-container" style="display: none;">
                     <label>Subobjetivo de Supervisión</label>
-                    <select id="objetivo-detalle" class="form-control">
-                        <!-- Opciones dinámicas -->
-                    </select>
+                    <select id="objetivo-detalle" class="form-control"></select>
                 </div>
 
                 <!-- Bloque 2: Datos del Cliente -->
@@ -170,7 +173,6 @@
                     </select>
                 </div>
 
-                <!-- Campos adicionales de cliente abierto -->
                 <div id="campos-cliente-abierto-extra" class="full-width" style="display: contents;">
                     <div class="form-group">
                         <label>Teléfono</label>
@@ -221,9 +223,7 @@
                 <!-- Bloque 3: Pasos de la Visita (Checklist) -->
                 <div class="section-title full-width" id="titulo-checklist">Pasos de la Visita (Checklist)</div>
                 
-                <div id="checklist-container" class="full-width" style="display: grid; grid-template-columns: 1fr; gap: 8px;">
-                    <!-- Generado por JS -->
-                </div>
+                <div id="checklist-container" class="full-width" style="display: grid; grid-template-columns: 1fr; gap: 8px;"></div>
 
                 <div class="form-group" id="grupo-codigos">
                     <label>Códigos sin Impactar / Comentarios</label>
@@ -239,7 +239,7 @@
                 <div class="section-title full-width">Evidencias</div>
 
                 <div class="form-group full-width" id="grupo-firma">
-                    <label>Firma del Cliente (Opcional - Dibuje dentro del recuadro)</label>
+                    <label>Firma del Cliente (Opcional)</label>
                     <div class="signature-container">
                         <canvas id="signature-canvas"></canvas>
                     </div>
@@ -255,7 +255,7 @@
             </form>
         </div>
 
-        <!-- VISTA HISTORIAL -->
+        <!-- VISTA HISTORIAL Y REPORTES -->
         <div id="view-historial" class="view-section"></div>
 
         <!-- VISTA MAPA -->
@@ -271,7 +271,7 @@
             <div>📝</div>Registro
         </button>
         <button class="nav-item" id="tab-historial">
-            <div>📊</div>Historial
+            <div>📊</div>Historial & Reportes
         </button>
         <button class="nav-item" id="tab-mapa">
             <div>🗺️</div>Mapa
@@ -290,7 +290,6 @@
             const objetivoDetalle = document.getElementById("objetivo-detalle");
             const subobjetivoContainer = document.getElementById("subobjetivo-container");
 
-            // Configuración del Lienzo de Firma Digital
             const canvas = document.getElementById('signature-canvas');
             const ctx = canvas.getContext('2d');
             let isDrawing = false;
@@ -463,16 +462,9 @@
             });
 
             const pasosChecklist = [
-                "ID Cliente en Base de Datos",
-                "Saludo a Cliente",
-                "ID Nuestras Marcas",
-                "ID Stock",
-                "Revisión de Caducidades",
-                "Impulso de Variantes",
-                "Cierre Promos",
-                "Comunicar Venta a Cliente",
-                "Manejo de Objecciones",
-                "Despedida"
+                "ID Cliente en Base de Datos", "Saludo a Cliente", "ID Nuestras Marcas",
+                "ID Stock", "Revisión de Caducidades", "Impulso de Variantes",
+                "Cierre Promos", "Comunicar Venta a Cliente", "Manejo de Objecciones", "Despedida"
             ];
 
             const checklistEl = document.getElementById("checklist-container");
@@ -492,9 +484,7 @@
             window.checklistEstado = {};
             window.marcarCheck = function(index, valor, btn) {
                 const parent = btn.parentElement;
-                parent.querySelectorAll('.check-btn').forEach(b => {
-                    b.classList.remove('active-ok', 'active-no');
-                });
+                parent.querySelectorAll('.check-btn').forEach(b => b.classList.remove('active-ok', 'active-no'));
                 if(valor === 'SI') btn.classList.add('active-ok');
                 else btn.classList.add('active-no');
                 window.checklistEstado[index] = valor;
@@ -513,11 +503,9 @@
             const form = document.getElementById("form-supervision");
             form.addEventListener("submit", e => {
                 e.preventDefault();
-
-                // Validar que se haya adjuntado la foto de fachada obligatoriamente
                 const fotoInput = document.getElementById("foto-fachada");
                 if (!fotoInput.files || fotoInput.files.length === 0) {
-                    alert("⚠️ Es obligatorio tomar o adjuntar la foto de la fachada antes de guardar el registro.");
+                    alert("⚠️ Es obligatorio tomar o adjuntar la foto de la fachada.");
                     fotoInput.focus();
                     return;
                 }
@@ -568,9 +556,8 @@
                 registros.push(registro);
                 localStorage.setItem("registros_supervision", JSON.stringify(registros));
 
-                alert(`¡Registro guardado con éxito! ${abierto === 'SI' ? 'Calificación: ' + calificacion : 'Estado: ' + tipoCierre}`);
+                alert(`¡Guardado con éxito! Calificación: ${calificacion}`);
                 
-                // Limpiar campos del cliente manteniendo el Bloque 1
                 document.getElementById("cliente-input").value = "";
                 document.getElementById("telefono-input").value = "";
                 document.getElementById("quien-recibe-input").value = "";
@@ -619,20 +606,57 @@
                 initMap();
             });
 
+            // Renderizar Historial y Dashboard Ejecutivo Visual con Gráficos Integrados
             function renderHistorial() {
                 const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
-                let html = `<div class="section-title">📊 Historial y Reportes Gerenciales</div>
-                    <button onclick="exportarExcel()" class="btn-submit" style="margin-bottom: 15px; background: #10b981; color: white;">📥 Descargar Reporte Ejecutivo (CSV/Excel)</button>
-                    <button onclick="localStorage.removeItem('registros_supervision'); renderHistorial();" class="btn-submit" style="margin-bottom: 15px; background: #ef4444; color: white;">🗑️ Borrar Historial</button>`;
+                
+                const total = registros.length;
+                let abiertos = registros.filter(r => r.clienteAbierto === 'SI').length;
+                let efectivos = registros.filter(r => r.compraEfectiva === 'SI').length;
+                let okCount = registros.filter(r => r.calificacion === 'OK').length;
+                
+                let pctAbiertos = total > 0 ? ((abiertos / total) * 100).toFixed(1) : 0;
+                let pctEfectivos = abiertos > 0 ? ((efectivos / abiertos) * 100).toFixed(1) : 0;
+
+                let html = `
+                    <div class="section-title">📊 Panel Ejecutivo Gerencial de Supervisión</div>
+                    
+                    <!-- Botones de Reportes Separados -->
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                        <button onclick="exportarCSVBaseDatos()" style="background: #2563eb; color: white; border: none; padding: 12px 18px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1;">📥 Descargar CSV Base de Datos</button>
+                        <button onclick="exportarReporteEjecutivoHTML()" style="background: #10b981; color: white; border: none; padding: 12px 18px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1;">📈 Ver / Descargar Reporte Ejecutivo Visual</button>
+                        <button onclick="localStorage.removeItem('registros_supervision'); renderHistorial();" style="background: #ef4444; color: white; border: none; padding: 12px 18px; border-radius: 6px; font-weight: bold; cursor: pointer;">🗑️ Borrar Todo</button>
+                    </div>
+
+                    <!-- Tarjetas KPIs Gerenciales -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                        <div class="kpi-card"><div class="kpi-label">Total Visitas</div><div class="kpi-value">${total}</div></div>
+                        <div class="kpi-card" style="border-left-color: #10b981;"><div class="kpi-label">% Clientes Abiertos</div><div class="kpi-value" style="color: #34d399;">${pctAbiertos}%</div></div>
+                        <div class="kpi-card" style="border-left-color: #f59e0b;"><div class="kpi-label">% Compra Efectiva</div><div class="kpi-value" style="color: #fbbf24;">${pctEfectivos}%</div></div>
+                        <div class="kpi-card" style="border-left-color: #38bdf8;"><div class="kpi-label">Calificados OK</div><div class="kpi-value" style="color: #38bdf8;">${okCount}</div></div>
+                    </div>
+
+                    <!-- Gráficas de Barras Visuales Simuladas -->
+                    <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 25px;">
+                        <h3 style="font-size: 14px; color: var(--accent); margin-bottom: 15px;">RENDIMIENTO DE VISITAS Y CUMPLIMIENTO</h3>
+                        <div style="margin-bottom: 10px; font-size: 12px;">Clientes Abiertos vs Cerrados</div>
+                        <div style="background: #0f172a; border-radius: 4px; height: 20px; width: 100%; overflow: hidden; display: flex;">
+                            <div style="background: #10b981; width: ${pctAbiertos}%; height: 100%; text-align: center; font-size: 10px; line-height: 20px; font-weight: bold;">Abiertos (${pctAbiertos}%)</div>
+                            <div style="background: #ef4444; width: ${100 - pctAbiertos}%; height: 100%; text-align: center; font-size: 10px; line-height: 20px; font-weight: bold;">Cerrados</div>
+                        </div>
+                    </div>
+
+                    <div class="section-title">Registro Detallado</div>
+                `;
 
                 if (registros.length === 0) {
-                    html += `<p style="color:var(--text-muted)">No hay registros guardados.</p>`;
+                    html += `<p style="color:var(--text-muted)">No hay registros guardados en el dispositivo.</p>`;
                 } else {
                     registros.forEach(r => {
                         html += `<div style="background:var(--bg-card); padding:12px; border-radius:8px; margin-bottom:10px; border-left:4px solid ${r.clienteAbierto==='SI'?'#10b981':'#ef4444'}">
                             <b>${r.cliente}</b> (${r.cedis} - ${r.ruta})<br>
-                            <small>Fecha: ${r.fecha} | Asesor: ${r.asesor}</small><br>
-                            <small>Estado: <b>${r.clienteAbierto === 'SI' ? 'Abierto (' + r.calificacion + ')' : 'Cerrado (' + r.tipoCierre + ')'}</b> | Impacto Prioridades: <b>${r.impactoPrioridades}</b></small>
+                            <small>Fecha: ${r.fecha} | Asesor: ${r.asesor} | Objetivo: ${r.objetivo}</small><br>
+                            <small>Estado: <b>${r.clienteAbierto === 'SI' ? 'Abierto (' + r.calificacion + ')' : 'Cerrado (' + r.tipoCierre + ')'}</b> | Compra: <b>${r.compraEfectiva}</b></small>
                         </div>`;
                     });
                 }
@@ -662,21 +686,105 @@
             }
         });
 
-        window.exportarExcel = function() {
+        // 1. Reporte CSV Base de Datos (Puro y estructurado)
+        window.exportarCSVBaseDatos = function() {
             const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
             if (registros.length === 0) { alert("No hay datos para exportar"); return; }
 
-            let csv = "\uFEFFFecha,CEDIS,Ruta,Asesor,Tipo Ruta,Objetivo,Cliente Abierto,Tipo Cierre,Cliente,Teléfono,Atiende,Segmento,Impacto Prioridades,Compra Efectiva,Motivo No Compra,Puntaje,Calificación,Códigos,Notas,Foto Fachada,Firma Cliente\n";
+            let csv = "\uFEFFFecha,CEDIS,Ruta,Asesor,Tipo Ruta,Objetivo,Cliente Abierto,Tipo Cierre,Cliente,Teléfono,Atiende,Segmento,Impacto Prioridades,Compra Efectiva,Motivo No Compra,Puntaje,Calificación,Códigos,Notas,Latitud,Longitud\n";
             registros.forEach(r => {
-                csv += `"${r.fecha}","${r.cedis}","${r.ruta}","${r.asesor}","${r.tipoRuta}","${r.objetivo}","${r.clienteAbierto}","${r.tipoCierre}","${r.cliente}","${r.telefono}","${r.quienRecibe}","${r.tipoCliente}","${r.impactoPrioridades}","${r.compraEfectiva}","${r.motivoNoCompra}",${r.puntaje},"${r.calificacion}","${r.codigos}","${r.notas}","${r.tieneFoto}","${r.tieneFirma}"\n`;
+                csv += `"${r.fecha}","${r.cedis}","${r.ruta}","${r.asesor}","${r.tipoRuta}","${r.objetivo}","${r.clienteAbierto}","${r.tipoCierre}","${r.cliente}","${r.telefono}","${r.quienRecibe}","${r.tipoCliente}","${r.impactoPrioridades}","${r.compraEfectiva}","${r.motivoNoCompra}",${r.puntaje},"${r.calificacion}","${r.codigos}","${r.notas}",${r.lat},${r.lng}\n`;
             });
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `Reporte_Ejecutivo_${new Date().toISOString().slice(0,10)}.csv`;
+            a.download = `BaseDatos_Supervision_${new Date().toISOString().slice(0,10)}.csv`;
             a.click();
+        };
+
+        // 2. Reporte Ejecutivo Visual (Estilo Corporativo con Gráficos y Tablas Detalladas)
+        window.exportarReporteEjecutivoHTML = function() {
+            const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
+            if (registros.length === 0) { alert("No hay datos para generar el reporte ejecutivo"); return; }
+
+            const total = registros.length;
+            const abiertos = registros.filter(r => r.clienteAbierto === 'SI').length;
+            const efectivos = registros.filter(r => r.compraEfectiva === 'SI').length;
+            const pctAbiertos = ((abiertos / total) * 100).toFixed(1);
+            const pctEfectivos = abiertos > 0 ? ((efectivos / abiertos) * 100).toFixed(1) : 0;
+
+            let win = window.open('', '_blank');
+            let html = `
+                <!DOCTYPE html>
+                <html lang="es">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Reporte Ejecutivo Gerencial - INTMEX</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; color: #111; background: #fff; }
+                        h1 { color: #0f172a; text-align: center; margin-bottom: 5px; }
+                        .subtitle { text-align: center; color: #64748b; font-size: 13px; margin-bottom: 25px; }
+                        .metrics { display: flex; justify-content: space-around; margin-bottom: 30px; text-align: center; }
+                        .metric-box { background: #f8fafc; border: 1px solid #cbd5e1; padding: 15px; border-radius: 8px; width: 22%; }
+                        .metric-val { font-size: 20px; font-weight: bold; color: #0284c7; margin-top: 5px; }
+                        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 20px; }
+                        th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; }
+                        th { background: #0f172a; color: #fff; }
+                        .bar-container { background: #e2e8f0; border-radius: 4px; height: 16px; width: 100%; margin: 5px 0 15px 0; overflow: hidden; display: flex; }
+                        .bar-fill { background: #10b981; height: 100%; text-align: center; color: white; font-size: 10px; line-height: 16px; }
+                    </style>
+                </head>
+                <body>
+                    <h1>REPORTE EJECUTIVO DE SUPERVISIÓN</h1>
+                    <div class="subtitle">Generado el ${new Date().toLocaleString()} - INTMEX</div>
+
+                    <div class="metrics">
+                        <div class="metric-box"><div>Total Visitas</div><div class="metric-val">${total}</div></div>
+                        <div class="metric-box"><div>Clientes Abiertos</div><div class="metric-val">${abiertos} (${pctAbiertos}%)</div></div>
+                        <div class="metric-box"><div>Compra Efectiva</div><div class="metric-val">${efectivos} (${pctEfectivos}%)</div></div>
+                        <div class="metric-box"><div>Efectividad Global</div><div class="metric-val">${((efectivos/total)*100).toFixed(1)}%</div></div>
+                    </div>
+
+                    <h3>Desempeño General de Operación</h3>
+                    <div>Tasa de Clientes Abiertos</div>
+                    <div class="bar-container"><div class="bar-fill" style="width: ${pctAbiertos}%;">${pctAbiertos}%</div></div>
+
+                    <h3>Detalle de Visitas y Auditoría</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>CEDIS / Ruta</th>
+                                <th>Asesor</th>
+                                <th>Cliente</th>
+                                <th>Estado</th>
+                                <th>Segmento</th>
+                                <th>Compra</th>
+                                <th>Calificación</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            registros.forEach(r => {
+                html += `<tr>
+                    <td>${r.fecha}</td>
+                    <td><b>${r.cedis}</b> - ${r.ruta}</td>
+                    <td>${r.asesor}</td>
+                    <td>${r.cliente}</td>
+                    <td>${r.clienteAbierto === 'SI' ? 'Abierto' : 'Cerrado (' + r.tipoCierre + ')'}</td>
+                    <td>${r.tipoCliente}</td>
+                    <td>${r.compraEfectiva}</td>
+                    <td><b>${r.calificacion}</b></td>
+                </tr>`;
+            });
+
+            html += `</tbody></table></body></html>`;
+            win.document.write(html);
+            win.document.close();
+            win.print();
         };
     </script>
 </body>
