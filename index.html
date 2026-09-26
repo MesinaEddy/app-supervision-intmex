@@ -143,7 +143,7 @@
                 <!-- Bloque 2: Datos del Cliente -->
                 <div class="section-title">Datos del Cliente</div>
 
-                <div class="form-group full-width">
+                <div class="form-group">
                     <label>¿Cliente Abierto?</label>
                     <select id="cliente-abierto-select" class="form-control" required>
                         <option value="SI">SÍ</option>
@@ -151,22 +151,23 @@
                     </select>
                 </div>
 
+                <!-- Campo Nombre del Cliente (Siempre visible para poder escribirlo) -->
+                <div class="form-group">
+                    <label>Nombre del Cliente</label>
+                    <input type="text" id="cliente-input" placeholder="Ej. Mini Super Alex" required>
+                </div>
+
                 <!-- Submenú condicional cuando el cliente está CERRADO (NO) -->
                 <div class="form-group full-width" id="subopcion-cerrado-container" style="display: none;">
-                    <label>Motivo de Cierre / Visita</label>
+                    <label>Tipo de Cierre / Visita</label>
                     <select id="tipo-cierre-select" class="form-control">
                         <option value="Solo esta visita">Solo esta visita</option>
                         <option value="Cerrado definitivo">Cerrado definitivo</option>
                     </select>
                 </div>
 
-                <!-- Campos de cliente abierto (se ocultan si es NO) -->
-                <div id="campos-cliente-abierto" class="full-width" style="display: contents;">
-                    <div class="form-group">
-                        <label>Nombre del Cliente</label>
-                        <input type="text" id="cliente-input" placeholder="Ej. Mini Super Alex" required>
-                    </div>
-
+                <!-- Campos adicionales de cliente abierto (se ocultan si es NO) -->
+                <div id="campos-cliente-abierto-extra" class="full-width" style="display: contents;">
                     <div class="form-group">
                         <label>Teléfono</label>
                         <input type="tel" id="telefono-input" placeholder="Ej. 6641234567">
@@ -320,7 +321,7 @@
             });
 
             const clienteAbiertoSelect = document.getElementById("cliente-abierto-select");
-            const camposClienteAbierto = document.getElementById("campos-cliente-abierto");
+            const camposClienteAbiertoExtra = document.getElementById("campos-cliente-abierto-extra");
             const subopcionCerradoContainer = document.getElementById("subopcion-cerrado-container");
             const checklistContainer = document.getElementById("checklist-container");
             const tituloChecklist = document.getElementById("titulo-checklist");
@@ -330,27 +331,23 @@
 
             clienteAbiertoSelect.addEventListener("change", function() {
                 if (this.value === "NO") {
-                    // Ocultar campos innecesarios y mostrar submenú de cierre
-                    camposClienteAbierto.style.display = "none";
+                    // Ocultar elementos de checklist y mostrar submenú de cierre
+                    camposClienteAbiertoExtra.style.display = "none";
                     subopcionCerradoContainer.style.display = "block";
                     checklistContainer.style.display = "none";
                     tituloChecklist.style.display = "none";
                     grupoCodigos.style.display = "none";
                     grupoNotas.style.display = "none";
                     grupoFirma.style.display = "none";
-                    
-                    document.getElementById("cliente-input").removeAttribute("required");
                 } else {
                     // Mostrar todo el flujo normal de cliente abierto
-                    camposClienteAbierto.style.display = "contents";
+                    camposClienteAbiertoExtra.style.display = "contents";
                     subopcionCerradoContainer.style.display = "none";
                     checklistContainer.style.display = "grid";
                     tituloChecklist.style.display = "block";
                     grupoCodigos.style.display = "block";
                     grupoNotas.style.display = "block";
                     grupoFirma.style.display = "block";
-                    
-                    document.getElementById("cliente-input").setAttribute("required", "true");
                 }
             });
 
@@ -438,7 +435,7 @@
                     objetivo: objetivoPrincipal.value + (subobjetivoContainer.style.display !== 'none' ? ` (${objetivoDetalle.value})` : ''),
                     clienteAbierto: abierto,
                     tipoCierre: tipoCierre,
-                    cliente: abierto === "SI" ? document.getElementById("cliente-input").value : prompt("Ingrese el nombre del cliente cerrado:") || "Cliente Cerrado",
+                    cliente: document.getElementById("cliente-input").value,
                     telefono: abierto === "SI" ? document.getElementById("telefono-input").value : "",
                     quienRecibe: abierto === "SI" ? document.getElementById("quien-recibe-input").value : "",
                     tipoCliente: abierto === "SI" ? document.getElementById("tipo-cte-input").value : "-",
@@ -458,7 +455,7 @@
 
                 alert(`¡Registro guardado con éxito! ${abierto === 'SI' ? 'Calificación: ' + calificacion : 'Estado: ' + tipoCierre}`);
                 form.reset();
-                camposClienteAbierto.style.display = "contents";
+                camposClienteAbiertoExtra.style.display = "contents";
                 subopcionCerradoContainer.style.display = "none";
                 checklistContainer.style.display = "grid";
                 tituloChecklist.style.display = "block";
