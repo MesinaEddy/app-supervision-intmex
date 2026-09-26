@@ -23,24 +23,34 @@
         body { background-color: var(--bg-main); color: var(--text-main); padding-bottom: 70px; }
 
         header { background: #0f172a; padding: 15px; text-align: center; border-bottom: 1px solid var(--border-color); }
-        header img { width: 40px; height: 40px; object-fit: contain; }
         header h1 { font-size: 16px; color: var(--text-main); margin-top: 5px; }
         header p { font-size: 11px; color: var(--text-muted); }
 
-        .container { max-width: 600px; margin: 0 auto; padding: 15px; }
+        .container { max-width: 950px; margin: 0 auto; padding: 15px; }
 
-        .gps-banner { background: #064e3b; color: #34d399; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 12px; border: 1px solid #059669; text-align: center; }
+        .gps-banner { background: #064e3b; color: #34d399; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 12px; border: 1px solid #059669; text-align: center; grid-column: 1 / -1; }
 
-        .section-title { font-size: 15px; font-weight: bold; color: var(--accent); margin: 20px 0 10px 0; border-bottom: 2px solid var(--border-color); padding-bottom: 5px; text-transform: uppercase; }
+        .section-title { font-size: 15px; font-weight: bold; color: var(--accent); margin: 25px 0 12px 0; border-bottom: 2px solid var(--border-color); padding-bottom: 5px; text-transform: uppercase; grid-column: 1 / -1; }
 
-        .form-group { margin-bottom: 12px; }
+        /* Estructura de 2 columnas adaptable */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        @media (min-width: 768px) {
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        .full-width { grid-column: 1 / -1; }
+
+        .form-group { margin-bottom: 4px; }
         .form-group label { display: block; font-size: 13px; margin-bottom: 5px; color: var(--text-muted); font-weight: 600; }
-        .form-control, select, textarea, input[type="text"], input[type="tel"] {
+        .form-control, select, textarea, input[type="text"], input[type="tel"], input[type="file"] {
             width: 100%; padding: 10px; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px;
         }
-        textarea { resize: vertical; height: 70px; }
-
-        .info-box { background: #172554; border: 1px solid #1d4ed8; padding: 10px; border-radius: 6px; font-size: 12px; color: #93c5fd; margin-top: 5px; }
+        textarea { resize: vertical; height: 75px; }
 
         /* Checklist interactivo */
         .checklist-item { display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 8px; }
@@ -50,7 +60,7 @@
         .check-btn.active-ok { background: var(--success); color: white; border-color: #059669; }
         .check-btn.active-no { background: var(--danger); color: white; border-color: #b91c1c; }
 
-        .btn-submit { background: var(--accent); color: #0f172a; border: none; width: 100%; padding: 14px; font-weight: bold; font-size: 15px; border-radius: 8px; cursor: pointer; margin-top: 20px; }
+        .btn-submit { background: var(--accent); color: #0f172a; border: none; width: 100%; padding: 14px; font-weight: bold; font-size: 15px; border-radius: 8px; cursor: pointer; margin-top: 20px; grid-column: 1 / -1; }
         .btn-submit:hover { opacity: 0.9; }
 
         /* Barra de Navegación Inferior */
@@ -66,7 +76,6 @@
 <body>
 
     <header>
-        <img src="https://via.placeholder.com/40" alt="Logo">
         <h1>SUPERVISION INTMEX</h1>
         <p>Control de Campo y Auditoría</p>
     </header>
@@ -74,10 +83,11 @@
     <div class="container">
         <!-- VISTA REGISTRO -->
         <div id="view-registro" class="view-section active-view">
-            <div id="gps-status" class="gps-banner">📍 Obteniendo ubicación GPS...</div>
+            <form id="form-supervision" class="form-grid">
+                
+                <div id="gps-status" class="gps-banner">📍 Obteniendo ubicación GPS...</div>
 
-            <form id="form-supervision">
-                <!-- Bloque 1 -->
+                <!-- Bloque 1: Datos de Ruta y Asesor -->
                 <div class="section-title">Datos de Ruta y Asesor</div>
                 
                 <div class="form-group">
@@ -94,7 +104,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Ruta</label>
+                    <label>Ruta (01-18 y 301-306)</label>
                     <select id="ruta-select" required class="form-control">
                         <option value="">Primero seleccione un CEDIS</option>
                     </select>
@@ -130,10 +140,10 @@
                     </select>
                 </div>
 
-                <!-- Bloque 2 -->
+                <!-- Bloque 2: Datos del Cliente -->
                 <div class="section-title">Datos del Cliente</div>
 
-                <div class="form-group">
+                <div class="form-group full-width">
                     <label>¿Cliente Abierto?</label>
                     <select id="cliente-abierto-select" class="form-control" required>
                         <option value="SI">SÍ</option>
@@ -141,7 +151,8 @@
                     </select>
                 </div>
 
-                <div id="campos-cliente-abierto">
+                <!-- Campos condicionales de cliente abierto (distribuidos en 2 columnas) -->
+                <div id="campos-cliente-abierto" class="full-width" style="display: contents;">
                     <div class="form-group">
                         <label>Nombre del Cliente</label>
                         <input type="text" id="cliente-input" placeholder="Ej. Mini Super Alex" required>
@@ -160,8 +171,8 @@
                     <div class="form-group">
                         <label>Segmento de Cliente</label>
                         <select id="tipo-cte-input" class="form-control">
-                            <option value="Tipo A">Tipo A: Área de cobro, pasillos, refrigeradores y carnicería</option>
-                            <option value="Tipo B">Tipo B: Área de cobro, pasillo y refrigerador</option>
+                            <option value="Tipo A">Tipo A: Cobro, pasillos, refis y carnicería</option>
+                            <option value="Tipo B">Tipo B: Cobro, pasillo y refrigerador</option>
                             <option value="Tipo C">Tipo C: Mostrador y pasillos limitados</option>
                             <option value="Tipo D">Tipo D: Ventanita o estanquillo</option>
                         </select>
@@ -183,28 +194,29 @@
                             <option value="No está el encargado">No está el encargado</option>
                         </select>
                     </div>
-
-                    <!-- Bloque 3 -->
-                    <div class="section-title">Pasos de la Visita (Checklist)</div>
-                    <div id="checklist-container">
-                        <!-- Se genera dinámicamente -->
-                    </div>
-
-                    <div class="form-group">
-                        <label>Códigos sin Impactar / Comentarios</label>
-                        <textarea id="codigos-input" placeholder="Ninguno"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Notas de Auditoría</label>
-                        <textarea id="notas-input" placeholder="Observaciones adicionales..."></textarea>
-                    </div>
                 </div>
 
-                <!-- Bloque 4 -->
+                <!-- Bloque 3: Pasos de la Visita (Checklist) -->
+                <div class="section-title">Pasos de la Visita (Checklist)</div>
+                
+                <div id="checklist-container" class="full-width" style="display: grid; grid-template-columns: 1fr; gap: 8px;">
+                    <!-- Generado por JS -->
+                </div>
+
+                <div class="form-group">
+                    <label>Códigos sin Impactar / Comentarios</label>
+                    <textarea id="codigos-input" placeholder="Ninguno"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Notas de Auditoría</label>
+                    <textarea id="notas-input" placeholder="Observaciones adicionales..."></textarea>
+                </div>
+
+                <!-- Bloque 4: Evidencias -->
                 <div class="section-title">Evidencias</div>
 
-                <div class="form-group" id="grupo-firma">
+                <div class="form-group">
                     <label>Firma del Cliente</label>
                     <input type="file" id="firma-cliente" accept="image/*">
                 </div>
@@ -219,9 +231,7 @@
         </div>
 
         <!-- VISTA HISTORIAL -->
-        <div id="view-historial" class="view-section">
-            <!-- Cargar historial dinámicamente -->
-        </div>
+        <div id="view-historial" class="view-section"></div>
 
         <!-- VISTA MAPA -->
         <div id="view-mapa" class="view-section">
@@ -247,7 +257,6 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            // Generador dinámico de rutas (01 a 18 y 301 a 306)
             const cedisSelect = document.getElementById("cedis-select");
             const rutaSelect = document.getElementById("ruta-select");
 
@@ -256,7 +265,6 @@
                 rutaSelect.innerHTML = '<option value="">Seleccione una Ruta</option>';
                 if (!prefijo) return;
 
-                // 01 al 18
                 for (let i = 1; i <= 18; i++) {
                     const num = i < 10 ? '0' + i : i;
                     const val = `${prefijo}${num}`;
@@ -265,7 +273,6 @@
                     opt.textContent = val;
                     rutaSelect.appendChild(opt);
                 }
-                // 301 al 306
                 for (let i = 301; i <= 306; i++) {
                     const val = `${prefijo}${i}`;
                     const opt = document.createElement("option");
@@ -275,7 +282,6 @@
                 }
             });
 
-            // Subobjetivos dinámicos según objetivo principal
             const objetivoPrincipal = document.getElementById("objetivo-principal");
             const subobjetivoContainer = document.getElementById("subobjetivo-container");
             const objetivoDetalle = document.getElementById("objetivo-detalle");
@@ -304,7 +310,6 @@
                 }
             });
 
-            // Condicionante Cliente Abierto SÍ / NO
             const clienteAbiertoSelect = document.getElementById("cliente-abierto-select");
             const camposClienteAbierto = document.getElementById("campos-cliente-abierto");
 
@@ -313,12 +318,11 @@
                     camposClienteAbierto.style.display = "none";
                     document.getElementById("cliente-input").removeAttribute("required");
                 } else {
-                    camposClienteAbierto.style.display = "block";
+                    camposClienteAbierto.style.display = "contents";
                     document.getElementById("cliente-input").setAttribute("required", "true");
                 }
             });
 
-            // Condicionante Compra Efectiva SÍ / NO
             const compraEfectivaSelect = document.getElementById("compra-efectiva-select");
             const motivoNoCompraContainer = document.getElementById("motivo-no-compra-container");
 
@@ -326,7 +330,6 @@
                 motivoNoCompraContainer.style.display = this.value === "NO" ? "block" : "none";
             });
 
-            // Generar Checklist Interactivo de los 10 pasos
             const pasosChecklist = [
                 "ID Cliente en Base de Datos",
                 "Saludo a Cliente",
@@ -365,7 +368,6 @@
                 window.checklistEstado[index] = valor;
             };
 
-            // GPS
             let currentLat = 32.4703;
             let currentLng = -116.8378;
             if (navigator.geolocation) {
@@ -376,7 +378,6 @@
                 });
             }
 
-            // Enviar formulario
             const form = document.getElementById("form-supervision");
             form.addEventListener("submit", e => {
                 e.preventDefault();
@@ -421,10 +422,9 @@
 
                 alert(`¡Registro guardado con éxito! Calificación: ${calificacion} (${puntaje} pts)`);
                 form.reset();
-                camposClienteAbierto.style.display = "block";
+                camposClienteAbierto.style.display = "contents";
             });
 
-            // Pestañas
             const tabReg = document.getElementById("tab-registro");
             const tabHist = document.getElementById("tab-historial");
             const tabMap = document.getElementById("tab-mapa");
@@ -469,7 +469,6 @@
                 viewHist.innerHTML = html;
             }
 
-            // Mapa interactivo con Leaflet
             let mapInitialized = false;
             let leafletMap = null;
             function initMap() {
