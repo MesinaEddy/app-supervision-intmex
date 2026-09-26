@@ -3,164 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SUPERVISION INTMEX</title>
+    <title>Supervisión Intmex - Control de Campo</title>
     <!-- Leaflet CSS para el mapa -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body {
-            background-color: #0f172a;
-            color: #f8fafc;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 0;
+        :root {
+            --bg-main: #0b1329;
+            --bg-card: #1e293b;
+            --border-color: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
         }
-        .header {
-            text-align: center;
-            padding: 15px 10px;
-            background: #1e293b;
-            border-bottom: 1px solid #334155;
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-main); padding-bottom: 70px; }
+
+        header { background: #0f172a; padding: 15px; text-align: center; border-bottom: 1px solid var(--border-color); }
+        header img { width: 40px; height: 40px; object-fit: contain; }
+        header h1 { font-size: 16px; color: var(--text-main); margin-top: 5px; }
+        header p { font-size: 11px; color: var(--text-muted); }
+
+        .container { max-width: 600px; margin: 0 auto; padding: 15px; }
+
+        .gps-banner { background: #064e3b; color: #34d399; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 12px; border: 1px solid #059669; text-align: center; }
+
+        .section-title { font-size: 15px; font-weight: bold; color: var(--accent); margin: 20px 0 10px 0; border-bottom: 2px solid var(--border-color); padding-bottom: 5px; text-transform: uppercase; }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 13px; margin-bottom: 5px; color: var(--text-muted); font-weight: 600; }
+        .form-control, select, textarea, input[type="text"], input[type="tel"] {
+            width: 100%; padding: 10px; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px;
         }
-        .header img {
-            max-height: 45px;
-            width: auto;
-            margin-bottom: 5px;
-            object-fit: contain;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 15px;
-            padding-bottom: 90px; /* Espacio para la barra inferior */
-        }
-        .section-title {
-            font-size: 16px;
-            color: #38bdf8;
-            margin-bottom: 8px;
-            margin-top: 20px;
-            font-weight: bold;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            font-size: 14px;
-            color: #cbd5e1;
-            margin-bottom: 5px;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 10px;
-            background-color: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 6px;
-            color: #fff;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
-        input[type="file"] {
-            padding: 8px;
-            background: #0f172a;
-            cursor: pointer;
-        }
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #38bdf8;
-        }
-        button.btn-primary {
-            background: #2563eb;
-            color: white;
-            border: none;
-            padding: 12px;
-            width: 100%;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-        button.btn-primary:hover {
-            background: #1d4ed8;
-        }
-        /* Barra de navegación inferior */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: #1e293b;
-            border-top: 1px solid #334155;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            z-index: 1000;
-        }
-        .nav-item {
-            background: none;
-            border: none;
-            color: #94a3b8;
-            font-size: 12px;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
-        .nav-item.active {
-            color: #38bdf8;
-        }
-        .nav-item span.icon {
-            font-size: 20px;
-        }
-        .view-section {
-            display: none;
-        }
-        .view-section.active-view {
-            display: block;
-        }
+        textarea { resize: vertical; height: 70px; }
+
+        .info-box { background: #172554; border: 1px solid #1d4ed8; padding: 10px; border-radius: 6px; font-size: 12px; color: #93c5fd; margin-top: 5px; }
+
+        /* Checklist interactivo */
+        .checklist-item { display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 8px; }
+        .checklist-item span { font-size: 13px; }
+        .checklist-options { display: flex; gap: 5px; }
+        .check-btn { padding: 5px 12px; border: 1px solid var(--border-color); background: #0f172a; color: var(--text-muted); border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .check-btn.active-ok { background: var(--success); color: white; border-color: #059669; }
+        .check-btn.active-no { background: var(--danger); color: white; border-color: #b91c1c; }
+
+        .btn-submit { background: var(--accent); color: #0f172a; border: none; width: 100%; padding: 14px; font-weight: bold; font-size: 15px; border-radius: 8px; cursor: pointer; margin-top: 20px; }
+        .btn-submit:hover { opacity: 0.9; }
+
+        /* Barra de Navegación Inferior */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #0f172a; border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; }
+        .nav-item { background: none; border: none; color: var(--text-muted); font-size: 11px; cursor: pointer; text-align: center; }
+        .nav-item.active { color: var(--accent); }
+        .nav-item div { font-size: 18px; margin-bottom: 2px; }
+
+        .view-section { display: none; }
+        .active-view { display: block; }
     </style>
 </head>
 <body>
 
-    <!-- Cabecera con tu logo local -->
-    <div class="header">
-        <!-- Reemplaza 'logo.png' si tu archivo tiene otro nombre (ej. logo.jpg, logo.svg) -->
-        <img src="logo.png" alt="Logo INTMEX" onerror="this.style.display='none'; document.getElementById('fallback-logo').style.display='block';">
-        <div id="fallback-logo" style="display:none; color: #38bdf8; font-weight: bold; font-size: 18px; margin-bottom: 5px;">INTMEX</div>
-        
-        <h1 style="font-size: 15px; color: #fff; margin: 4px 0 0 0;">SUPERVISION INTMEX</h1>
-        <p style="font-size: 11px; color: #94a3b8; margin: 2px 0 0 0;">Control de Campo y Auditoría</p>
-    </div>
+    <header>
+        <img src="https://via.placeholder.com/40" alt="Logo">
+        <h1>SUPERVISION INTMEX</h1>
+        <p>Control de Campo y Auditoría</p>
+    </header>
 
-    <!-- VISTA 1: REGISTRO -->
-    <div id="view-registro" class="view-section active-view">
-        <div class="container">
-            <!-- Estado del GPS -->
-            <div id="gps-status" style="margin-bottom: 15px;">
-                <div style="background: #1e293b; color: #38bdf8; padding: 10px; border-radius: 6px; border: 1px solid #334155;">
-                    <b>Buscando ubicación GPS...</b><br><small>Esperando señal de satélite...</small>
-                </div>
-            </div>
+    <div class="container">
+        <!-- VISTA REGISTRO -->
+        <div id="view-registro" class="view-section active-view">
+            <div id="gps-status" class="gps-banner">📍 Obteniendo ubicación GPS...</div>
 
             <form id="form-supervision">
+                <!-- Bloque 1 -->
                 <div class="section-title">Datos de Ruta y Asesor</div>
                 
                 <div class="form-group">
                     <label>CEDIS</label>
-                    <select id="cedis-select" required>
+                    <select id="cedis-select" required class="form-control">
                         <option value="">Seleccione CEDIS</option>
-                        <option value="TIJUANA">TIJUANA</option>
-                        <option value="MEXICALI">MEXICALI</option>
-                        <option value="HERMOSILLO">HERMOSILLO</option>
-                        <option value="MOCHIS">MOCHIS</option>
-                        <option value="CULIACAN">CULIACAN</option>
-                        <option value="MAZATLAN">MAZATLAN</option>
+                        <option value="TIJ">TIJUANA</option>
+                        <option value="MXLI">MEXICALI</option>
+                        <option value="HILLO">HERMOSILLO</option>
+                        <option value="MOC">MOCHIS</option>
+                        <option value="CUL">CULIACAN</option>
+                        <option value="MZT">MAZATLAN</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label>Ruta</label>
-                    <select id="ruta-select" required>
+                    <select id="ruta-select" required class="form-control">
                         <option value="">Primero seleccione un CEDIS</option>
                     </select>
                 </div>
@@ -170,84 +105,410 @@
                     <input type="text" id="asesor-input" placeholder="Ej. Carlos Gutiérrez" required>
                 </div>
 
-                <div class="section-title">Datos Generales del Cliente</div>
-                
                 <div class="form-group">
-                    <label>Nombre del Cliente</label>
-                    <input type="text" id="cliente-input" placeholder="Ej. Mini Super Alex" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Teléfono</label>
-                    <input type="tel" id="telefono-input" placeholder="Ej. 6641234567">
-                </div>
-
-                <div class="form-group">
-                    <label>¿Quién Recibe?</label>
-                    <input type="text" id="quien-recibe-input" placeholder="Nombre de la persona que atiende">
-                </div>
-
-                <div class="form-group">
-                    <label>Tipo de Cliente</label>
-                    <select id="tipo-cte-input">
-                        <option value="A">Tipo A</option>
-                        <option value="B">Tipo B</option>
-                        <option value="C">Tipo C</option>
+                    <label>Tipo de Ruta</label>
+                    <select id="tipo-ruta-input" class="form-control">
+                        <option value="Ruta Activa">Ruta Activa</option>
+                        <option value="Ruta Nueva">Ruta Nueva</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>Códigos sin Impactar / Comentarios</label>
-                    <textarea id="codigos-input" rows="2" placeholder="Ninguno"></textarea>
+                    <label>Objetivo de Supervisión</label>
+                    <select id="objetivo-principal" class="form-control" required>
+                        <option value="">Seleccione Objetivo</option>
+                        <option value="Venta">Venta</option>
+                        <option value="Capacitación">Capacitación</option>
+                        <option value="Territorio">Territorio</option>
+                    </select>
                 </div>
 
-                <div class="form-group">
-                    <label>Notas de Auditoría</label>
-                    <textarea id="notas-input" rows="3" placeholder="Observaciones adicionales..."></textarea>
+                <div class="form-group" id="subobjetivo-container" style="display: none;">
+                    <label>Subobjetivo de Supervisión</label>
+                    <select id="objetivo-detalle" class="form-control">
+                        <!-- Opciones dinámicas -->
+                    </select>
                 </div>
 
-                <div class="section-title">Evidencias y Comentarios</div>
+                <!-- Bloque 2 -->
+                <div class="section-title">Datos del Cliente</div>
 
                 <div class="form-group">
-                    <label>Foto de Fachada / Establecimiento</label>
-                    <input type="file" id="foto-fachada" accept="image/*" capture="environment">
+                    <label>¿Cliente Abierto?</label>
+                    <select id="cliente-abierto-select" class="form-control" required>
+                        <option value="SI">SÍ</option>
+                        <option value="NO">NO</option>
+                    </select>
                 </div>
 
-                <div class="form-group">
-                    <label>Firma del Cliente (Imagen o Captura)</label>
+                <div id="campos-cliente-abierto">
+                    <div class="form-group">
+                        <label>Nombre del Cliente</label>
+                        <input type="text" id="cliente-input" placeholder="Ej. Mini Super Alex" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" id="telefono-input" placeholder="Ej. 6641234567">
+                    </div>
+
+                    <div class="form-group">
+                        <label>¿Quién Recibe?</label>
+                        <input type="text" id="quien-recibe-input" placeholder="Persona que atiende">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Segmento de Cliente</label>
+                        <select id="tipo-cte-input" class="form-control">
+                            <option value="Tipo A">Tipo A: Área de cobro, pasillos, refrigeradores y carnicería</option>
+                            <option value="Tipo B">Tipo B: Área de cobro, pasillo y refrigerador</option>
+                            <option value="Tipo C">Tipo C: Mostrador y pasillos limitados</option>
+                            <option value="Tipo D">Tipo D: Ventanita o estanquillo</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>¿Compra Efectiva?</label>
+                        <select id="compra-efectiva-select" class="form-control">
+                            <option value="SI">SÍ</option>
+                            <option value="NO">NO</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="motivo-no-compra-container" style="display: none;">
+                        <label>Motivo de No Compra</label>
+                        <select id="motivo-no-compra" class="form-control">
+                            <option value="Sin Dinero">Sin Dinero</option>
+                            <option value="Inventario">Inventario</option>
+                            <option value="No está el encargado">No está el encargado</option>
+                        </select>
+                    </div>
+
+                    <!-- Bloque 3 -->
+                    <div class="section-title">Pasos de la Visita (Checklist)</div>
+                    <div id="checklist-container">
+                        <!-- Se genera dinámicamente -->
+                    </div>
+
+                    <div class="form-group">
+                        <label>Códigos sin Impactar / Comentarios</label>
+                        <textarea id="codigos-input" placeholder="Ninguno"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Notas de Auditoría</label>
+                        <textarea id="notas-input" placeholder="Observaciones adicionales..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Bloque 4 -->
+                <div class="section-title">Evidencias</div>
+
+                <div class="form-group" id="grupo-firma">
+                    <label>Firma del Cliente</label>
                     <input type="file" id="firma-cliente" accept="image/*">
                 </div>
 
-                <button type="submit" class="btn-primary">Guardar Registro</button>
+                <div class="form-group">
+                    <label>Foto de Fachada / Establecimiento</label>
+                    <input type="file" id="foto-fachada" accept="image/*" capture="environment" required>
+                </div>
+
+                <button type="submit" class="btn-submit">Guardar Registro</button>
             </form>
+        </div>
+
+        <!-- VISTA HISTORIAL -->
+        <div id="view-historial" class="view-section">
+            <!-- Cargar historial dinámicamente -->
+        </div>
+
+        <!-- VISTA MAPA -->
+        <div id="view-mapa" class="view-section">
+            <div class="section-title">Mapa de Ubicaciones en Tiempo Real</div>
+            <div id="map" style="width: 100%; height: 400px; border-radius: 8px; border: 1px solid var(--border-color);"></div>
         </div>
     </div>
 
-    <!-- VISTA 2: HISTORIAL -->
-    <div id="view-historial" class="view-section"></div>
-
-    <!-- VISTA 3: MAPA -->
-    <div id="view-mapa" class="view-section"></div>
-
-    <!-- BARRA DE NAVEGACIÓN INFERIOR -->
-    <nav class="bottom-nav">
+    <!-- Navegación Inferior -->
+    <div class="bottom-nav">
         <button class="nav-item active" id="tab-registro">
-            <span class="icon">📝</span>
-            <span>Registro</span>
+            <div>📝</div>Registro
         </button>
         <button class="nav-item" id="tab-historial">
-            <span class="icon">📊</span>
-            <span>Historial</span>
+            <div>📊</div>Historial
         </button>
         <button class="nav-item" id="tab-mapa">
-            <span class="icon">🗺️</span>
-            <span>Mapa</span>
+            <div>🗺️</div>Mapa
         </button>
-    </nav>
+    </div>
 
     <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <!-- Tu archivo script.js -->
-    <script src="script.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // Generador dinámico de rutas (01 a 18 y 301 a 306)
+            const cedisSelect = document.getElementById("cedis-select");
+            const rutaSelect = document.getElementById("ruta-select");
+
+            cedisSelect.addEventListener("change", function() {
+                const prefijo = this.value;
+                rutaSelect.innerHTML = '<option value="">Seleccione una Ruta</option>';
+                if (!prefijo) return;
+
+                // 01 al 18
+                for (let i = 1; i <= 18; i++) {
+                    const num = i < 10 ? '0' + i : i;
+                    const val = `${prefijo}${num}`;
+                    const opt = document.createElement("option");
+                    opt.value = val;
+                    opt.textContent = val;
+                    rutaSelect.appendChild(opt);
+                }
+                // 301 al 306
+                for (let i = 301; i <= 306; i++) {
+                    const val = `${prefijo}${i}`;
+                    const opt = document.createElement("option");
+                    opt.value = val;
+                    opt.textContent = val;
+                    rutaSelect.appendChild(opt);
+                }
+            });
+
+            // Subobjetivos dinámicos según objetivo principal
+            const objetivoPrincipal = document.getElementById("objetivo-principal");
+            const subobjetivoContainer = document.getElementById("subobjetivo-container");
+            const objetivoDetalle = document.getElementById("objetivo-detalle");
+
+            objetivoPrincipal.addEventListener("change", function() {
+                const val = this.value;
+                objetivoDetalle.innerHTML = "";
+                if (val === "Venta") {
+                    subobjetivoContainer.style.display = "block";
+                    ["Efectividad de Venta", "Impulso"].forEach(sub => {
+                        const opt = document.createElement("option");
+                        opt.value = sub;
+                        opt.textContent = sub;
+                        objetivoDetalle.appendChild(opt);
+                    });
+                } else if (val === "Capacitación" || val === "Territorio") {
+                    subobjetivoContainer.style.display = "block";
+                    ["Nuevo Ingreso", "Reestructura"].forEach(sub => {
+                        const opt = document.createElement("option");
+                        opt.value = sub;
+                        opt.textContent = sub;
+                        objetivoDetalle.appendChild(opt);
+                    });
+                } else {
+                    subobjetivoContainer.style.display = "none";
+                }
+            });
+
+            // Condicionante Cliente Abierto SÍ / NO
+            const clienteAbiertoSelect = document.getElementById("cliente-abierto-select");
+            const camposClienteAbierto = document.getElementById("campos-cliente-abierto");
+
+            clienteAbiertoSelect.addEventListener("change", function() {
+                if (this.value === "NO") {
+                    camposClienteAbierto.style.display = "none";
+                    document.getElementById("cliente-input").removeAttribute("required");
+                } else {
+                    camposClienteAbierto.style.display = "block";
+                    document.getElementById("cliente-input").setAttribute("required", "true");
+                }
+            });
+
+            // Condicionante Compra Efectiva SÍ / NO
+            const compraEfectivaSelect = document.getElementById("compra-efectiva-select");
+            const motivoNoCompraContainer = document.getElementById("motivo-no-compra-container");
+
+            compraEfectivaSelect.addEventListener("change", function() {
+                motivoNoCompraContainer.style.display = this.value === "NO" ? "block" : "none";
+            });
+
+            // Generar Checklist Interactivo de los 10 pasos
+            const pasosChecklist = [
+                "ID Cliente en Base de Datos",
+                "Saludo a Cliente",
+                "ID Nuestras Marcas",
+                "ID Stock",
+                "Revisión de Caducidades",
+                "Impulso de Variantes",
+                "Cierre Promos",
+                "Comunicar Venta a Cliente",
+                "Manejo de Objecciones",
+                "Despedida"
+            ];
+
+            const checklistContainer = document.getElementById("checklist-container");
+            pasosChecklist.forEach((paso, index) => {
+                const div = document.createElement("div");
+                div.className = "checklist-item";
+                div.innerHTML = `
+                    <span>${index + 1}. ${paso}</span>
+                    <div class="checklist-options">
+                        <button type="button" class="check-btn" onclick="marcarCheck(${index}, 'SI', this)">SÍ</button>
+                        <button type="button" class="check-btn" onclick="marcarCheck(${index}, 'NO', this)">NO</button>
+                    </div>
+                `;
+                checklistContainer.appendChild(div);
+            });
+
+            window.checklistEstado = {};
+            window.marcarCheck = function(index, valor, btn) {
+                const parent = btn.parentElement;
+                parent.querySelectorAll('.check-btn').forEach(b => {
+                    b.classList.remove('active-ok', 'active-no');
+                });
+                if(valor === 'SI') btn.classList.add('active-ok');
+                else btn.classList.add('active-no');
+                window.checklistEstado[index] = valor;
+            };
+
+            // GPS
+            let currentLat = 32.4703;
+            let currentLng = -116.8378;
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    currentLat = pos.coords.latitude;
+                    currentLng = pos.coords.longitude;
+                    document.getElementById("gps-status").innerText = `📍 GPS Activo: ${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`;
+                });
+            }
+
+            // Enviar formulario
+            const form = document.getElementById("form-supervision");
+            form.addEventListener("submit", e => {
+                e.preventDefault();
+                const abierto = clienteAbiertoSelect.value;
+                
+                let puntaje = 0;
+                if (abierto === "SI") {
+                    Object.values(window.checklistEstado).forEach(v => {
+                        if (v === "SI") puntaje += 10;
+                    });
+                }
+
+                let calificacion = "OCUPA CAPACITACION";
+                if (puntaje >= 70) calificacion = "OK";
+                else if (puntaje >= 50) calificacion = "OCUPA REFUERZO";
+
+                const registro = {
+                    fecha: new Date().toLocaleString(),
+                    cedis: cedisSelect.value,
+                    ruta: rutaSelect.value,
+                    asesor: document.getElementById("asesor-input").value,
+                    tipoRuta: document.getElementById("tipo-ruta-input").value,
+                    objetivo: objetivoPrincipal.value + (subobjetivoContainer.style.display !== 'none' ? ` (${objetivoDetalle.value})` : ''),
+                    clienteAbierto: abierto,
+                    cliente: abierto === "SI" ? document.getElementById("cliente-input").value : "CERRADO / NO DISPONIBLE",
+                    telefono: abierto === "SI" ? document.getElementById("telefono-input").value : "",
+                    quienRecibe: abierto === "SI" ? document.getElementById("quien-recibe-input").value : "",
+                    tipoCliente: abierto === "SI" ? document.getElementById("tipo-cte-input").value : "-",
+                    compraEfectiva: abierto === "SI" ? compraEfectivaSelect.value : "NO",
+                    motivoNoCompra: abierto === "SI" && compraEfectivaSelect.value === "NO" ? document.getElementById("motivo-no-compra").value : "-",
+                    codigos: abierto === "SI" ? document.getElementById("codigos-input").value : "-",
+                    notas: abierto === "SI" ? document.getElementById("notas-input").value : "Cliente Cerrado",
+                    puntaje: puntaje,
+                    calificacion: calificacion,
+                    lat: currentLat,
+                    lng: currentLng
+                };
+
+                let registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
+                registros.push(registro);
+                localStorage.setItem("registros_supervision", JSON.stringify(registros));
+
+                alert(`¡Registro guardado con éxito! Calificación: ${calificacion} (${puntaje} pts)`);
+                form.reset();
+                camposClienteAbierto.style.display = "block";
+            });
+
+            // Pestañas
+            const tabReg = document.getElementById("tab-registro");
+            const tabHist = document.getElementById("tab-historial");
+            const tabMap = document.getElementById("tab-mapa");
+            const viewReg = document.getElementById("view-registro");
+            const viewHist = document.getElementById("view-historial");
+            const viewMap = document.getElementById("view-mapa");
+
+            function cambiarVista(actBtn, actView) {
+                [tabReg, tabHist, tabMap].forEach(b => b.classList.remove("active"));
+                [viewReg, viewHist, viewMap].forEach(v => v.classList.remove("active-view"));
+                actBtn.classList.add("active");
+                actView.classList.add("active-view");
+            }
+
+            tabReg.addEventListener("click", () => cambiarVista(tabReg, viewReg));
+            tabHist.addEventListener("click", () => {
+                cambiarVista(tabHist, viewHist);
+                renderHistorial();
+            });
+            tabMap.addEventListener("click", () => {
+                cambiarVista(tabMap, viewMap);
+                initMap();
+            });
+
+            function renderHistorial() {
+                const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
+                let html = `<div class="section-title">📊 Historial y Reportes Gerenciales</div>
+                    <button onclick="exportarExcel()" class="btn-submit" style="margin-bottom: 15px; background: #10b981; color: white;">📥 Descargar Reporte Ejecutivo (CSV/Excel)</button>
+                    <button onclick="localStorage.removeItem('registros_supervision'); renderHistorial();" class="btn-submit" style="margin-bottom: 15px; background: #ef4444; color: white;">🗑️ Borrar Historial</button>`;
+
+                if (registros.length === 0) {
+                    html += `<p style="color:var(--text-muted)">No hay registros guardados.</p>`;
+                } else {
+                    registros.forEach(r => {
+                        html += `<div style="background:var(--bg-card); padding:12px; border-radius:8px; margin-bottom:10px; border-left:4px solid ${r.calificacion==='OK'?'#10b981':'#f59e0b'}">
+                            <b>${r.cliente}</b> (${r.cedis} - ${r.ruta})<br>
+                            <small>Fecha: ${r.fecha} | Asesor: ${r.asesor}</small><br>
+                            <small>Calificación: <b>${r.calificacion}</b> (${r.puntaje} pts) | Compra Efectiva: <b>${r.compraEfectiva}</b></small>
+                        </div>`;
+                    });
+                }
+                viewHist.innerHTML = html;
+            }
+
+            // Mapa interactivo con Leaflet
+            let mapInitialized = false;
+            let leafletMap = null;
+            function initMap() {
+                const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
+                if (!mapInitialized) {
+                    leafletMap = L.map('map').setView([currentLat, currentLng], 12);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; OpenStreetMap contributors'
+                    }).addTo(leafletMap);
+                    mapInitialized = true;
+                } else {
+                    leafletMap.invalidateSize();
+                }
+
+                registros.forEach(r => {
+                    if(r.lat && r.lng) {
+                        L.marker([r.lat, r.lng]).addTo(leafletMap)
+                          .bindPopup(`<b>${r.cliente}</b><br>Ruta: ${r.ruta}<br>Calificación: ${r.calificacion}`);
+                    }
+                });
+            }
+        });
+
+        window.exportarExcel = function() {
+            const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
+            if (registros.length === 0) { alert("No hay datos para exportar"); return; }
+
+            let csv = "\uFEFFFecha,CEDIS,Ruta,Asesor,Tipo Ruta,Objetivo,Cliente Abierto,Cliente,Teléfono,Atiende,Segmento,Compra Efectiva,Motivo No Compra,Puntaje,Calificación,Códigos,Notas\n";
+            registros.forEach(r => {
+                csv += `"${r.fecha}","${r.cedis}","${r.ruta}","${r.asesor}","${r.tipoRuta}","${r.objetivo}","${r.clienteAbierto}","${r.cliente}","${r.telefono}","${r.quienRecibe}","${r.tipoCliente}","${r.compraEfectiva}","${r.motivoNoCompra}",${r.puntaje},"${r.calificacion}","${r.codigos}","${r.notas}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `Reporte_Ejecutivo_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+        };
+    </script>
 </body>
 </html>
