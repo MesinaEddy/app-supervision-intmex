@@ -9,10 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.gpsData = { lat: 0, lon: 0, accuracy: 0 };
 
-   // 1. GEOLOCALIZACIÓN AUTOMÁTICA CON ALTA PRECISIÓN Y CONTROL DE TIEMPO
+    // 1. GEOLOCALIZACIÓN AUTOMÁTICA CON UNLOCK GARANTIZADO
     function obtenerUbicacionAutomatica() {
         if (!navigator.geolocation) {
             actualizarEstadoGPS("error", "Geolocalización no soportada", "Tu dispositivo no soporta esta función.");
+            habilitarControlesFormulario(); // Liberar la app aunque no haya GPS
             return;
         }
 
@@ -29,43 +30,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 actualizarEstadoGPS("success", "GPS Capturado Correctamente", `Lat: ${lat.toFixed(5)}, Lon: ${lon.toFixed(5)} (Precisión: ${accuracy}m)`);
                 if (gpsBoxContainer) gpsBoxContainer.style.borderColor = "#059669";
                 if (retryBtn) retryBtn.style.display = "none";
+                
+                habilitarControlesFormulario(); // Liberar la app tras éxito
             },
             (error) => {
-                let mensajeError = "No se pudo obtener la ubicación a tiempo.";
+                let mensajeError = "No se pudo obtener la ubicación (Puedes continuar).";
                 if (error.code === error.PERMISSION_DENIED) {
                     mensajeError = "Permisos de ubicación denegados en el dispositivo.";
                 } else if (error.code === error.TIMEOUT) {
-                    mensajeError = "Tiempo de espera agotado. Puedes reintentar con el botón.";
+                    mensajeError = "Tiempo agotado. Puedes reintentar con el botón verde.";
                 }
                 
                 actualizarEstadoGPS("error", "GPS pendiente / Sin señal", mensajeError);
                 if (retryBtn) retryBtn.style.display = "flex";
+
+                habilitarControlesFormulario(); // CLAVE: Liberar la app AUNQUE falle el GPS
             },
             { 
-                enableHighAccuracy: true,  // Reactivado: Fuerza la búsqueda por hardware/GPS real
-                timeout: 8000,             // Tiempo límite de 8 segundos para no bloquear la app
-                maximumAge: 10000          // Acepta ubicaciones recientes de hasta 10 segundos atrás
+                enableHighAccuracy: true,  // Usa el GPS real del teléfono
+                timeout: 5000,             // 5 segundos máximo de espera para no desesperar al usuario
+                maximumAge: 30000          // Acepta coordenadas leídas hace menos de 30 seg
             }
         );
     }
-    function actualizarEstadoGPS(estado, titulo, descripcion) {
-        if (!gpsTitle || !gpsDesc) return;
-        gpsTitle.textContent = titulo;
-        gpsDesc.textContent = descripcion;
-        if (estado === "loading" && gpsDot) gpsDot.style.backgroundColor = "#f59e0b";
-        if (estado === "success" && gpsDot) {
-            gpsDot.style.backgroundColor = "#10b981";
-            if (gpsBadge) { gpsBadge.textContent = "OBTENIDO"; gpsBadge.style.color = "#34d399"; }
-        }
-        if (estado === "error" && gpsDot) {
-            gpsDot.style.backgroundColor = "#ef4444";
-            if (gpsBadge) { gpsBadge.textContent = "SIN GPS"; gpsBadge.style.color = "#f87171"; }
+
+    // Función que asegura que el CEDIS siempre esté activo para seleccionar
+    function habilitarControlesFormulario() {
+        const cedisSelect = document.getElementById('cedis-select');
+        if (cedisSelect) {
+            cedisSelect.disabled = false;
         }
     }
-
-    obtenerUbicacionAutomatica();
-    if (retryBtn) retryBtn.addEventListener('click', obtenerUbicacionAutomatica);
-
     // 2. TABULADOR DINÁMICO
     document.addEventListener('click', (e) => {
         const boton = e.target.closest('.option-btn');
