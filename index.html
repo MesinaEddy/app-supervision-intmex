@@ -333,7 +333,7 @@
 
                 for (let i = 1; i <= 18; i++) {
                     const num = i < 10 ? '0' + i : i;
-                    const val = `${cedisVal}${num}`;
+                    const val = ${cedisVal}${num};
                     const opt = document.createElement("option");
                     opt.value = val;
                     opt.textContent = val;
@@ -341,7 +341,7 @@
                     rutaSelect.appendChild(opt);
                 }
                 for (let i = 301; i <= 306; i++) {
-                    const val = `${cedisVal}${i}`;
+                    const val = ${cedisVal}${i};
                     const opt = document.createElement("option");
                     opt.value = val;
                     opt.textContent = val;
@@ -490,7 +490,7 @@
                 navigator.geolocation.getCurrentPosition(pos => {
                     currentLat = pos.coords.latitude;
                     currentLng = pos.coords.longitude;
-                    document.getElementById("gps-status").innerText = `📍 GPS Activo: ${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`;
+                    document.getElementById("gps-status").innerText = 📍 GPS Activo: ${currentLat.toFixed(4)}, ${currentLng.toFixed(4)};
                 });
             }
 
@@ -504,76 +504,91 @@
                     return;
                 }
 
-                // Leer imagen de fachada en Base64 para guardarla en localStorage y mostrarla en el reporte de Excel
+                // Función segura para comprimir la imagen y evitar errores de memoria en celulares
+                const file = fotoInput.files[0];
                 const reader = new FileReader();
-                reader.readAsDataURL(fotoInput.files[0]);
-                reader.onload = function() {
-                    const fotoBase64 = reader.result;
-                    const firmaBase64 = !isCanvasBlank(canvas) ? canvas.toDataURL() : "";
+                reader.readAsDataURL(file);
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = function() {
+                        const canvasImg = document.createElement('canvas');
+                        const MAX_WIDTH = 800; // Ancho optimizado para reportes y evitar saturar memoria
+                        const scaleSize = MAX_WIDTH / img.width;
+                        canvasImg.width = MAX_WIDTH;
+                        canvasImg.height = img.height * (scaleSize < 1 ? scaleSize : 1);
 
-                    const abierto = clienteAbiertoSelect.value;
-                    let puntaje = 0;
-                    let calificacion = "N/A (CERRADO)";
-                    let tipoCierre = "-";
+                        const ctxImg = canvasImg.getContext('2d');
+                        ctxImg.drawImage(img, 0, 0, canvasImg.width, canvasImg.height);
+                        
+                        // Comprimir a formato JPEG con calidad del 70% para evitar "Memoria insuficiente"
+                        const fotoBase64 = canvasImg.toDataURL('image/jpeg', 0.7);
+                        const firmaBase64 = !isCanvasBlank(canvas) ? canvas.toDataURL('image/png', 0.7) : "";
 
-                    if (abierto === "SI") {
-                        Object.values(window.checklistEstado).forEach(v => {
-                            if (v === "SI") puntaje += 10;
-                        });
-                        if (puntaje >= 70) calificacion = "OK";
-                        else if (puntaje >= 50) calificacion = "OCUPA REFUERZO";
-                        else calificacion = "OCUPA CAPACITACION";
-                    } else {
-                        tipoCierre = document.getElementById("tipo-cierre-select").value;
-                    }
+                        const abierto = clienteAbiertoSelect.value;
+                        let puntaje = 0;
+                        let calificacion = "N/A (CERRADO)";
+                        let tipoCierre = "-";
 
-                    const registro = {
-                        fecha: new Date().toLocaleString(),
-                        cedis: cedisSelect.value,
-                        ruta: rutaSelect.value,
-                        asesor: asesorInput.value,
-                        tipoRuta: tipoRutaInput.value,
-                        objetivo: objetivoPrincipal.value + (subobjetivoContainer.style.display !== 'none' ? ` (${objetivoDetalle.value})` : ''),
-                        clienteAbierto: abierto,
-                        tipoCierre: tipoCierre,
-                        cliente: document.getElementById("cliente-input").value,
-                        telefono: abierto === "SI" ? document.getElementById("telefono-input").value : "",
-                        quienRecibe: abierto === "SI" ? document.getElementById("quien-recibe-input").value : "",
-                        tipoCliente: abierto === "SI" ? document.getElementById("tipo-cte-input").value : "-",
-                        impactoPrioridades: abierto === "SI" ? document.getElementById("impacto-prioridades-select").value : "-",
-                        compraEfectiva: abierto === "SI" ? compraEfectivaSelect.value : "NO",
-                        motivoNoCompra: abierto === "SI" && compraEfectivaSelect.value === "NO" ? document.getElementById("motivo-no-compra").value : "-",
-                        codigos: abierto === "SI" ? document.getElementById("codigos-input").value : "-",
-                        notas: abierto === "SI" ? document.getElementById("notas-input").value : `Cierre: ${tipoCierre}`,
-                        puntaje: puntaje,
-                        calificacion: calificacion,
-                        lat: currentLat,
-                        lng: currentLng,
-                        foto: fotoBase64,
-                        firma: firmaBase64
+                        if (abierto === "SI") {
+                            Object.values(window.checklistEstado).forEach(v => {
+                                if (v === "SI") puntaje += 10;
+                            });
+                            if (puntaje >= 70) calificacion = "OK";
+                            else if (puntaje >= 50) calificacion = "OCUPA REFUERZO";
+                            else calificacion = "OCUPA CAPACITACION";
+                        } else {
+                            tipoCierre = document.getElementById("tipo-cierre-select").value;
+                        }
+
+                        const registro = {
+                            fecha: new Date().toLocaleString(),
+                            cedis: cedisSelect.value,
+                            ruta: rutaSelect.value,
+                            asesor: asesorInput.value,
+                            tipoRuta: tipoRutaInput.value,
+                            objetivo: objetivoPrincipal.value + (subobjetivoContainer.style.display !== 'none' ? ` (${objetivoDetalle.value})` : ''),
+                            clienteAbierto: abierto,
+                            tipoCierre: tipoCierre,
+                            cliente: document.getElementById("cliente-input").value,
+                            telefono: abierto === "SI" ? document.getElementById("telefono-input").value : "",
+                            quienRecibe: abierto === "SI" ? document.getElementById("quien-recibe-input").value : "",
+                            tipoCliente: abierto === "SI" ? document.getElementById("tipo-cte-input").value : "-",
+                            impactoPrioridades: abierto === "SI" ? document.getElementById("impacto-prioridades-select").value : "-",
+                            compraEfectiva: abierto === "SI" ? compraEfectivaSelect.value : "NO",
+                            motivoNoCompra: abierto === "SI" && compraEfectivaSelect.value === "NO" ? document.getElementById("motivo-no-compra").value : "-",
+                            codigos: abierto === "SI" ? document.getElementById("codigos-input").value : "-",
+                            notas: abierto === "SI" ? document.getElementById("notas-input").value : Cierre: ${tipoCierre},
+                            puntaje: puntaje,
+                            calificacion: calificacion,
+                            lat: currentLat,
+                            lng: currentLng,
+                            foto: fotoBase64,
+                            firma: firmaBase64
+                        };
+
+                        let registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
+                        registros.push(registro);
+                        localStorage.setItem("registros_supervision", JSON.stringify(registros));
+
+                        alert(¡Guardado con éxito! Calificación: ${calificacion});
+                        
+                        document.getElementById("cliente-input").value = "";
+                        document.getElementById("telefono-input").value = "";
+                        document.getElementById("quien-recibe-input").value = "";
+                        document.getElementById("codigos-input").value = "";
+                        document.getElementById("notas-input").value = "";
+                        document.getElementById("foto-fachada").value = "";
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        
+                        document.querySelectorAll('.check-btn').forEach(b => b.classList.remove('active-ok', 'active-no'));
+                        window.checklistEstado = {};
+
+                        if(clienteAbiertoSelect.value === "NO") {
+                            clienteAbiertoSelect.value = "SI";
+                            clienteAbiertoSelect.dispatchEvent(new Event('change'));
+                        }
                     };
-
-                    let registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
-                    registros.push(registro);
-                    localStorage.setItem("registros_supervision", JSON.stringify(registros));
-
-                    alert(`¡Guardado con éxito! Calificación: ${calificacion}`);
-                    
-                    document.getElementById("cliente-input").value = "";
-                    document.getElementById("telefono-input").value = "";
-                    document.getElementById("quien-recibe-input").value = "";
-                    document.getElementById("codigos-input").value = "";
-                    document.getElementById("notas-input").value = "";
-                    document.getElementById("foto-fachada").value = "";
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    
-                    document.querySelectorAll('.check-btn').forEach(b => b.classList.remove('active-ok', 'active-no'));
-                    window.checklistEstado = {};
-
-                    if(clienteAbiertoSelect.value === "NO") {
-                        clienteAbiertoSelect.value = "SI";
-                        clienteAbiertoSelect.dispatchEvent(new Event('change'));
-                    }
                 };
             });
 
@@ -677,7 +692,7 @@
                 `;
 
                 if (registros.length === 0) {
-                    html += `<p style="color:var(--text-muted)">No hay registros guardados en el dispositivo.</p>`;
+                    html += <p style="color:var(--text-muted)">No hay registros guardados en el dispositivo.</p>;
                 } else {
                     registros.forEach(r => {
                         html += `<div style="background:var(--bg-card); padding:12px; border-radius:8px; margin-bottom:10px; border-left:4px solid ${r.clienteAbierto==='SI'?'#10b981':'#ef4444'}">
@@ -707,7 +722,7 @@
                 registros.forEach(r => {
                     if(r.lat && r.lng) {
                         L.marker([r.lat, r.lng]).addTo(leafletMap)
-                          .bindPopup(`<b>${r.cliente}</b><br>Ruta: ${r.ruta}<br>Estado: ${r.clienteAbierto === 'SI' ? 'Abierto' : 'Cerrado'}`);
+                          .bindPopup(<b>${r.cliente}</b><br>Ruta: ${r.ruta}<br>Estado: ${r.clienteAbierto === 'SI' ? 'Abierto' : 'Cerrado'});
                     }
                 });
             }
@@ -719,14 +734,14 @@
 
             let csv = "\uFEFFFecha,CEDIS,Ruta,Asesor,Tipo Ruta,Objetivo,Cliente Abierto,Tipo Cierre,Cliente,Teléfono,Atiende,Segmento,Impacto Prioridades,Compra Efectiva,Motivo No Compra,Puntaje,Calificación,Códigos,Notas,Latitud,Longitud\n";
             registros.forEach(r => {
-                csv += `"${r.fecha}","${r.cedis}","${r.ruta}","${r.asesor}","${r.tipoRuta}","${r.objetivo}","${r.clienteAbierto}","${r.tipoCierre}","${r.cliente}","${r.telefono}","${r.quienRecibe}","${r.tipoCliente}","${r.impactoPrioridades}","${r.compraEfectiva}","${r.motivoNoCompra}",${r.puntaje},"${r.calificacion}","${r.codigos}","${r.notas}",${r.lat},${r.lng}\n`;
+                csv += "${r.fecha}","${r.cedis}","${r.ruta}","${r.asesor}","${r.tipoRuta}","${r.objetivo}","${r.clienteAbierto}","${r.tipoCierre}","${r.cliente}","${r.telefono}","${r.quienRecibe}","${r.tipoCliente}","${r.impactoPrioridades}","${r.compraEfectiva}","${r.motivoNoCompra}",${r.puntaje},"${r.calificacion}","${r.codigos}","${r.notas}",${r.lat},${r.lng}\n;
             });
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `BaseDatos_Supervision_${new Date().toISOString().slice(0,10)}.csv`;
+            a.download = BaseDatos_Supervision_${new Date().toISOString().slice(0,10)}.csv;
             a.click();
         };
 
@@ -735,17 +750,16 @@
             if (registros.length === 0) { alert("No hay datos para generar el reporte ejecutivo"); return; }
 
             let win = window.open('', '_blank');
-            let html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Reporte Ejecutivo Gerencial</title><style>body{font-family:Arial,sans-serif;padding:20px;text-align:center;}table{width:100%;border-collapse:collapse;font-size:11px;margin-top:20px;text-align:left;}th,td{border:1px solid #cbd5e1;padding:6px;}th{background:#0f172a;color:#fff;}.foto-min{max-height:60px;width:auto;}</style></head><body><h1>REPORTE EJECUTIVO CON EVIDENCIAS</h1><table><thead><tr><th>Fecha</th><th>Ruta</th><th>Asesor</th><th>Cliente</th><th>Calificación</th><th>Foto Fachada</th><th>Firma</th></tr></thead><tbody>`;
+            let html = <!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Reporte Ejecutivo Gerencial</title><style>body{font-family:Arial,sans-serif;padding:20px;text-align:center;}table{width:100%;border-collapse:collapse;font-size:11px;margin-top:20px;text-align:left;}th,td{border:1px solid #cbd5e1;padding:6px;}th{background:#0f172a;color:#fff;}.foto-min{max-height:60px;width:auto;}</style></head><body><h1>REPORTE EJECUTIVO CON EVIDENCIAS</h1><table><thead><tr><th>Fecha</th><th>Ruta</th><th>Asesor</th><th>Cliente</th><th>Calificación</th><th>Foto Fachada</th><th>Firma</th></tr></thead><tbody>;
             registros.forEach(r => {
-                html += `<tr><td>${r.fecha}</td><td>${r.ruta}</td><td>${r.asesor}</td><td>${r.cliente}</td><td><b>${r.calificacion}</b></td><td>${r.foto ? '<img src="'+r.foto+'" class="foto-min">' : 'Sin foto'}</td><td>${r.firma ? '<img src="'+r.firma+'" class="foto-min">' : 'Sin firma'}</td></tr>`;
+                html += <tr><td>${r.fecha}</td><td>${r.ruta}</td><td>${r.asesor}</td><td>${r.cliente}</td><td><b>${r.calificacion}</b></td><td>${r.foto ? '<img src="'+r.foto+'" class="foto-min">' : 'Sin foto'}</td><td>${r.firma ? '<img src="'+r.firma+'" class="foto-min">' : 'Sin firma'}</td></tr>;
             });
-            html += `</tbody></table></body></html>`;
+            html += </tbody></table></body></html>;
             win.document.write(html);
             win.document.close();
             win.print();
         };
 
-        // Reporte Ejecutivo Exportable a Excel (con fotos integradas en celdas)
         window.exportarReporteExcelConFotos = function() {
             const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
             if (registros.length === 0) { alert("No hay datos para exportar"); return; }
@@ -790,19 +804,19 @@
                         <td>${r.impactoPrioridades}</td>
                         <td>${r.compraEfectiva}</td>
                         <td><b>${r.calificacion}</b> (${r.puntaje} pts)</td>
-                        <td>${r.foto ? `<img src="${r.foto}" class="foto-celda">` : 'Sin foto'}</td>
-                        <td>${r.firma ? `<img src="${r.firma}" class="foto-celda">` : 'Sin firma'}</td>
+                        <td>${r.foto ? <img src="${r.foto}" class="foto-celda"> : 'Sin foto'}</td>
+                        <td>${r.firma ? <img src="${r.firma}" class="foto-celda"> : 'Sin firma'}</td>
                     </tr>
                 `;
             });
 
-            excelContent += `</tbody></table></body></html>`;
+            excelContent += </tbody></table></body></html>;
 
             const blob = new Blob([excelContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `Reporte_Ejecutivo_Con_Fotos_${new Date().toISOString().slice(0,10)}.xls`;
+            a.download = Reporte_Ejecutivo_Con_Fotos_${new Date().toISOString().slice(0,10)}.xls;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
