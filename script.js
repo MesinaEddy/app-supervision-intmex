@@ -283,3 +283,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 250);
     }
 });
+
+// Seleccionamos el input de la fachada/establecimiento
+const inputFoto = document.querySelector('input[type="file"]');
+
+inputFoto.addEventListener('change', function (event) {
+  const archivo = event.target.files[0];
+
+  if (!archivo) return;
+
+  // Aplicamos el módulo de compresión
+  new Compressor(archivo, {
+    quality: 0.6,          // Reduce la calidad al 60% (imperceptible a la vista, reduce mucho el peso)
+    maxWidth: 1024,        // Redimensiona el ancho máximo a 1024px (suficiente para evidencias)
+    maxHeight: 1024,       // Redimensiona el alto máximo a 1024px
+    mimeType: 'image/jpeg',// Fuerza el formato a JPG ligero
+    
+    success(resultadoBlob) {
+      // 'resultadoBlob' es la imagen ya reducida en peso y dimensiones.
+      
+      // OPCIÓN A: Si la vas a enviar en un formulario (FormData)
+      const formData = new FormData();
+      formData.append('foto_fachada', resultadoBlob, 'evidencia.jpg');
+
+      // OPCIÓN B: Si necesitas una vista previa ligera en la pantalla sin saturar la RAM
+      const urlPreview = URL.createObjectURL(resultadoBlob);
+      // document.getElementById('tu-img-preview').src = urlPreview;
+
+      console.log('Imagen comprimida con éxito. Nuevo peso:', resultadoBlob.size / 1024, 'KB');
+    },
+    
+    error(err) {
+      console.error('Error al comprimir la imagen:', err.message);
+    },
+  });
+});
