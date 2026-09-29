@@ -31,14 +31,7 @@ if (inputFoto) {
             mimeType: 'image/jpeg',
 
             success(resultadoBlob) {
-                // Generamos la URL para mostrar la vista previa en el HTML
-                const urlPreview = URL.createObjectURL(resultadoBlob);
-                
-                // ASIGNA AQUÍ TU ELEMENTO IMG DE VISTA PREVIA (Ajusta 'id-de-tu-img' con tu ID real)
-                // document.getElementById('id-de-tu-img').src = urlPreview;
-
-                // GUARDAR EL BLOB COMPRIMIDO EN TU VARIABLE GLOBAL O FORMULARIO
-                // fotoComprimidaParaEnviar = resultadoBlob; 
+                console.log('Imagen comprimida con éxito:', resultadoBlob.size / 1024, 'KB');
             },
 
             error(err) {
