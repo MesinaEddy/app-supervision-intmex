@@ -9,14 +9,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.gpsData = { lat: 0, lon: 0, accuracy: 0 };
 
-    // 1. GEOLOCALIZACIÓN AUTOMÁTICA CON FALLBACK
+   // 1. GEOLOCALIZACIÓN AUTOMÁTICA CON ALTA PRECISIÓN Y CONTROL DE TIEMPO
     function obtenerUbicacionAutomatica() {
         if (!navigator.geolocation) {
             actualizarEstadoGPS("error", "Geolocalización no soportada", "Tu dispositivo no soporta esta función.");
             return;
         }
 
-        actualizarEstadoGPS("loading", "Obteniendo ubicación automática...", "Buscando coordenadas...");
+        actualizarEstadoGPS("loading", "Obteniendo ubicación automática...", "Conectando con satélites GPS...");
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
@@ -31,21 +31,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (retryBtn) retryBtn.style.display = "none";
             },
             (error) => {
-                let mensajeError = "No se pudo obtener la ubicación (Omitido).";
+                let mensajeError = "No se pudo obtener la ubicación a tiempo.";
                 if (error.code === error.PERMISSION_DENIED) {
-                    mensajeError = "Permisos de ubicación denegados.";
+                    mensajeError = "Permisos de ubicación denegados en el dispositivo.";
+                } else if (error.code === error.TIMEOUT) {
+                    mensajeError = "Tiempo de espera agotado. Puedes reintentar con el botón.";
                 }
+                
                 actualizarEstadoGPS("error", "GPS pendiente / Sin señal", mensajeError);
                 if (retryBtn) retryBtn.style.display = "flex";
             },
             { 
-                enableHighAccuracy: false, // Evita congelar la tablet en zonas cerradas
-                timeout: 6000,             // Límite máximo de espera: 6 segundos
-                maximumAge: 60000          // Acepta ubicación de hace 1 minuto en memoria
+                enableHighAccuracy: true,  // Reactivado: Fuerza la búsqueda por hardware/GPS real
+                timeout: 8000,             // Tiempo límite de 8 segundos para no bloquear la app
+                maximumAge: 10000          // Acepta ubicaciones recientes de hasta 10 segundos atrás
             }
         );
     }
-
     function actualizarEstadoGPS(estado, titulo, descripcion) {
         if (!gpsTitle || !gpsDesc) return;
         gpsTitle.textContent = titulo;
