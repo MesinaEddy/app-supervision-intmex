@@ -39,9 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (retryBtn) retryBtn.style.display = "flex";
             },
             { 
-                enableHighAccuracy: false, // Desactivado para no congelar la tablet si no hay vista clara al cielo
+                enableHighAccuracy: false, // Evita congelar la tablet en zonas cerradas
                 timeout: 6000,             // Límite máximo de espera: 6 segundos
-                maximumAge: 60000          // Permite usar ubicaciones en caché de hace 1 minuto
+                maximumAge: 60000          // Acepta ubicación de hace 1 minuto en memoria
             }
         );
     }
@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnFirma) { btnFirma.innerHTML = '✍️ Firma Registrada Correctamente ✓'; btnFirma.style.borderColor = '#10b981'; btnFirma.style.color = '#10b981'; }
     });
 
-    // COMPRESIÓN DE FOTO DE FACHADA (Corrige el error de "Memoria Insuficiente")
+    // COMPRESIÓN DE FOTO DE FACHADA (Corrige "Memoria Insuficiente")
     if (inputCamara) {
         inputCamara.addEventListener('change', function(e) {
             const archivo = e.target.files[0];
@@ -171,7 +171,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     },
                     error(err) {
                         console.error('Error al comprimir la foto:', err.message);
-                        // Fallback simple si la compresión falla
                         const reader = new FileReader();
                         reader.onload = function(event) {
                             fotoFachadaBase64 = event.target.result;
@@ -181,7 +180,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             } else {
-                // Si la librería Compressor no está cargada
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     fotoFachadaBase64 = event.target.result;
@@ -246,7 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const codigosInput = document.querySelector('input[placeholder*="SKU"]');
 
             if (ruta === "Seleccione Ruta" || !ruta || !asesorInput?.value.trim() || !clienteInput?.value.trim() || !quienRecibeInput?.value.trim() || !codigosInput?.value.trim()) {
-                alert("⚠️️ Complete todos los campos obligatorios.");
+                alert("⚠️ Complete todos los campos obligatorios.");
                 return;
             }
             if (evidenciaTipo === 'firma' && !firmaRealizada) {
@@ -309,7 +307,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (btnFoto) { btnFoto.innerHTML = '📷 Tomar Foto de la Fachada'; btnFoto.style.borderColor = ''; btnFoto.style.color = ''; }
     }
 
-    // 6. NAVEGACIÓN ENTRE VISTAS (REGISTRO, HISTORIAL Y MAPA)
+    // 6. NAVEGACIÓN ENTRE VISTAS
     const navRegistro = document.getElementById('nav-registro');
     const navHistorial = document.getElementById('nav-historial');
     const navMapa = document.getElementById('nav-mapa');
@@ -376,7 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 <div style="display: flex; gap: 10px; margin: 15px 0; flex-wrap: wrap;">
                     <button id="btn-exportar-csv" style="background: #059669; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: 600;">📥 Exportar a CSV (Google My Maps)</button>
-                    <button id="btn-limpiar-historial" style="background: #dc2626; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: 600;">🗑️ Borrar Historial</button>
+                    <button id="btn-limpiar-historial" style="background: #dc2626; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: 600;">🗑️️ Borrar Historial</button>
                 </div>
                 <hr style="border-color: #333; margin-bottom: 20px;">
         `;
