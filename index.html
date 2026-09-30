@@ -62,9 +62,9 @@
         .kpi-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
 
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #0f172a; border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; }
-        .nav-item { background: none; border: none; color: var(--text-muted); font-size: 12px; cursor: pointer; text-align: center; width: 33.33%; }
+        .nav-item { background: none; border: none; color: var(--text-muted); font-size: 11px; cursor: pointer; text-align: center; width: 25%; }
         .nav-item.active { color: var(--accent); font-weight: bold; }
-        .nav-item div { font-size: 18px; margin-bottom: 2px; }
+        .nav-item div { font-size: 16px; margin-bottom: 2px; }
 
         .view-section { display: none; }
         .view-section.active-view { display: block; }
@@ -78,12 +78,12 @@
     </header>
 
     <div class="container">
-        <!-- VISTA REGISTRO -->
+        <!-- VISTA 1: REGISTRO CLIENTE -->
         <div id="view-registro" class="view-section active-view">
             <div id="gps-status" class="gps-banner">📍 Activando GPS en tiempo real...</div>
 
             <form id="form-supervision" class="form-grid">
-                <div class="section-title full-width">Datos de Ruta y Asesor</div>
+                <div class="section-title full-width">1. Datos de Ruta y Asesor</div>
                 
                 <div class="form-group">
                     <label>CEDIS</label>
@@ -133,7 +133,7 @@
                     <select id="objetivo-detalle" class="form-control"></select>
                 </div>
 
-                <div class="section-title full-width">Datos del Cliente</div>
+                <div class="section-title full-width">2. Datos del Cliente</div>
 
                 <div class="form-group full-width">
                     <label>¿Cliente Abierto?</label>
@@ -203,65 +203,72 @@
                     </div>
                 </div>
 
-                <div class="section-title full-width" id="titulo-checklist">Pasos de la Visita (Checklist)</div>
+                <div class="section-title full-width" id="titulo-checklist">3. Pasos de la Visita (Checklist)</div>
                 <div id="checklist-container" class="full-width" style="display: grid; grid-template-columns: 1fr; gap: 8px;"></div>
 
-                <div class="form-group" id="grupo-codigos">
+                <div class="form-group full-width" id="grupo-codigos">
                     <label>Códigos sin Impactar / Comentarios</label>
-                    <textarea id="codigos-input" placeholder="Ninguno"></textarea>
+                    <textarea id="codes-input" placeholder="Ninguno"></textarea>
                 </div>
 
-                <div class="form-group" id="grupo-notas">
+                <div class="form-group full-width" id="grupo-notas">
                     <label>Notas de Auditoría</label>
-                    <textarea id="notas-input" placeholder="Observaciones adicionales..."></textarea>
+                    <textarea id="notes-input" placeholder="Observaciones adicionales..."></textarea>
                 </div>
-
-                <div class="section-title full-width">Finalizar Supervisión (Evaluación del Asesor)</div>
-                <div class="full-width" style="background: var(--bg-card); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 10px;">
-                    <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">Resumen del Checklist Actual:</div>
-                    <div id="resumen-evaluacion-texto" style="font-size: 14px; font-weight: bold; color: var(--accent); margin-bottom: 10px;">Aciertos: 0 / 10 (0%) - Pendiente de evaluar</div>
-                    <div id="badge-estatus-asesor" style="display: inline-block; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 12px; background: #334155; color: #fff;">ESTATUS: PENDIENTE</div>
-                </div>
-
-                <div class="section-title full-width">Evidencias y Firmas Obligatorias</div>
-
-                <div class="form-group full-width" id="grupo-firma">
-                    <label id="label-firma-titulo">1. Firma de Conformidad del Supervisor</label>
-                    <div class="signature-container">
-                        <canvas id="signature-canvas"></canvas>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
-                        <button type="button" class="btn-clear" id="clear-signature">Limpiar Recuadro</button>
-                        <button type="button" id="btn-siguiente-firma" style="background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">Guardar Firma y Pasar a Asesor ➡️</button>
-                    </div>
-                </div>
-
-                <div class="form-group full-width">
-                    <label>Foto de Fachada / Establecimiento (Obligatorio)</label>
-                    <input type="file" id="foto-fachada" accept="image/*" capture="environment" required>
-                </div>
-
-                <button type="submit" class="btn-submit" id="btn-final-guardar" disabled style="opacity: 0.5; cursor: not-allowed;">Finalizar y Guardar Registro</button>
             </form>
         </div>
 
-        <!-- VISTA HISTORIAL -->
+        <!-- VISTA 2: EVALUACIÓN Y FIRMAS (Pestaña Independiente) -->
+        <div id="view-evaluacion" class="view-section">
+            <div class="section-title">Evaluación y Cierre de Supervisión</div>
+            
+            <div style="background: var(--bg-card); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px;">
+                <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">Resumen del Checklist Actual:</div>
+                <div id="resumen-evaluacion-texto" style="font-size: 15px; font-weight: bold; color: var(--accent); margin-bottom: 10px;">Aciertos: 0 / 10 (0%) - Pendiente de evaluar</div>
+                <div id="badge-estatus-asesor" style="display: inline-block; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 12px; background: #334155; color: #fff;">ESTATUS: PENDIENTE</div>
+            </div>
+
+            <div class="section-title">Evidencias y Firmas Obligatorias</div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label id="label-firma-titulo">1. Firma de Conformidad del Supervisor</label>
+                <div class="signature-container">
+                    <canvas id="signature-canvas"></canvas>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
+                    <button type="button" class="btn-clear" id="clear-signature">Limpiar Recuadro</button>
+                    <button type="button" id="btn-siguiente-firma" style="background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">Guardar Firma y Pasar a Asesor ➡️</button>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label>Foto de Fachada / Establecimiento (Obligatorio)</label>
+                <input type="file" id="foto-fachada" accept="image/*" capture="environment">
+            </div>
+
+            <button type="button" class="btn-submit" id="btn-final-guardar" disabled style="opacity: 0.5; cursor: not-allowed;">Finalizar y Guardar Registro en Base</button>
+        </div>
+
+        <!-- VISTA 3: HISTORIAL Y PANEL GERENCIAL DETALLADO -->
         <div id="view-historial" class="view-section">
-            <div class="section-title">📊 Panel Ejecutivo Gerencial</div>
+            <div class="section-title">📊 Panel Ejecutivo Gerencial de Supervisión</div>
             <div id="historial-contenido"></div>
         </div>
 
-        <!-- VISTA MAPA -->
+        <!-- VISTA 4: MAPA EN TIEMPO REAL -->
         <div id="view-mapa" class="view-section">
             <div class="section-title">Mapa de Ubicaciones en Tiempo Real</div>
             <div id="map" style="width: 100%; height: 420px; border-radius: 8px; border: 1px solid var(--border-color); background: #111;"></div>
         </div>
     </div>
 
-    <!-- Navegación Inferior -->
+    <!-- Navegación Inferior de 4 Pestañas -->
     <div class="bottom-nav">
         <button class="nav-item active" id="tab-registro" onclick="cambiarPestana('registro')">
             <div>📝</div>Registro
+        </button>
+        <button class="nav-item" id="tab-evaluacion" onclick="cambiarPestana('evaluacion')">
+            <div>✍️</div>Evaluación
         </button>
         <button class="nav-item" id="tab-historial" onclick="cambiarPestana('historial')">
             <div>📊</div>Historial
@@ -280,14 +287,13 @@
             "Cierre Promos", "Comunicar Venta a Cliente", "Manejo de Objecciones", "Despedida"
         ];
 
-        let currentLat = 32.5149; // Coordenada inicial por defecto (Tijuana)
+        let currentLat = 32.5149;
         let currentLng = -116.9934;
         let mapInstance = null;
         let windowChecklistEstado = {};
 
-        // Control de Pestañas con actualización reactiva automática
         window.cambiarPestana = function(pestana) {
-            ['registro', 'historial', 'mapa'].forEach(p => {
+            ['registro', 'evaluacion', 'historial', 'mapa'].forEach(p => {
                 document.getElementById(`view-${p}`).classList.remove('active-view');
                 document.getElementById(`tab-${p}`).classList.remove('active');
             });
@@ -295,14 +301,13 @@
             document.getElementById(`tab-${pestana}`).classList.add('active');
 
             if (pestana === 'historial') {
-                renderHistorial(); // Renderiza el historial dinámicamente al entrar
+                renderHistorial();
             } else if (pestana === 'mapa') {
-                setTimeout(initMap, 150); // Carga y reajusta el mapa Leaflet con los nuevos registros
+                setTimeout(initMap, 150);
             }
         };
 
         document.addEventListener("DOMContentLoaded", () => {
-            // 1. GPS EN TIEMPO REAL CON watchPosition (Se actualiza al moverte)
             const gpsStatus = document.getElementById("gps-status");
             if (navigator.geolocation) {
                 navigator.geolocation.watchPosition(
@@ -325,7 +330,7 @@
                 gpsStatus.innerText = "⚠️ Geolocalización no soportada por este navegador.";
             }
 
-            // 2. CONFIGURACIÓN DE FIRMA CANVAS
+            // CANVAS FIRMAS
             const canvas = document.getElementById('signature-canvas');
             const ctx = canvas.getContext('2d');
             let isDrawing = false;
@@ -343,7 +348,7 @@
                 ctx.lineCap = 'round';
             }
             window.addEventListener('load', resizeCanvas);
-            setTimeout(resizeCanvas, 200);
+            setTimeout(resizeCanvas, 300);
 
             canvas.addEventListener('mousedown', (e) => { isDrawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); });
             canvas.addEventListener('mousemove', (e) => { if (!isDrawing) return; ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); });
@@ -409,11 +414,12 @@
                 }
             });
 
-            // 3. SELECTORES DE CEDIS Y RUTAS
+            // CEDIS Y RUTAS
             const cedisSelect = document.getElementById("cedis-select");
             const rutaSelect = document.getElementById("ruta-select");
 
-            function poblarRutas(cedisVal, rutaSeleccionada = "") {
+            cedisSelect.addEventListener("change", function() {
+                const cedisVal = this.value;
                 rutaSelect.innerHTML = '<option value="">Seleccione una Ruta</option>';
                 if (!cedisVal) return;
                 for (let i = 1; i <= 18; i++) {
@@ -421,23 +427,17 @@
                     const val = `${cedisVal}${num}`;
                     const opt = document.createElement("option");
                     opt.value = val; opt.textContent = val;
-                    if (val === rutaSeleccionada) opt.selected = true;
                     rutaSelect.appendChild(opt);
                 }
                 for (let i = 301; i <= 306; i++) {
                     const val = `${cedisVal}${i}`;
                     const opt = document.createElement("option");
                     opt.value = val; opt.textContent = val;
-                    if (val === rutaSeleccionada) opt.selected = true;
                     rutaSelect.appendChild(opt);
                 }
-            }
-
-            cedisSelect.addEventListener("change", function() {
-                poblarRutas(this.value);
             });
 
-            // OBJETIVOS Y SUBJETIVOS
+            // OBJETIVOS
             const objetivoPrincipal = document.getElementById("objetivo-principal");
             const objetivoDetalle = document.getElementById("objetivo-detalle");
             const subobjetivoContainer = document.getElementById("subobjetivo-container");
@@ -470,7 +470,6 @@
             const tituloChecklist = document.getElementById("titulo-checklist");
             const grupoCodigos = document.getElementById("grupo-codigos");
             const grupoNotas = document.getElementById("grupo-notas");
-            const grupoFirma = document.getElementById("grupo-firma");
 
             clienteAbiertoSelect.addEventListener("change", function() {
                 if (this.value === "NO") {
@@ -480,7 +479,6 @@
                     tituloChecklist.style.display = "none";
                     grupoCodigos.style.display = "none";
                     grupoNotas.style.display = "none";
-                    grupoFirma.style.display = "none";
                 } else {
                     camposClienteAbiertoExtra.style.display = "contents";
                     subopcionCerradoContainer.style.display = "none";
@@ -488,12 +486,11 @@
                     tituloChecklist.style.display = "block";
                     grupoCodigos.style.display = "block";
                     grupoNotas.style.display = "block";
-                    grupoFirma.style.display = "block";
                 }
                 actualizarEvaluacionEnVivo();
             });
 
-            // CHECKLIST RENDER
+            // CHECKLIST
             pasosChecklist.forEach((paso, index) => {
                 const div = document.createElement("div");
                 div.className = "checklist-item";
@@ -528,7 +525,7 @@
                 let estatus = "CERRADO / NA";
                 let colorBg = "#334155";
                 if (abierto === "SI") {
-                    if (porcentaje <= 59) { estatus = "INEFICIENTE"; colorBg = "#ef4444"; }
+                    if (porcentaje <= 59) { estatus = "OCUPA REFUERZO"; colorBg = "#ef4444"; }
                     else if (porcentaje <= 79) { estatus = "ÁREAS DE OPORTUNIDAD"; colorBg = "#f59e0b"; }
                     else if (porcentaje <= 99) { estatus = "BIEN"; colorBg = "#38bdf8"; }
                     else { estatus = "EXCELENTE"; colorBg = "#10b981"; }
@@ -552,13 +549,18 @@
                 }
             }
 
-            // FORM SUBMIT
-            const form = document.getElementById("form-supervision");
-            form.addEventListener("submit", e => {
-                e.preventDefault();
+            // GUARDAR FINAL
+            btnFinalGuardar.addEventListener("click", () => {
+                const clienteInputVal = document.getElementById("cliente-input").value;
+                const asesorInputVal = document.getElementById("asesor-input").value;
+                if(!clienteInputVal || !asesorInputVal || !cedisSelect.value || !rutaSelect.value) {
+                    alert("⚠️ Faltan datos obligatorios en la pestaña de Registro.");
+                    cambiarPestana('registro');
+                    return;
+                }
 
                 if (!firmaSupervisorBase64 || !firmaAsesorBase64) {
-                    alert("⚠️ Debe completar ambas firmas.");
+                    alert("⚠️️ Debe completar ambas firmas en la pestaña de Evaluación.");
                     return;
                 }
 
@@ -597,11 +599,11 @@
                             fecha: new Date().toLocaleString(),
                             cedis: cedisSelect.value,
                             ruta: rutaSelect.value,
-                            asesor: asesorInput.value,
-                            tipoRuta: tipoRutaInput.value,
+                            asesor: asesorInputVal,
+                            tipoRuta: document.getElementById("tipo-ruta-input").value,
                             objetivo: objetivoPrincipal.value + (subobjetivoContainer.style.display !== 'none' ? ` (${objetivoDetalle.value})` : ''),
                             clienteAbierto: abierto,
-                            cliente: document.getElementById("cliente-input").value,
+                            cliente: clienteInputVal,
                             telefono: abierto === "SI" ? document.getElementById("telefono-input").value : "",
                             quienRecibe: abierto === "SI" ? document.getElementById("quien-recibe-input").value : "",
                             tipoCliente: abierto === "SI" ? document.getElementById("tipo-cte-input").value : "-",
@@ -611,7 +613,7 @@
                             porcentaje: resEval.porcentaje,
                             detalleChecklist: detalleChecklistReg,
                             calificacion: resEval.estatus,
-                            lat: currentLat, // Coordenada actual real en el momento exacto del guardado
+                            lat: currentLat,
                             lng: currentLng,
                             foto: fotoBase64,
                             firmaSupervisor: firmaSupervisorBase64,
@@ -622,10 +624,10 @@
                         registros.push(registro);
                         localStorage.setItem("registros_supervision", JSON.stringify(registros));
 
-                        alert(`¡Guardado con éxito con ubicación GPS (${currentLat.toFixed(4)}, ${currentLng.toFixed(4)})! Estatus: ${resEval.estatus}`);
+                        alert(`¡Guardado con éxito! Ubicación GPS (${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}) registrada.`);
                         
-                        // Resetear formulario
-                        form.reset();
+                        // Resetear todo
+                        document.getElementById("form-supervision").reset();
                         ctx.clearRect(0, 0, canvas.width, canvas.height);
                         pasoFirmaActual = 1;
                         firmaSupervisorBase64 = "";
@@ -647,7 +649,7 @@
             });
         });
 
-        // 4. HISTORIAL Y PANEL DINÁMICO REACTIVO
+        // HISTORIAL DETALLADO GERENCIAL
         function renderHistorial() {
             const contenido = document.getElementById("historial-contenido");
             const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
@@ -655,39 +657,83 @@
             const total = registros.length;
             let abiertos = registros.filter(r => r.clienteAbierto === 'SI');
             let efectivos = abiertos.filter(r => r.compraEfectiva === 'SI').length;
+            let impactoSi = abiertos.filter(r => r.impactoPrioridades === 'SI').length;
+            
             let pctAbiertos = total > 0 ? ((abiertos.length / total) * 100).toFixed(1) : 0;
             let pctEfectivos = abiertos.length > 0 ? ((efectivos / abiertos.length) * 100).toFixed(1) : 0;
+            let pctImpacto = abiertos.length > 0 ? ((impactoSi / abiertos.length) * 100).toFixed(1) : 0;
+
             let sumaAciertos = abiertos.reduce((acc, r) => acc + (Number(r.aciertos) || 0), 0);
             let promedioAciertos = abiertos.length > 0 ? (sumaAciertos / abiertos.length).toFixed(1) : 0;
             let promedioPct = (promedioAciertos / 10) * 100;
 
             let estatusGeneral = "EXCELENTE";
             let colorEstatus = "#10b981";
-            if (promedioPct <= 59) { estatusGeneral = "INEFICIENTE"; colorEstatus = "#ef4444"; }
+            if (promedioPct <= 59) { estatusGeneral = "OCUPA REFUERZO"; colorEstatus = "#ef4444"; }
             else if (promedioPct <= 79) { estatusGeneral = "ÁREAS DE OPORTUNIDAD"; colorEstatus = "#f59e0b"; }
             else if (promedioPct <= 99) { estatusGeneral = "BIEN"; colorEstatus = "#38bdf8"; }
 
+            // Contar fallos por cada paso del checklist
+            let fallosChecklist = {};
+            pasosChecklist.forEach(p => fallosChecklist[p] = 0);
+            abiertos.forEach(r => {
+                if (r.detalleChecklist) {
+                    for (let [paso, val] of Object.entries(r.detalleChecklist)) {
+                        if (val === 'NO') {
+                            fallosChecklist[paso] = (fallosChecklist[paso] || 0) + 1;
+                        }
+                    }
+                }
+            });
+
+            // Segmentos de Clientes
+            let segA = abiertos.filter(r => r.tipoCliente && r.tipoCliente.includes('Tipo A')).length;
+            let segB = abiertos.filter(r => r.tipoCliente && r.tipoCliente.includes('Tipo B')).length;
+            let segC = abiertos.filter(r => r.tipoCliente && r.tipoCliente.includes('Tipo C')).length;
+            let segD = abiertos.filter(r => r.tipoCliente && r.tipoCliente.includes('Tipo D')).length;
+
             let html = `
-                <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
-                    <button onclick="exportarCSVBaseDatos()" style="background: #2563eb; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1;">📥 CSV Base</button>
+                <div style="display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap;">
+                    <button onclick="exportarCSVBaseDatos()" style="background: #2563eb; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1;">📥 CSV Base de Datos</button>
                     <button onclick="localStorage.removeItem('registros_supervision'); renderHistorial();" style="background: #ef4444; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer;">🗑️ Borrar Todo</button>
                 </div>
 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin-bottom: 15px;">
                     <div class="kpi-card"><div class="kpi-label">Total Visitas</div><div class="kpi-value">${total}</div></div>
                     <div class="kpi-card"><div class="kpi-label">% Abiertos</div><div class="kpi-value">${pctAbiertos}%</div></div>
-                    <div class="kpi-card"><div class="kpi-label">% Efectivos</div><div class="kpi-value">${pctEfectivos}%</div></div>
+                    <div class="kpi-card"><div class="kpi-label">% Compra</div><div class="kpi-value">${pctEfectivos}%</div></div>
+                    <div class="kpi-card"><div class="kpi-label">% Impacto</div><div class="kpi-value">${pctImpacto}%</div></div>
                 </div>
 
-                <div style="background: var(--bg-card); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px;">
-                    <div style="font-size: 13px; color: var(--accent); font-weight: bold; margin-bottom: 5px;">EVALUACIÓN GLOBAL</div>
-                    <div style="font-size: 13px; color: var(--text-muted);">Promedio Aciertos: <b>${promedioAciertos} / 10 (${promedioPct}%)</b></div>
-                    <div style="margin-top: 8px; padding: 6px; background: #0f172a; border-left: 4px solid ${colorEstatus}; font-size: 13px;">
-                        Estatus: <b style="color: ${colorEstatus};">${estatusGeneral}</b>
+                <div style="background: var(--bg-card); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 15px;">
+                    <div style="font-size: 13px; color: var(--accent); font-weight: bold; margin-bottom: 5px;">EVALUACIÓN Y CALIFICACIÓN DEL ASESOR</div>
+                    <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 5px;">Promedio de Aciertos en Checklist: <b>${promedioAciertos} / 10</b></div>
+                    <div style="padding: 6px; background: #0f172a; border-left: 4px solid ${colorEstatus}; font-size: 13px; margin-bottom: 12px;">
+                        Estatus de Desempeño: <b style="color: ${colorEstatus};">${estatusGeneral}</b>
+                    </div>
+                    <div style="font-size: 12px; color: var(--text-muted); font-weight: bold; margin-bottom: 6px;">⚠️ Áreas donde requiere capacitación (Pasos con más fallos):</div>
+                    <ul style="padding-left: 18px; font-size: 12px; color: var(--text-muted);">
+            `;
+
+            for (let [paso, fallos] of Object.entries(fallosChecklist)) {
+                html += `<li>${paso}: <b>${fallos} fallos registrados</b></li>`;
+            }
+
+            html += `
+                    </ul>
+                </div>
+
+                <div style="background: var(--bg-card); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 15px;">
+                    <div style="font-size: 13px; color: var(--accent); font-weight: bold; margin-bottom: 8px;">DISTRIBUCIÓN DE CLIENTES SEGMENTADOS</div>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; text-align: center;">
+                        <div style="background:#0f172a; padding:8px; border-radius:6px;"><small style="color:var(--text-muted);">Tipo A</small><div style="font-weight:bold; color:var(--accent);">${segA}</div></div>
+                        <div style="background:#0f172a; padding:8px; border-radius:6px;"><small style="color:var(--text-muted);">Tipo B</small><div style="font-weight:bold; color:var(--accent);">${segB}</div></div>
+                        <div style="background:#0f172a; padding:8px; border-radius:6px;"><small style="color:var(--text-muted);">Tipo C</small><div style="font-weight:bold; color:var(--accent);">${segC}</div></div>
+                        <div style="background:#0f172a; padding:8px; border-radius:6px;"><small style="color:var(--text-muted);">Tipo D</small><div style="font-weight:bold; color:var(--accent);">${segD}</div></div>
                     </div>
                 </div>
 
-                <div class="section-title">Detalle de Registros</div>
+                <div class="section-title">Registro Detallado</div>
             `;
 
             if (registros.length === 0) {
@@ -696,7 +742,7 @@
                 registros.forEach((r, idx) => {
                     html += `<div style="background:var(--bg-card); padding:12px; border-radius:8px; margin-bottom:10px; border-left:4px solid ${r.clienteAbierto==='SI'?'#10b981':'#ef4444'}">
                         <b>${idx + 1}. ${r.cliente}</b> (${r.cedis} - Ruta: ${r.ruta})<br>
-                        <small style="color: var(--text-muted);">Fecha: ${r.fecha} | Asesor: ${r.asesor}</small><br>
+                        <small style="color: var(--text-muted);">Fecha: ${r.fecha} | Asesor: ${r.asesor} | Segmento: ${r.tipoCliente}</small><br>
                         <small style="color: var(--accent);">Calificación: <b>${r.calificacion} (${r.porcentaje || 0}%)</b> | GPS: ${r.lat.toFixed(4)}, ${r.lng.toFixed(4)}</small>
                     </div>`;
                 });
@@ -704,7 +750,7 @@
             contenido.innerHTML = html;
         }
 
-        // 5. MAPA LEAFLET DINÁMICO CON TODOS LOS REGISTROS
+        // MAPA LEAFLET DINÁMICO
         function initMap() {
             const container = document.getElementById('map');
             if (!container) return;
@@ -719,7 +765,6 @@
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(mapInstance);
 
-            // Agregar marcador de la ubicación actual en vivo del supervisor
             L.marker([currentLat, currentLng], {
                 icon: L.divIcon({
                     className: 'current-pos-icon',
@@ -728,7 +773,6 @@
                 })
             }).addTo(mapInstance).bindPopup("<b>📍 Tu ubicación actual en tiempo real</b>");
 
-            // Cargar todos los puntos guardados en localStorage
             const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
             registros.forEach(r => {
                 if (r.lat && r.lng) {
