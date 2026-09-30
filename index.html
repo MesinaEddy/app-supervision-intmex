@@ -3,801 +3,515 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supervisión Intmex - Control de Campo</title>
-    <!-- Leaflet CSS -->
+    <title>Supervisión INTMEX - Control de Campo</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Leaflet CSS & JS for Interactive Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --bg-main: #0b1329;
-            --bg-card: #1e293b;
-            --border-color: #334155;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent: #38bdf8;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg-main); color: var(--text-main); padding-bottom: 80px; }
-
-        header { background: #0f172a; padding: 15px; text-align: center; border-bottom: 1px solid var(--border-color); }
-        header h1 { font-size: 16px; color: var(--text-main); margin-top: 5px; }
-        header p { font-size: 11px; color: var(--text-muted); }
-
-        .container { max-width: 950px; margin: 0 auto; padding: 15px; }
-
-        .gps-banner { background: #064e3b; color: #34d399; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 12px; border: 1px solid #059669; text-align: center; }
-
-        .section-title { font-size: 15px; font-weight: bold; color: var(--accent); margin: 25px 0 12px 0; border-bottom: 2px solid var(--border-color); padding-bottom: 5px; text-transform: uppercase; }
-
-        .form-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
-        @media (min-width: 768px) { .form-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; } }
-        .full-width { grid-column: 1 / -1; }
-
-        .form-group { margin-bottom: 4px; }
-        .form-group label { display: block; font-size: 13px; margin-bottom: 5px; color: var(--text-muted); font-weight: 600; }
-        .form-control, select, textarea, input[type="text"], input[type="tel"], input[type="file"] {
-            width: 100%; padding: 10px; background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px;
-        }
-        textarea { resize: vertical; height: 75px; }
-
-        .signature-container { background: #ffffff; border-radius: 6px; border: 1px solid var(--border-color); width: 100%; height: 160px; position: relative; touch-action: none; }
-        canvas { width: 100%; height: 100%; display: block; cursor: crosshair; }
-        .btn-clear { background: #64748b; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-top: 5px; }
-
-        .checklist-item { display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 8px; }
-        .checklist-item span { font-size: 13px; }
-        .checklist-options { display: flex; gap: 5px; }
-        .check-btn { padding: 5px 12px; border: 1px solid var(--border-color); background: #0f172a; color: var(--text-muted); border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
-        .check-btn.active-ok { background: var(--success); color: white; border-color: #059669; }
-        .check-btn.active-no { background: var(--danger); color: white; border-color: #b91c1c; }
-
-        .btn-submit { background: var(--accent); color: #0f172a; border: none; width: 100%; padding: 14px; font-weight: bold; font-size: 15px; border-radius: 8px; cursor: pointer; margin-top: 20px; grid-column: 1 / -1; }
-        .btn-submit:hover { opacity: 0.9; }
-
-        .kpi-card { background: #1e293b; padding: 15px; border-radius: 8px; border-left: 4px solid var(--accent); text-align: center; }
-        .kpi-value { font-size: 22px; font-weight: bold; color: var(--text-main); margin-top: 5px; }
-        .kpi-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
-
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #0f172a; border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; }
-        .nav-item { background: none; border: none; color: var(--text-muted); font-size: 11px; cursor: pointer; text-align: center; width: 25%; }
-        .nav-item.active { color: var(--accent); font-weight: bold; }
-        .nav-item div { font-size: 16px; margin-bottom: 2px; }
-
-        .view-section { display: none; }
-        .view-section.active-view { display: block; }
+        #map { height: 400px; border-radius: 0.5rem; }
+        .signature-pad { border: 2px dashed #4b5563; background: #1f2937; border-radius: 0.5rem; cursor: crosshair; }
     </style>
 </head>
-<body>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen pb-12">
 
-    <header>
-        <h1>SUPERVISION INTMEX</h1>
-        <p>Control de Campo y Auditoría en Tiempo Real</p>
+    <!-- Header -->
+    <header class="bg-slate-800 border-b border-slate-700 py-4 px-6 shadow-md">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold tracking-wide text-blue-400">SUPERVISIÓN INTMEX</h1>
+                <p class="text-xs text-slate-400">Control de Campo y Auditoría en Tiempo Real</p>
+            </div>
+            <!-- GPS Status Banner -->
+            <div id="gps-status" class="mt-2 md:mt-0 bg-emerald-900/60 border border-emerald-500 text-emerald-300 text-xs px-3 py-1.5 rounded-full flex items-center gap-2">
+                <i class="fa-solid fa-location-dot animate-pulse"></i>
+                <span id="gps-text">Obteniendo GPS...</span>
+            </div>
+        </div>
     </header>
 
-    <div class="container">
-        <!-- VISTA 1: REGISTRO CLIENTE -->
-        <div id="view-registro" class="view-section active-view">
-            <div id="gps-status" class="gps-banner">📍 Activando GPS en tiempo real...</div>
-
-            <form id="form-supervision" class="form-grid">
-                <div class="section-title full-width">1. Datos de Ruta y Asesor</div>
-                
-                <div class="form-group">
-                    <label>CEDIS</label>
-                    <select id="cedis-select" required class="form-control">
+    <!-- SECCIÓN FIJA: DATOS DE RUTA Y ASESOR (NO SE REINICIAN) -->
+    <section class="max-w-7xl mx-auto px-4 mt-6">
+        <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-4 shadow-lg">
+            <div class="flex justify-between items-center mb-3 border-b border-slate-700 pb-2">
+                <h2 class="text-sm font-semibold text-blue-300 uppercase tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-id-card"></i> 1. Datos de Ruta y Asesor (Fijos en Jornada)
+                </h2>
+                <span class="text-xs text-slate-400 bg-slate-700 px-2 py-0.5 rounded">Autoguardado activo</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">CEDIS</label>
+                    <select id="f-cedis" onchange="saveRouteData()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:border-blue-500 outline-none">
                         <option value="">Seleccione CEDIS</option>
-                        <option value="TIJ">TIJUANA</option>
-                        <option value="MXLI">MEXICALI</option>
-                        <option value="HILLO">HERMOSILLO</option>
-                        <option value="MOC">MOCHIS</option>
-                        <option value="CUL">CULIACAN</option>
-                        <option value="MZT">MAZATLAN</option>
+                        <option value="CEDIS Tijuana">CEDIS Tijuana</option>
+                        <option value="CEDIS Mexicali">CEDIS Mexicali</option>
+                        <option value="CEDIS Ensenada">CEDIS Ensenada</option>
                     </select>
                 </div>
-
-                <div class="form-group">
-                    <label>RUTA</label>
-                    <select id="ruta-select" required class="form-control">
-                        <option value="">Primero seleccione un CEDIS</option>
-                    </select>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Ruta</label>
+                    <input type="text" id="f-ruta" placeholder="Ej. R-402" oninput="saveRouteData()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:border-blue-500 outline-none">
                 </div>
-
-                <div class="form-group">
-                    <label>Nombre del Asesor</label>
-                    <input type="text" id="asesor-input" placeholder="Ej. Carlos Gutiérrez" required>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Nombre del Asesor</label>
+                    <input type="text" id="f-asesor" placeholder="Ej. Carlos Gutiérrez" oninput="saveRouteData()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:border-blue-500 outline-none">
                 </div>
-
-                <div class="form-group">
-                    <label>Tipo de Ruta</label>
-                    <select id="tipo-ruta-input" class="form-control">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Tipo de Ruta</label>
+                    <select id="f-tipo-ruta" onchange="saveRouteData()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:border-blue-500 outline-none">
                         <option value="Ruta Activa">Ruta Activa</option>
-                        <option value="Ruta Nueva">Ruta Nueva</option>
+                        <option value="Preventa">Preventa</option>
+                        <option value="Reparto">Reparto</option>
                     </select>
                 </div>
-
-                <div class="form-group">
-                    <label>Objetivo de Supervisión</label>
-                    <select id="objetivo-principal" class="form-control" required>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Objetivo de Supervisión</label>
+                    <select id="f-objetivo" onchange="saveRouteData()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:border-blue-500 outline-none">
                         <option value="">Seleccione Objetivo</option>
-                        <option value="Venta">Venta</option>
-                        <option value="Capacitación">Capacitación</option>
-                        <option value="Territorio">Territorio</option>
+                        <option value="Auditoría de Estándares">Auditoría de Estándares</option>
+                        <option value="Acompañamiento y Capacitación">Acompañamiento</option>
+                        <option value="Revisión de Cartera">Revisión de Cartera</option>
                     </select>
                 </div>
+            </div>
+        </div>
+    </section>
 
-                <div class="form-group" id="subobjetivo-container" style="display: none;">
-                    <label>Subobjetivo de Supervisión</label>
-                    <select id="objetivo-detalle" class="form-control"></select>
-                </div>
+    <!-- Navigation Tabs -->
+    <main class="max-w-7xl mx-auto px-4 mt-6">
+        <div class="flex border-b border-slate-700 space-x-2 overflow-x-auto">
+            <button onclick="switchTab('clientes')" id="btn-tab-clientes" class="tab-btn px-4 py-2.5 font-medium text-sm rounded-t-lg bg-blue-600 text-white transition">
+                <i class="fa-solid fa-store mr-2"></i> 2. Registro de Clientes
+            </button>
+            <button onclick="switchTab('supervision')" id="btn-tab-supervision" class="tab-btn px-4 py-2.5 font-medium text-sm rounded-t-lg bg-slate-800 text-slate-400 hover:text-white transition">
+                <i class="fa-solid fa-clipboard-check mr-2"></i> 3. Supervisión / Checklist
+            </button>
+            <button onclick="switchTab('mapa')" id="btn-tab-mapa" class="tab-btn px-4 py-2.5 font-medium text-sm rounded-t-lg bg-slate-800 text-slate-400 hover:text-white transition" onclick="setTimeout(invalidateMap, 200)">
+                <i class="fa-solid fa-map-location-dot mr-2"></i> 4. Mapa Interactivo
+            </button>
+            <button onclick="switchTab('historial')" id="btn-tab-historial" class="tab-btn px-4 py-2.5 font-medium text-sm rounded-t-lg bg-slate-800 text-slate-400 hover:text-white transition">
+                <i class="fa-solid fa-clock-rotate-left mr-2"></i> 5. Historial y Reporte
+            </button>
+        </div>
 
-                <div class="section-title full-width">2. Datos del Cliente</div>
-
-                <div class="form-group full-width">
-                    <label>¿Cliente Abierto?</label>
-                    <select id="cliente-abierto-select" class="form-control" required>
-                        <option value="SI">SÍ</option>
-                        <option value="NO">NO</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label>Nombre del Cliente</label>
-                    <input type="text" id="cliente-input" placeholder="Ej. Mini Super Alex" required>
-                </div>
-
-                <div class="form-group full-width" id="subopcion-cerrado-container" style="display: none;">
-                    <label>Tipo de Cierre / Visita</label>
-                    <select id="tipo-cierre-select" class="form-control">
-                        <option value="Solo esta visita">Solo esta visita</option>
-                        <option value="Cerrado definitivo">Cerrado definitivo</option>
-                    </select>
-                </div>
-
-                <div id="campos-cliente-abierto-extra" class="full-width" style="display: contents;">
-                    <div class="form-group">
-                        <label>Teléfono</label>
-                        <input type="tel" id="telefono-input" placeholder="Ej. 6641234567">
-                    </div>
-
-                    <div class="form-group">
-                        <label>¿Quién Recibe?</label>
-                        <input type="text" id="quien-recibe-input" placeholder="Persona que atiende">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Segmento de Cliente</label>
-                        <select id="tipo-cte-input" class="form-control">
-                            <option value="Tipo A">Tipo A: Cobro, pasillos, refis y carnicería</option>
-                            <option value="Tipo B">Tipo B: Cobro, pasillo y refrigerador</option>
-                            <option value="Tipo C">Tipo C: Mostrador y pasillos limitados</option>
-                            <option value="Tipo D">Tipo D: Ventanita o estanquillo</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Impacto de Prioridades</label>
-                        <select id="impacto-prioridades-select" class="form-control">
-                            <option value="SI">SÍ</option>
+        <!-- TAB 1: REGISTRO DE CLIENTES -->
+        <div id="tab-clientes" class="tab-content bg-slate-800 border border-slate-700 border-t-0 rounded-b-xl p-6 shadow-xl">
+            <h2 class="text-lg font-semibold text-blue-400 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-user-plus"></i> Alta de Cliente en Base de Datos Real
+            </h2>
+            <form id="client-form" onsubmit="registerClient(event)" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">¿Cliente Abierto?</label>
+                        <select id="c-abierto" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
+                            <option value="SÍ">SÍ</option>
                             <option value="NO">NO</option>
                         </select>
                     </div>
-
-                    <div class="form-group">
-                        <label>¿Compra Efectiva?</label>
-                        <select id="compra-efectiva-select" class="form-control">
-                            <option value="SI">SÍ</option>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Nombre del Cliente</label>
+                        <input type="text" id="c-nombre" required placeholder="Ej. Mini Super Alex" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Teléfono</label>
+                        <input type="tel" id="c-telefono" placeholder="Ej. 6641234567" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">¿Quién Recibe?</label>
+                        <input type="text" id="c-recibe" placeholder="Persona que atiende" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Segmento de Cliente</label>
+                        <select id="c-segmento" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
+                            <option value="Tipo A: Cobro, pasillos, refis y carnicería">Tipo A: Cobro, pasillos, refis y carnicería</option>
+                            <option value="Tipo B: Pasillos y refrigeradores">Tipo B: Pasillos y refrigeradores</option>
+                            <option value="Tipo C: Solo exhibición básica">Tipo C: Solo exhibición básica</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Impacto de Prioridades</label>
+                        <select id="c-impacto" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
+                            <option value="SÍ">SÍ</option>
                             <option value="NO">NO</option>
                         </select>
                     </div>
-
-                    <div class="form-group" id="motivo-no-compra-container" style="display: none;">
-                        <label>Motivo de No Compra</label>
-                        <select id="motivo-no-compra" class="form-control">
-                            <option value="Sin Dinero">Sin Dinero</option>
-                            <option value="Inventario">Inventario</option>
-                            <option value="No está el encargado">No está el encargado</option>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">¿Compra Efectiva?</label>
+                        <select id="c-compra" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
+                            <option value="SÍ">SÍ</option>
+                            <option value="NO">NO</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="section-title full-width" id="titulo-checklist">3. Pasos de la Visita (Checklist)</div>
-                <div id="checklist-container" class="full-width" style="display: grid; grid-template-columns: 1fr; gap: 8px;"></div>
-
-                <div class="form-group full-width" id="grupo-codigos">
-                    <label>Códigos sin Impactar / Comentarios</label>
-                    <textarea id="codes-input" placeholder="Ninguno"></textarea>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Códigos sin Impactar / Comentarios</label>
+                        <textarea id="c-codigos" rows="2" placeholder="Ninguno" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">Ninguno</textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Notas de Auditoría</label>
+                        <textarea id="c-notas" rows="2" placeholder="Observaciones adicionales..." class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200"></textarea>
+                    </div>
                 </div>
 
-                <div class="form-group full-width" id="grupo-notas">
-                    <label>Notas de Auditoría</label>
-                    <textarea id="notes-input" placeholder="Observaciones adicionales..."></textarea>
+                <!-- Foto Fachada y Firma del Cliente -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-700">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Foto de Fachada / Negocio</label>
+                        <input type="file" id="c-foto" accept="image/*" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Firma del Cliente de Conformidad</label>
+                        <canvas id="client-sig-pad" class="signature-pad w-full h-28"></canvas>
+                        <button type="button" onclick="clearClientSig()" class="mt-1 text-xs text-red-400 hover:underline"><i class="fa-solid fa-eraser"></i> Borrar Firma</button>
+                    </div>
+                </div>
+
+                <div class="pt-4 flex justify-end">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2.5 rounded-lg shadow transition flex items-center gap-2 text-sm">
+                        <i class="fa-solid fa-floppy-disk"></i> Guardar Cliente y Continuar
+                    </button>
                 </div>
             </form>
         </div>
 
-        <!-- VISTA 2: EVALUACIÓN Y FIRMAS (Pestaña Independiente) -->
-        <div id="view-evaluacion" class="view-section">
-            <div class="section-title">Evaluación y Cierre de Supervisión</div>
+        <!-- TAB 2: SUPERVISION / CHECKLIST -->
+        <div id="tab-supervision" class="tab-content hidden bg-slate-800 border border-slate-700 border-t-0 rounded-b-xl p-6 shadow-xl">
+            <h2 class="text-lg font-semibold text-blue-400 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-clipboard-list"></i> 3. Pasos de la Visita (Checklist de Supervisión)
+            </h2>
             
-            <div style="background: var(--bg-card); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px;">
-                <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">Resumen del Checklist Actual:</div>
-                <div id="resumen-evaluacion-texto" style="font-size: 15px; font-weight: bold; color: var(--accent); margin-bottom: 10px;">Aciertos: 0 / 10 (0%) - Pendiente de evaluar</div>
-                <div id="badge-estatus-asesor" style="display: inline-block; padding: 6px 12px; border-radius: 4px; font-weight: bold; font-size: 12px; background: #334155; color: #fff;">ESTATUS: PENDIENTE</div>
+            <div class="mb-6 p-4 bg-slate-900 border border-slate-700 rounded-lg">
+                <label class="block text-xs text-slate-400 mb-2 font-semibold uppercase">Seleccionar Cliente Registrado para Auditar:</label>
+                <select id="supervision-client-select" class="w-full bg-slate-800 border border-slate-600 rounded p-2.5 text-sm text-slate-200">
+                    <option value="">-- Primero registre o seleccione un cliente --</option>
+                </select>
             </div>
 
-            <div class="section-title">Evidencias y Firmas Obligatorias</div>
-
-            <div class="form-group" style="margin-bottom: 15px;">
-                <label id="label-firma-titulo">1. Firma de Conformidad del Supervisor</label>
-                <div class="signature-container">
-                    <canvas id="signature-canvas"></canvas>
+            <form id="supervision-form" onsubmit="submitSupervision(event)" class="space-y-3">
+                <div id="checklist-container" class="space-y-2">
+                    <!-- Generado dinámicamente -->
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px;">
-                    <button type="button" class="btn-clear" id="clear-signature">Limpiar Recuadro</button>
-                    <button type="button" id="btn-siguiente-firma" style="background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;">Guardar Firma y Pasar a Asesor ➡️</button>
+
+                <div class="pt-6 flex justify-end">
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-6 py-2.5 rounded-lg shadow transition flex items-center gap-2 text-sm">
+                        <i class="fa-solid fa-circle-check"></i> Finalizar Auditoría y Generar Reporte
+                    </button>
                 </div>
+            </form>
+        </div>
+
+        <!-- TAB 3: MAPA INTERACTIVO -->
+        <div id="tab-mapa" class="tab-content hidden bg-slate-800 border border-slate-700 border-t-0 rounded-b-xl p-6 shadow-xl">
+            <h2 class="text-lg font-semibold text-blue-400 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-map"></i> Ubicaciones Registradas en Ruta
+            </h2>
+            <p class="text-xs text-slate-400 mb-4">Visualice geográficamente los puntos visitados y auditados durante la jornada actual.</p>
+            <div id="map"></div>
+        </div>
+
+        <!-- TAB 4: HISTORIAL Y REPORTES -->
+        <div id="tab-historial" class="tab-content hidden bg-slate-800 border border-slate-700 border-t-0 rounded-b-xl p-6 shadow-xl">
+            <h2 class="text-lg font-semibold text-blue-400 mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-list-check"></i> Historial Consolidado de Visitas y Auditorías
+            </h2>
+            <div id="history-container" class="space-y-4">
+                <p class="text-sm text-slate-400 text-center py-8">No hay registros guardados todavía.</p>
             </div>
-
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label>Foto de Fachada / Establecimiento (Obligatorio)</label>
-                <input type="file" id="foto-fachada" accept="image/*" capture="environment">
-            </div>
-
-            <button type="button" class="btn-submit" id="btn-final-guardar" disabled style="opacity: 0.5; cursor: not-allowed;">Finalizar y Guardar Registro en Base</button>
         </div>
+    </main>
 
-        <!-- VISTA 3: HISTORIAL Y PANEL GERENCIAL DETALLADO -->
-        <div id="view-historial" class="view-section">
-            <div class="section-title">📊 Panel Ejecutivo Gerencial de Supervisión</div>
-            <div id="historial-contenido"></div>
-        </div>
-
-        <!-- VISTA 4: MAPA EN TIEMPO REAL -->
-        <div id="view-mapa" class="view-section">
-            <div class="section-title">Mapa de Ubicaciones en Tiempo Real</div>
-            <div id="map" style="width: 100%; height: 420px; border-radius: 8px; border: 1px solid var(--border-color); background: #111;"></div>
-        </div>
-    </div>
-
-    <!-- Navegación Inferior de 4 Pestañas -->
-    <div class="bottom-nav">
-        <button class="nav-item active" id="tab-registro" onclick="cambiarPestana('registro')">
-            <div>📝</div>Registro
-        </button>
-        <button class="nav-item" id="tab-evaluacion" onclick="cambiarPestana('evaluacion')">
-            <div>✍️</div>Evaluación
-        </button>
-        <button class="nav-item" id="tab-historial" onclick="cambiarPestana('historial')">
-            <div>📊</div>Historial
-        </button>
-        <button class="nav-item" id="tab-mapa" onclick="cambiarPestana('mapa')">
-            <div>🗺️</div>Mapa
-        </button>
-    </div>
-
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Script de lógica de la aplicación -->
     <script>
-        const pasosChecklist = [
-            "ID Cliente en Base de Datos", "Saludo a Cliente", "ID Nuestras Marcas",
-            "ID Stock", "Revisión de Caducidades", "Impulso de Variantes",
-            "Cierre Promos", "Comunicar Venta a Cliente", "Manejo de Objecciones", "Despedida"
+        // --- ESTADO GLOBAL Y PERSISTENCIA DE RUTA ---
+        let currentLat = 32.47027;
+        let lng = -116.83785;
+        let map, markersLayer;
+        let clientSignaturePad;
+
+        const checklistSteps = [
+            "1. ID Cliente en Base de Datos",
+            "2. Saludo a Cliente",
+            "3. ID Nuestras Marcas",
+            "4. ID Stock",
+            "5. Revisión de Caducidades",
+            "6. Impulso de Variantes",
+            "7. Cierre Promos",
+            "8. Comunicar Venta a Cliente",
+            "9. Manejo de Objeciones",
+            "10. Despedida"
         ];
 
-        let currentLat = 32.5149;
-        let currentLng = -116.9934;
-        let mapInstance = null;
-        let windowChecklistEstado = {};
-
-        window.cambiarPestana = function(pestana) {
-            ['registro', 'evaluacion', 'historial', 'mapa'].forEach(p => {
-                document.getElementById(`view-${p}`).classList.remove('active-view');
-                document.getElementById(`tab-${p}`).classList.remove('active');
-            });
-            document.getElementById(`view-${pestana}`).classList.add('active-view');
-            document.getElementById(`tab-${pestana}`).classList.add('active');
-
-            if (pestana === 'historial') {
-                renderHistorial();
-            } else if (pestana === 'mapa') {
-                setTimeout(initMap, 150);
-            }
-        };
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const gpsStatus = document.getElementById("gps-status");
-            if (navigator.geolocation) {
-                navigator.geolocation.watchPosition(
-                    pos => {
-                        currentLat = pos.coords.latitude;
-                        currentLng = pos.coords.longitude;
-                        gpsStatus.innerText = `📍 GPS Activo y Actualizado: ${currentLat.toFixed(5)}, ${currentLng.toFixed(5)}`;
-                        gpsStatus.style.background = "#064e3b";
-                        gpsStatus.style.color = "#34d399";
-                    },
-                    err => {
-                        gpsStatus.innerText = "⚠️ Advertencia GPS: Usando última posición o predeterminada.";
-                        gpsStatus.style.background = "#78350f";
-                        gpsStatus.style.borderColor = "#b45309";
-                        gpsStatus.style.color = "#fde68a";
-                    },
-                    { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
-                );
-            } else {
-                gpsStatus.innerText = "⚠️ Geolocalización no soportada por este navegador.";
-            }
-
-            // CANVAS FIRMAS
-            const canvas = document.getElementById('signature-canvas');
-            const ctx = canvas.getContext('2d');
-            let isDrawing = false;
-            let firmaSupervisorBase64 = "";
-            let firmaAsesorBase64 = "";
-            let pasoFirmaActual = 1;
-
-            function resizeCanvas() {
-                const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                canvas.width = canvas.offsetWidth * ratio;
-                canvas.height = canvas.offsetHeight * ratio;
-                ctx.scale(ratio, ratio);
-                ctx.strokeStyle = '#000000';
-                ctx.lineWidth = 2;
-                ctx.lineCap = 'round';
-            }
-            window.addEventListener('load', resizeCanvas);
-            setTimeout(resizeCanvas, 300);
-
-            canvas.addEventListener('mousedown', (e) => { isDrawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); });
-            canvas.addEventListener('mousemove', (e) => { if (!isDrawing) return; ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); });
-            canvas.addEventListener('mouseup', () => { isDrawing = false; });
-            canvas.addEventListener('mouseleave', () => { isDrawing = false; });
-
-            canvas.addEventListener('touchstart', (e) => {
-                isDrawing = true;
-                const rect = canvas.getBoundingClientRect();
-                const touch = e.touches[0];
-                ctx.beginPath();
-                ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
-                e.preventDefault();
-            });
-            canvas.addEventListener('touchmove', (e) => {
-                if (!isDrawing) return;
-                const rect = canvas.getBoundingClientRect();
-                const touch = e.touches[0];
-                ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
-                ctx.stroke();
-                e.preventDefault();
-            });
-            canvas.addEventListener('touchend', () => { isDrawing = false; });
-
-            document.getElementById('clear-signature').addEventListener('click', () => {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-            });
-
-            const btnSiguienteFirma = document.getElementById('btn-siguiente-firma');
-            const labelFirmaTitulo = document.getElementById('label-firma-titulo');
-            const btnFinalGuardar = document.getElementById('btn-final-guardar');
-
-            function isCanvasBlank(cvs) {
-                const blank = document.createElement('canvas');
-                blank.width = cvs.width;
-                blank.height = cvs.height;
-                return cvs.toDataURL() === blank.toDataURL();
-            }
-
-            btnSiguienteFirma.addEventListener('click', () => {
-                if (isCanvasBlank(canvas)) {
-                    alert("⚠️ El recuadro de firma está vacío.");
-                    return;
-                }
-
-                if (pasoFirmaActual === 1) {
-                    firmaSupervisorBase64 = canvas.toDataURL('image/png', 0.7);
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    pasoFirmaActual = 2;
-                    labelFirmaTitulo.textContent = "2. Firma del Asesor (Evaluado)";
-                    btnSiguienteFirma.textContent = "Validar y Bloquear Firmas ✔️";
-                    btnSiguienteFirma.style.background = "#10b981";
-                    alert("✅ Firma del supervisor guardada. Entregue el dispositivo al Asesor.");
-                } else if (pasoFirmaActual === 2) {
-                    firmaAsesorBase64 = canvas.toDataURL('image/png', 0.7);
-                    alert("✅ ¡Ambas firmas capturadas correctamente!");
-                    btnSiguienteFirma.disabled = true;
-                    btnSiguienteFirma.style.opacity = "0.5";
-                    document.getElementById('clear-signature').disabled = true;
-                    btnFinalGuardar.disabled = false;
-                    btnFinalGuardar.style.opacity = "1";
-                    btnFinalGuardar.style.cursor = "pointer";
-                }
-            });
-
-            // CEDIS Y RUTAS
-            const cedisSelect = document.getElementById("cedis-select");
-            const rutaSelect = document.getElementById("ruta-select");
-
-            cedisSelect.addEventListener("change", function() {
-                const cedisVal = this.value;
-                rutaSelect.innerHTML = '<option value="">Seleccione una Ruta</option>';
-                if (!cedisVal) return;
-                for (let i = 1; i <= 18; i++) {
-                    const num = i < 10 ? '0' + i : i;
-                    const val = `${cedisVal}${num}`;
-                    const opt = document.createElement("option");
-                    opt.value = val; opt.textContent = val;
-                    rutaSelect.appendChild(opt);
-                }
-                for (let i = 301; i <= 306; i++) {
-                    const val = `${cedisVal}${i}`;
-                    const opt = document.createElement("option");
-                    opt.value = val; opt.textContent = val;
-                    rutaSelect.appendChild(opt);
-                }
-            });
-
-            // OBJETIVOS
-            const objetivoPrincipal = document.getElementById("objetivo-principal");
-            const objetivoDetalle = document.getElementById("objetivo-detalle");
-            const subobjetivoContainer = document.getElementById("subobjetivo-container");
-
-            objetivoPrincipal.addEventListener("change", function() {
-                const val = this.value;
-                objetivoDetalle.innerHTML = "";
-                if (val === "Venta") {
-                    subobjetivoContainer.style.display = "block";
-                    ["Efectividad de Venta", "Impulso"].forEach(sub => {
-                        const opt = document.createElement("option"); opt.value = sub; opt.textContent = sub;
-                        objetivoDetalle.appendChild(opt);
-                    });
-                } else if (val === "Capacitación" || val === "Territorio") {
-                    subobjetivoContainer.style.display = "block";
-                    ["Nuevo Ingreso", "Reestructura"].forEach(sub => {
-                        const opt = document.createElement("option"); opt.value = sub; opt.textContent = sub;
-                        objetivoDetalle.appendChild(opt);
-                    });
-                } else {
-                    subobjetivoContainer.style.display = "none";
-                }
-            });
-
-            // CLIENTE ABIERTO / CERRADO
-            const clienteAbiertoSelect = document.getElementById("cliente-abierto-select");
-            const camposClienteAbiertoExtra = document.getElementById("campos-cliente-abierto-extra");
-            const subopcionCerradoContainer = document.getElementById("subopcion-cerrado-container");
-            const checklistContainer = document.getElementById("checklist-container");
-            const tituloChecklist = document.getElementById("titulo-checklist");
-            const grupoCodigos = document.getElementById("grupo-codigos");
-            const grupoNotas = document.getElementById("grupo-notas");
-
-            clienteAbiertoSelect.addEventListener("change", function() {
-                if (this.value === "NO") {
-                    camposClienteAbiertoExtra.style.display = "none";
-                    subopcionCerradoContainer.style.display = "block";
-                    checklistContainer.style.display = "none";
-                    tituloChecklist.style.display = "none";
-                    grupoCodigos.style.display = "none";
-                    grupoNotas.style.display = "none";
-                } else {
-                    camposClienteAbiertoExtra.style.display = "contents";
-                    subopcionCerradoContainer.style.display = "none";
-                    checklistContainer.style.display = "grid";
-                    tituloChecklist.style.display = "block";
-                    grupoCodigos.style.display = "block";
-                    grupoNotas.style.display = "block";
-                }
-                actualizarEvaluacionEnVivo();
-            });
-
-            // CHECKLIST
-            pasosChecklist.forEach((paso, index) => {
-                const div = document.createElement("div");
-                div.className = "checklist-item";
-                div.innerHTML = `
-                    <span>${index + 1}. ${paso}</span>
-                    <div class="checklist-options">
-                        <button type="button" class="check-btn" onclick="marcarCheck(${index}, 'SI', this)">SÍ</button>
-                        <button type="button" class="check-btn" onclick="marcarCheck(${index}, 'NO', this)">NO</button>
-                    </div>
-                `;
-                checklistContainer.appendChild(div);
-            });
-
-            window.marcarCheck = function(index, valor, btn) {
-                const parent = btn.parentElement;
-                parent.querySelectorAll('.check-btn').forEach(b => b.classList.remove('active-ok', 'active-no'));
-                if(valor === 'SI') btn.classList.add('active-ok');
-                else btn.classList.add('active-no');
-                windowChecklistEstado[index] = valor;
-                actualizarEvaluacionEnVivo();
-            };
-
-            function calcularResultadosAsesor() {
-                let aciertos = 0;
-                const abierto = clienteAbiertoSelect.value;
-                if (abierto === "SI") {
-                    pasosChecklist.forEach((paso, idx) => {
-                        if (windowChecklistEstado[idx] === "SI") aciertos++;
-                    });
-                }
-                const porcentaje = (aciertos / 10) * 100;
-                let estatus = "CERRADO / NA";
-                let colorBg = "#334155";
-                if (abierto === "SI") {
-                    if (porcentaje <= 59) { estatus = "OCUPA REFUERZO"; colorBg = "#ef4444"; }
-                    else if (porcentaje <= 79) { estatus = "ÁREAS DE OPORTUNIDAD"; colorBg = "#f59e0b"; }
-                    else if (porcentaje <= 99) { estatus = "BIEN"; colorBg = "#38bdf8"; }
-                    else { estatus = "EXCELENTE"; colorBg = "#10b981"; }
-                }
-                return { aciertos, porcentaje, estatus, colorBg };
-            }
-
-            function actualizarEvaluacionEnVivo() {
-                const res = calcularResultadosAsesor();
-                const textoResumen = document.getElementById("resumen-evaluacion-texto");
-                const badgeEstatus = document.getElementById("badge-estatus-asesor");
-
-                if (clienteAbiertoSelect.value === "NO") {
-                    textoResumen.textContent = "Visita Cerrada / No aplica evaluación";
-                    badgeEstatus.textContent = "ESTATUS: N/A";
-                    badgeEstatus.style.background = "#334155";
-                } else {
-                    textoResumen.textContent = `Aciertos: ${res.aciertos} / 10 (${res.porcentaje}%)`;
-                    badgeEstatus.textContent = `ESTATUS: ${res.estatus}`;
-                    badgeEstatus.style.background = res.colorBg;
-                }
-            }
-
-            // GUARDAR FINAL
-            btnFinalGuardar.addEventListener("click", () => {
-                const clienteInputVal = document.getElementById("cliente-input").value;
-                const asesorInputVal = document.getElementById("asesor-input").value;
-                if(!clienteInputVal || !asesorInputVal || !cedisSelect.value || !rutaSelect.value) {
-                    alert("⚠️ Faltan datos obligatorios en la pestaña de Registro.");
-                    cambiarPestana('registro');
-                    return;
-                }
-
-                if (!firmaSupervisorBase64 || !firmaAsesorBase64) {
-                    alert("⚠️️ Debe completar ambas firmas en la pestaña de Evaluación.");
-                    return;
-                }
-
-                const fotoInput = document.getElementById("foto-fachada");
-                if (!fotoInput.files || fotoInput.files.length === 0) {
-                    alert("⚠️ Es obligatorio adjuntar la foto de la fachada.");
-                    return;
-                }
-
-                const file = fotoInput.files[0];
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = function(event) {
-                    const img = new Image();
-                    img.src = event.target.result;
-                    img.onload = function() {
-                        const canvasImg = document.createElement('canvas');
-                        const MAX_WIDTH = 800;
-                        const scaleSize = MAX_WIDTH / img.width;
-                        canvasImg.width = MAX_WIDTH;
-                        canvasImg.height = img.height * (scaleSize < 1 ? scaleSize : 1);
-                        const ctxImg = canvasImg.getContext('2d');
-                        ctxImg.drawImage(img, 0, 0, canvasImg.width, canvasImg.height);
-                        
-                        const fotoBase64 = canvasImg.toDataURL('image/jpeg', 0.7);
-                        const resEval = calcularResultadosAsesor();
-                        const abierto = clienteAbiertoSelect.value;
-                        let detalleChecklistReg = {};
-                        if (abierto === "SI") {
-                            pasosChecklist.forEach((paso, idx) => {
-                                detalleChecklistReg[paso] = windowChecklistEstado[idx] || "NO";
-                            });
-                        }
-
-                        const registro = {
-                            fecha: new Date().toLocaleString(),
-                            cedis: cedisSelect.value,
-                            ruta: rutaSelect.value,
-                            asesor: asesorInputVal,
-                            tipoRuta: document.getElementById("tipo-ruta-input").value,
-                            objetivo: objetivoPrincipal.value + (subobjetivoContainer.style.display !== 'none' ? ` (${objetivoDetalle.value})` : ''),
-                            clienteAbierto: abierto,
-                            cliente: clienteInputVal,
-                            telefono: abierto === "SI" ? document.getElementById("telefono-input").value : "",
-                            quienRecibe: abierto === "SI" ? document.getElementById("quien-recibe-input").value : "",
-                            tipoCliente: abierto === "SI" ? document.getElementById("tipo-cte-input").value : "-",
-                            impactoPrioridades: abierto === "SI" ? document.getElementById("impacto-prioridades-select").value : "-",
-                            compraEfectiva: abierto === "SI" ? document.getElementById("compra-efectiva-select").value : "NO",
-                            aciertos: Number(resEval.aciertos) || 0,
-                            porcentaje: resEval.porcentaje,
-                            detalleChecklist: detalleChecklistReg,
-                            calificacion: resEval.estatus,
-                            lat: currentLat,
-                            lng: currentLng,
-                            foto: fotoBase64,
-                            firmaSupervisor: firmaSupervisorBase64,
-                            firmaAsesor: firmaAsesorBase64
-                        };
-
-                        let registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
-                        registros.push(registro);
-                        localStorage.setItem("registros_supervision", JSON.stringify(registros));
-
-                        alert(`¡Guardado con éxito! Ubicación GPS (${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}) registrada.`);
-                        
-                        // Resetear todo
-                        document.getElementById("form-supervision").reset();
-                        ctx.clearRect(0, 0, canvas.width, canvas.height);
-                        pasoFirmaActual = 1;
-                        firmaSupervisorBase64 = "";
-                        firmaAsesorBase64 = "";
-                        labelFirmaTitulo.textContent = "1. Firma de Conformidad del Supervisor";
-                        btnSiguienteFirma.textContent = "Guardar Firma y Pasar a Asesor ➡️";
-                        btnSiguienteFirma.style.background = "#2563eb";
-                        btnSiguienteFirma.disabled = false;
-                        btnSiguienteFirma.style.opacity = "1";
-                        document.getElementById('clear-signature').disabled = false;
-                        btnFinalGuardar.disabled = true;
-                        btnFinalGuardar.style.opacity = "0.5";
-                        windowChecklistEstado = {};
-                        document.querySelectorAll('.check-btn').forEach(b => b.classList.remove('active-ok', 'active-no'));
-                        actualizarEvaluacionEnVivo();
-                        cambiarPestana('historial');
-                    };
-                };
-            });
+        window.addEventListener('DOMContentLoaded', () => {
+            loadRouteData();
+            initGPS();
+            initChecklist();
+            initSignaturePad();
+            initMap();
+            loadHistory();
+            updateClientDropdown();
         });
 
-        // HISTORIAL DETALLADO GERENCIAL
-        function renderHistorial() {
-            const contenido = document.getElementById("historial-contenido");
-            const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
-            
-            const total = registros.length;
-            let abiertos = registros.filter(r => r.clienteAbierto === 'SI');
-            let efectivos = abiertos.filter(r => r.compraEfectiva === 'SI').length;
-            let impactoSi = abiertos.filter(r => r.impactoPrioridades === 'SI').length;
-            
-            let pctAbiertos = total > 0 ? ((abiertos.length / total) * 100).toFixed(1) : 0;
-            let pctEfectivos = abiertos.length > 0 ? ((efectivos / abiertos.length) * 100).toFixed(1) : 0;
-            let pctImpacto = abiertos.length > 0 ? ((impactoSi / abiertos.length) * 100).toFixed(1) : 0;
-
-            let sumaAciertos = abiertos.reduce((acc, r) => acc + (Number(r.aciertos) || 0), 0);
-            let promedioAciertos = abiertos.length > 0 ? (sumaAciertos / abiertos.length).toFixed(1) : 0;
-            let promedioPct = (promedioAciertos / 10) * 100;
-
-            let estatusGeneral = "EXCELENTE";
-            let colorEstatus = "#10b981";
-            if (promedioPct <= 59) { estatusGeneral = "OCUPA REFUERZO"; colorEstatus = "#ef4444"; }
-            else if (promedioPct <= 79) { estatusGeneral = "ÁREAS DE OPORTUNIDAD"; colorEstatus = "#f59e0b"; }
-            else if (promedioPct <= 99) { estatusGeneral = "BIEN"; colorEstatus = "#38bdf8"; }
-
-            // Contar fallos por cada paso del checklist
-            let fallosChecklist = {};
-            pasosChecklist.forEach(p => fallosChecklist[p] = 0);
-            abiertos.forEach(r => {
-                if (r.detalleChecklist) {
-                    for (let [paso, val] of Object.entries(r.detalleChecklist)) {
-                        if (val === 'NO') {
-                            fallosChecklist[paso] = (fallosChecklist[paso] || 0) + 1;
-                        }
-                    }
-                }
-            });
-
-            // Segmentos de Clientes
-            let segA = abiertos.filter(r => r.tipoCliente && r.tipoCliente.includes('Tipo A')).length;
-            let segB = abiertos.filter(r => r.tipoCliente && r.tipoCliente.includes('Tipo B')).length;
-            let segC = abiertos.filter(r => r.tipoCliente && r.tipoCliente.includes('Tipo C')).length;
-            let segD = abiertos.filter(r => r.tipoCliente && r.tipoCliente.includes('Tipo D')).length;
-
-            let html = `
-                <div style="display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap;">
-                    <button onclick="exportarCSVBaseDatos()" style="background: #2563eb; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1;">📥 CSV Base de Datos</button>
-                    <button onclick="localStorage.removeItem('registros_supervision'); renderHistorial();" style="background: #ef4444; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer;">🗑️ Borrar Todo</button>
-                </div>
-
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin-bottom: 15px;">
-                    <div class="kpi-card"><div class="kpi-label">Total Visitas</div><div class="kpi-value">${total}</div></div>
-                    <div class="kpi-card"><div class="kpi-label">% Abiertos</div><div class="kpi-value">${pctAbiertos}%</div></div>
-                    <div class="kpi-card"><div class="kpi-label">% Compra</div><div class="kpi-value">${pctEfectivos}%</div></div>
-                    <div class="kpi-card"><div class="kpi-label">% Impacto</div><div class="kpi-value">${pctImpacto}%</div></div>
-                </div>
-
-                <div style="background: var(--bg-card); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 15px;">
-                    <div style="font-size: 13px; color: var(--accent); font-weight: bold; margin-bottom: 5px;">EVALUACIÓN Y CALIFICACIÓN DEL ASESOR</div>
-                    <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 5px;">Promedio de Aciertos en Checklist: <b>${promedioAciertos} / 10</b></div>
-                    <div style="padding: 6px; background: #0f172a; border-left: 4px solid ${colorEstatus}; font-size: 13px; margin-bottom: 12px;">
-                        Estatus de Desempeño: <b style="color: ${colorEstatus};">${estatusGeneral}</b>
-                    </div>
-                    <div style="font-size: 12px; color: var(--text-muted); font-weight: bold; margin-bottom: 6px;">⚠️ Áreas donde requiere capacitación (Pasos con más fallos):</div>
-                    <ul style="padding-left: 18px; font-size: 12px; color: var(--text-muted);">
-            `;
-
-            for (let [paso, fallos] of Object.entries(fallosChecklist)) {
-                html += `<li>${paso}: <b>${fallos} fallos registrados</b></li>`;
-            }
-
-            html += `
-                    </ul>
-                </div>
-
-                <div style="background: var(--bg-card); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 15px;">
-                    <div style="font-size: 13px; color: var(--accent); font-weight: bold; margin-bottom: 8px;">DISTRIBUCIÓN DE CLIENTES SEGMENTADOS</div>
-                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; text-align: center;">
-                        <div style="background:#0f172a; padding:8px; border-radius:6px;"><small style="color:var(--text-muted);">Tipo A</small><div style="font-weight:bold; color:var(--accent);">${segA}</div></div>
-                        <div style="background:#0f172a; padding:8px; border-radius:6px;"><small style="color:var(--text-muted);">Tipo B</small><div style="font-weight:bold; color:var(--accent);">${segB}</div></div>
-                        <div style="background:#0f172a; padding:8px; border-radius:6px;"><small style="color:var(--text-muted);">Tipo C</small><div style="font-weight:bold; color:var(--accent);">${segC}</div></div>
-                        <div style="background:#0f172a; padding:8px; border-radius:6px;"><small style="color:var(--text-muted);">Tipo D</small><div style="font-weight:bold; color:var(--accent);">${segD}</div></div>
-                    </div>
-                </div>
-
-                <div class="section-title">Registro Detallado</div>
-            `;
-
-            if (registros.length === 0) {
-                html += `<p style="color:var(--text-muted); font-size: 13px;">No hay registros guardados todavía.</p>`;
-            } else {
-                registros.forEach((r, idx) => {
-                    html += `<div style="background:var(--bg-card); padding:12px; border-radius:8px; margin-bottom:10px; border-left:4px solid ${r.clienteAbierto==='SI'?'#10b981':'#ef4444'}">
-                        <b>${idx + 1}. ${r.cliente}</b> (${r.cedis} - Ruta: ${r.ruta})<br>
-                        <small style="color: var(--text-muted);">Fecha: ${r.fecha} | Asesor: ${r.asesor} | Segmento: ${r.tipoCliente}</small><br>
-                        <small style="color: var(--accent);">Calificación: <b>${r.calificacion} (${r.porcentaje || 0}%)</b> | GPS: ${r.lat.toFixed(4)}, ${r.lng.toFixed(4)}</small>
-                    </div>`;
-                });
-            }
-            contenido.innerHTML = html;
+        // Guardar automáticamente datos de ruta en localStorage para que NO se pierdan ni se reinicien
+        function saveRouteData() {
+            const data = {
+                cedis: document.getElementById('f-cedis').value,
+                ruta: document.getElementById('f-ruta').value,
+                asesor: document.getElementById('f-asesor').value,
+                tipoRuta: document.getElementById('f-tipo-ruta').value,
+                objetivo: document.getElementById('f-objetivo').value
+            };
+            localStorage.setItem('intmex_route_data', JSON.stringify(data));
         }
 
-        // MAPA LEAFLET DINÁMICO
-        function initMap() {
-            const container = document.getElementById('map');
-            if (!container) return;
-
-            if (mapInstance) {
-                mapInstance.remove();
-                mapInstance = null;
+        function loadRouteData() {
+            const saved = localStorage.getItem('intmex_route_data');
+            if (saved) {
+                const data = JSON.parse(saved);
+                document.getElementById('f-cedis').value = data.cedis || '';
+                document.getElementById('f-ruta').value = data.ruta || '';
+                document.getElementById('f-asesor').value = data.asesor || '';
+                document.getElementById('f-tipo-ruta').value = data.tipoRuta || 'Ruta Activa';
+                document.getElementById('f-objetivo').value = data.objetivo || '';
             }
+        }
 
-            mapInstance = L.map('map').setView([currentLat, currentLng], 13);
+        // GPS Real o Simulado
+        function initGPS() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        currentLat = position.coords.latitude;
+                        lng = position.coords.longitude;
+                        document.getElementById('gps-text').innerText = `GPS Activo y Actualizado: ${currentLat.toFixed(5)}, ${lng.toFixed(5)}`;
+                    },
+                    () => {
+                        document.getElementById('gps-text').innerText = `GPS por defecto: ${currentLat}, ${lng}`;
+                    }
+                );
+            }
+        }
+
+        // Navegación por pestañas
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('bg-slate-800', 'text-slate-400');
+            });
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`btn-tab-${tabId}`);
+            activeBtn.classList.remove('bg-slate-800', 'text-slate-400');
+            activeBtn.classList.add('bg-blue-600', 'text-white');
+
+            if(tabId === 'mapa' && map) {
+                setTimeout(() => map.invalidateSize(), 200);
+            }
+        }
+
+        // Checklist generator
+        function initChecklist() {
+            const container = document.getElementById('checklist-container');
+            container.innerHTML = '';
+            checklistSteps.forEach((step, idx) => {
+                container.innerHTML += `
+                    <div class="flex items-center justify-between bg-slate-900 border border-slate-700/60 p-3 rounded-lg">
+                        <span class="text-sm font-medium text-slate-200">${step}</span>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="setCheck(${idx}, 'SÍ')" id="chk-${idx}-si" class="px-4 py-1.5 text-xs font-bold rounded bg-slate-800 text-slate-300 border border-slate-600 hover:bg-emerald-600 hover:border-emerald-500 transition">SÍ</button>
+                            <button type="button" onclick="setCheck(${idx}, 'NO')" id="chk-${idx}-no" class="px-4 py-1.5 text-xs font-bold rounded bg-slate-800 text-slate-300 border border-slate-600 hover:bg-red-600 hover:border-red-500 transition">NO</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        const checkValues = {};
+        function setCheck(idx, val) {
+            checkValues[idx] = val;
+            const btnSi = document.getElementById(`chk-${idx}-si`);
+            const btnNo = document.getElementById(`chk-${idx}-no`);
+            if(val === 'SÍ') {
+                btnSi.className = "px-4 py-1.5 text-xs font-bold rounded bg-emerald-600 text-white border border-emerald-500 shadow";
+                btnNo.className = "px-4 py-1.5 text-xs font-bold rounded bg-slate-800 text-slate-300 border border-slate-600";
+            } else {
+                btnNo.className = "px-4 py-1.5 text-xs font-bold rounded bg-red-600 text-white border border-red-500 shadow";
+                btnSi.className = "px-4 py-1.5 text-xs font-bold rounded bg-slate-800 text-slate-300 border border-slate-600";
+            }
+        }
+
+        // Canvas de Firma
+        let isDrawing = false;
+        function initSignaturePad() {
+            const canvas = document.getElementById('client-sig-pad');
+            const ctx = canvas.getContext('2d');
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+
+            canvas.addEventListener('mousedown', startDraw);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDraw);
+            canvas.addEventListener('touchstart', handleTouch);
+            canvas.addEventListener('touchmove', handleTouch);
+            canvas.addEventListener('touchend', stopDraw);
+
+            function startDraw(e) { isDrawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); }
+            function draw(e) { if(!isDrawing) return; ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); }
+            function stopDraw() { isDrawing = false; }
+            function handleTouch(e) {
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' : e.type === 'touchmove' ? 'mousemove' : 'mouseup', {
+                    clientX: touch.clientX, clientY: touch.clientY
+                });
+                canvas.dispatchEvent(mouseEvent);
+            }
+        }
+
+        function clearClientSig() {
+            const canvas = document.getElementById('client-sig-pad');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        // Leaflet Map Initialization
+        function initMap() {
+            map = L.map('map').setView([currentLat, lng], 14);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(mapInstance);
-
-            L.marker([currentLat, currentLng], {
-                icon: L.divIcon({
-                    className: 'current-pos-icon',
-                    html: '<div style="background:#38bdf8; width:14px; height:14px; border-radius:50%; border:2px solid #fff; box-shadow: 0 0 10px #38bdf8;"></div>',
-                    iconSize: [14, 14]
-                })
-            }).addTo(mapInstance).bindPopup("<b>📍 Tu ubicación actual en tiempo real</b>");
-
-            const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
-            registros.forEach(r => {
-                if (r.lat && r.lng) {
-                    L.marker([r.lat, r.lng]).addTo(mapInstance)
-                      .bindPopup(`<b>${r.cliente}</b><br>Ruta: ${r.ruta}<br>Estatus: ${r.calificacion}<br><small>${r.fecha}</small>`);
-                }
-            });
-            
-            setTimeout(() => { mapInstance.invalidateSize(); }, 200);
+            }).addTo(map);
+            markersLayer = L.layerGroup().addTo(map);
+            updateMapMarkers();
         }
 
-        window.exportarCSVBaseDatos = function() {
-            const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
-            if (registros.length === 0) { alert("No hay datos para exportar"); return; }
-            let csv = "\uFEFFFecha,CEDIS,Ruta,Asesor,Cliente,Calificación,Porcentaje,Latitud,Longitud\n";
-            registros.forEach(r => {
-                csv += `"${r.fecha}","${r.cedis}","${r.ruta}","${r.asesor}","${r.cliente}","${r.calificacion}","${r.porcentaje}%","${r.lat}","${r.lng}"\n`;
+        function updateMapMarkers() {
+            if(!markersLayer) return;
+            markersLayer.clearLayers();
+            const clients = JSON.parse(localStorage.getItem('intmex_clients') || '[]');
+            clients.forEach(c => {
+                if(c.lat && c.lng) {
+                    L.marker([c.lat, c.lng]).addTo(markersLayer)
+                      .bindPopup(`<b>${c.nombre}</b><br>Tel: ${c.telefono}<br>Segmento: ${c.segmento}`);
+                }
             });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `Supervision_${new Date().toISOString().slice(0,10)}.csv`;
-            a.click();
-        };
+        }
+
+        // Registro de Cliente
+        function registerClient(e) {
+            e.preventDefault();
+            const clientData = {
+                id: Date.now(),
+                abierto: document.getElementById('c-abierto').value,
+                nombre: document.getElementById('c-nombre').value,
+                telefono: document.getElementById('c-telefono').value,
+                recibe: document.getElementById('c-recibe').value,
+                segmento: document.getElementById('c-segmento').value,
+                impacto: document.getElementById('c-impacto').value,
+                compra: document.getElementById('c-compra').value,
+                codigos: document.getElementById('c-codigos').value,
+                notas: document.getElementById('c-notas').value,
+                lat: currentLat,
+                lng: lng,
+                timestamp: new Date().toLocaleString()
+            };
+
+            let clients = JSON.parse(localStorage.getItem('intmex_clients') || '[]');
+            clients.push(clientData);
+            localStorage.setItem('intmex_clients', JSON.stringify(clients));
+
+            alert('¡Cliente registrado correctamente en la base de datos!');
+            document.getElementById('client-form').reset();
+            clearClientSig();
+            updateClientDropdown();
+            updateMapMarkers();
+            switchTab('supervision');
+        }
+
+        function updateClientDropdown() {
+            const select = document.getElementById('supervision-client-select');
+            const clients = JSON.parse(localStorage.getItem('intmex_clients') || '[]');
+            select.innerHTML = '<option value="">-- Seleccione un cliente registrado --</option>';
+            clients.forEach(c => {
+                select.innerHTML += `<option value="${c.id}">${c.nombre} (${c.segmento})</option>`;
+            });
+        }
+
+        // Enviar Supervisión
+        function submitSupervision(e) {
+            e.preventDefault();
+            const clientId = document.getElementById('supervision-client-select').value;
+            if(!clientId) {
+                alert('Por favor seleccione un cliente para asociar la supervisión.');
+                return;
+            }
+
+            const routeData = JSON.parse(localStorage.getItem('intmex_route_data') || '{}');
+            const clients = JSON.parse(localStorage.getItem('intmex_clients') || '[]');
+            const client = clients.find(c => c.id == clientId);
+
+            const record = {
+                id: Date.now(),
+                route: routeData,
+                client: client,
+                checklist: { ...checkValues },
+                timestamp: new Date().toLocaleString()
+            };
+
+            let history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
+            history.unshift(record);
+            localStorage.setItem('intmex_history', JSON.stringify(history));
+
+            alert('¡Auditoría y Checklist guardados exitosamente!');
+            document.getElementById('supervision-form').reset();
+            for (let k in checkValues) delete checkValues[k];
+            initChecklist();
+            loadHistory();
+            switchTab('historial');
+        }
+
+        // Cargar Historial
+        function loadHistory() {
+            const container = document.getElementById('history-container');
+            const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
+            
+            if(history.length === 0) {
+                container.innerHTML = `<p class="text-sm text-slate-400 text-center py-8">No hay registros guardados todavía.</p>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            history.forEach(item => {
+                let checklistHtml = '<ul class="grid grid-cols-1 md:grid-cols-2 gap-1 text-xs text-slate-300 mt-2">';
+                checklistSteps.forEach((step, idx) => {
+                    const ans = item.checklist[idx] || 'N/A';
+                    const color = ans === 'SÍ' ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold';
+                    checklistHtml += `<li>${step}: <span class="${color}">${ans}</span></li>`;
+                });
+                checklistHtml += '</ul>';
+
+                container.innerHTML += `
+                    <div class="bg-slate-900 border border-slate-700 rounded-lg p-4 shadow">
+                        <div class="flex justify-between items-start border-b border-slate-800 pb-2 mb-2">
+                            <div>
+                                <span class="text-xs bg-blue-900 text-blue-300 px-2 py-0.5 rounded font-semibold">${item.route.cedis || 'CEDIS N/D'} - Ruta: ${item.route.ruta || 'N/D'}</span>
+                                <h3 class="text-base font-bold text-white mt-1">${item.client ? item.client.nombre : 'Cliente Desconocido'}</h3>
+                                <p class="text-xs text-slate-400">Asesor: ${item.route.asesor || 'N/D'} | Segmento: ${item.client ? item.client.segmento : 'N/D'}</p>
+                            </div>
+                            <span class="text-xs text-slate-400">${item.timestamp}</span>
+                        </div>
+                        <div class="mt-2">
+                            <p class="text-xs font-semibold text-blue-300 uppercase tracking-wider">Resultados del Checklist:</p>
+                            ${checklistHtml}
+                        </div>
+                    </div>
+                `;
+            });
+        }
     </script>
 </body>
 </html>
