@@ -492,7 +492,7 @@
                     currentLng = pos.coords.longitude;
                     document.getElementById("gps-status").innerText = `📍 GPS Activo: ${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`;
                 }, err => {
-                    console.warn("GPS no disponible, usando ubicación predeterminada.");
+                    console.warn("GPS no disponible.");
                 });
             }
 
@@ -563,7 +563,7 @@
                             motivoNoCompra: abierto === "SI" && compraEfectivaSelect.value === "NO" ? document.getElementById("motivo-no-compra").value : "-",
                             codigos: abierto === "SI" ? document.getElementById("codigos-input").value : "-",
                             notas: abierto === "SI" ? document.getElementById("notas-input").value : "-",
-                            aciertos: aciertos,
+                            aciertos: Number(aciertos) || 0,
                             detalleChecklist: detalleChecklistReg,
                             calificacion: calificacionAsesor,
                             lat: currentLat,
@@ -645,7 +645,8 @@
                 let segC = abiertos.filter(r => r.tipoCliente === 'Tipo C').length;
                 let segD = abiertos.filter(r => r.tipoCliente === 'Tipo D').length;
 
-                let sumaAciertos = abiertos.reduce((acc, r) => acc + r.aciertos, 0);
+                // Calcular promedio de aciertos de forma robusta
+                let sumaAciertos = abiertos.reduce((acc, r) => acc + (Number(r.aciertos) || 0), 0);
                 let promedioAciertos = abiertos.length > 0 ? (sumaAciertos / abiertos.length).toFixed(1) : 0;
 
                 let estatusGeneral = "EXCELENTE";
@@ -719,7 +720,7 @@
                         html += `<div style="background:var(--bg-card); padding:12px; border-radius:8px; margin-bottom:10px; border-left:4px solid ${r.clienteAbierto==='SI'?'#10b981':'#ef4444'}">
                             <b>${r.cliente}</b> (${r.cedis} - ${r.ruta})<br>
                             <small>Fecha: ${r.fecha} | Asesor: ${r.asesor} | Segmento: ${r.tipoCliente}</small><br>
-                            <small>Estado: <b>${r.clienteAbierto === 'SI' ? 'Abierto (' + r.calificacion + ' - ' + r.aciertos + '/10)' : 'Cerrado'}</b> | Compra: <b>${r.compraEfectiva}</b></small>
+                            <small>Estado: <b>${r.clienteAbierto === 'SI' ? 'Abierto (' + r.calificacion + ' - ' + (r.aciertos || 0) + '/10)' : 'Cerrado'}</b> | Compra: <b>${r.compraEfectiva}</b></small>
                         </div>`;
                     });
                 }
@@ -755,7 +756,7 @@
 
             let csv = "\uFEFFFecha,CEDIS,Ruta,Asesor,Tipo Ruta,Objetivo,Cliente Abierto,Tipo Cierre,Cliente,Teléfono,Atiende,Segmento,Impacto Prioridades,Compra Efectiva,Motivo No Compra,Aciertos Checklist,Calificación Asesor,Códigos,Notas,Latitud,Longitud\n";
             registros.forEach(r => {
-                csv += `"${r.fecha}","${r.cedis}","${r.ruta}","${r.asesor}","${r.tipoRuta}","${r.objetivo}","${r.clienteAbierto}","${r.tipoCierre}","${r.cliente}","${r.telefono}","${r.quienRecibe}","${r.tipoCliente}","${r.impactoPrioridades}","${r.compraEfectiva}","${r.motivoNoCompra}",${r.aciertos},"${r.calificacion}","${r.codigos}","${r.notas}",${r.lat},${r.lng}\n`;
+                csv += `"${r.fecha}","${r.cedis}","${r.ruta}","${r.asesor}","${r.tipoRuta}","${r.objetivo}","${r.clienteAbierto}","${r.tipoCierre}","${r.cliente}","${r.telefono}","${r.quienRecibe}","${r.tipoCliente}","${r.impactoPrioridades}","${r.compraEfectiva}","${r.motivoNoCompra}",${r.aciertos || 0},"${r.calificacion}","${r.codigos}","${r.notas}",${r.lat},${r.lng}\n`;
             });
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -773,7 +774,7 @@
             let win = window.open('', '_blank');
             let html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Reporte Ejecutivo Gerencial</title><style>body{font-family:Arial,sans-serif;padding:20px;text-align:center;}table{width:100%;border-collapse:collapse;font-size:11px;margin-top:20px;text-align:left;}th,td{border:1px solid #cbd5e1;padding:6px;}th{background:#0f172a;color:#fff;}.foto-min{max-height:60px;width:auto;}</style></head><body><h1>REPORTE EJECUTIVO CON EVIDENCIAS Y CAPACITACIÓN</h1><table><thead><tr><th>Fecha</th><th>Ruta</th><th>Asesor</th><th>Cliente</th><th>Aciertos</th><th>Calificación Asesor</th><th>Foto Fachada</th><th>Firma</th></tr></thead><tbody>`;
             registros.forEach(r => {
-                html += `<tr><td>${r.fecha}</td><td>${r.ruta}</td><td>${r.asesor}</td><td>${r.cliente}</td><td>${r.aciertos}/10</td><td><b>${r.calificacion}</b></td><td>${r.foto ? '<img src="'+r.foto+'" class="foto-min">' : 'Sin foto'}</td><td>${r.firma ? '<img src="'+r.firma+'" class="foto-min">' : 'Sin firma'}</td></tr>`;
+                html += `<tr><td>${r.fecha}</td><td>${r.ruta}</td><td>${r.asesor}</td><td>${r.cliente}</td><td>${r.aciertos || 0}/10</td><td><b>${r.calificacion}</b></td><td>${r.foto ? '<img src="'+r.foto+'" class="foto-min">' : 'Sin foto'}</td><td>${r.firma ? '<img src="'+r.firma+'" class="foto-min">' : 'Sin firma'}</td></tr>`;
             });
             html += `</tbody></table></body></html>`;
             win.document.write(html);
@@ -825,7 +826,7 @@
                         <td>${r.tipoCliente}</td>
                         <td>${r.impactoPrioridades}</td>
                         <td>${r.compraEfectiva}</td>
-                        <td>${r.aciertos}/10</td>
+                        <td>${r.aciertos || 0}/10</td>
                         <td><b>${r.calificacion}</b></td>
                         <td>${r.foto ? `<img src="${r.foto}" class="foto-celda">` : 'Sin foto'}</td>
                         <td>${r.firma ? `<img src="${r.firma}" class="foto-celda">` : 'Sin firma'}</td>
