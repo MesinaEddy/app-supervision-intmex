@@ -491,6 +491,8 @@
                     currentLat = pos.coords.latitude;
                     currentLng = pos.coords.longitude;
                     document.getElementById("gps-status").innerText = `📍 GPS Activo: ${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`;
+                }, err => {
+                    console.warn("GPS no disponible, usando ubicación predeterminada.");
                 });
             }
 
@@ -643,7 +645,6 @@
                 let segC = abiertos.filter(r => r.tipoCliente === 'Tipo C').length;
                 let segD = abiertos.filter(r => r.tipoCliente === 'Tipo D').length;
 
-                // Calcular promedio de aciertos
                 let sumaAciertos = abiertos.reduce((acc, r) => acc + r.aciertos, 0);
                 let promedioAciertos = abiertos.length > 0 ? (sumaAciertos / abiertos.length).toFixed(1) : 0;
 
@@ -653,7 +654,6 @@
                 else if (promedioAciertos <= 7) { estatusGeneral = "ÁREAS DE OPORTUNIDAD"; colorEstatus = "#f59e0b"; }
                 else if (promedioAciertos <= 9) { estatusGeneral = "BIEN"; colorEstatus = "#38bdf8"; }
 
-                // Detectar qué pasos fallan más
                 let fallosPorPaso = {};
                 pasosChecklist.forEach(p => fallosPorPaso[p] = 0);
                 abiertos.forEach(r => {
@@ -681,7 +681,6 @@
                         <div class="kpi-card" style="border-left-color: #38bdf8;"><div class="kpi-label">% Impacto Prioridades</div><div class="kpi-value" style="color: #38bdf8;">${pctImpacto}%</div></div>
                     </div>
 
-                    <!-- Evaluación del Asesor con Áreas de Mejora -->
                     <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 25px;">
                         <h3 style="font-size: 14px; color: var(--accent); margin-bottom: 10px;">EVALUACIÓN Y CALIFICACIÓN DEL ASESOR</h3>
                         <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">Promedio de Aciertos en Checklist: <b style="color: #fff; font-size: 16px;">${promedioAciertos} / 10</b></div>
@@ -733,7 +732,7 @@
                 const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
                 if (!mapInitialized) {
                     leafletMap = L.map('map').setView([currentLat, currentLng], 12);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}<i>/{y}.png', {</i>
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                         attribution: '&copy; OpenStreetMap contributors'
                     }).addTo(leafletMap);
                     mapInitialized = true;
