@@ -275,6 +275,12 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
+        const pasosChecklist = [
+            "ID Cliente en Base de Datos", "Saludo a Cliente", "ID Nuestras Marcas",
+            "ID Stock", "Revisión de Caducidades", "Impulso de Variantes",
+            "Cierre Promos", "Comunicar Venta a Cliente", "Manejo de Objecciones", "Despedida"
+        ];
+
         document.addEventListener("DOMContentLoaded", () => {
             const cedisSelect = document.getElementById("cedis-select");
             const rutaSelect = document.getElementById("ruta-select");
@@ -455,12 +461,6 @@
                 motivoNoCompraContainer.style.display = this.value === "NO" ? "block" : "none";
             });
 
-            const pasosChecklist = [
-                "ID Cliente en Base de Datos", "Saludo a Cliente", "ID Nuestras Marcas",
-                "ID Stock", "Revisión de Caducidades", "Impulso de Variantes",
-                "Cierre Promos", "Comunicar Venta a Cliente", "Manejo de Objecciones", "Despedida"
-            ];
-
             const checklistEl = document.getElementById("checklist-container");
             pasosChecklist.forEach((paso, index) => {
                 const div = document.createElement("div");
@@ -504,76 +504,94 @@
                     return;
                 }
 
-                // Leer imagen de fachada en Base64 para guardarla en localStorage y mostrarla en el reporte de Excel
+                const file = fotoInput.files[0];
                 const reader = new FileReader();
-                reader.readAsDataURL(fotoInput.files[0]);
-                reader.onload = function() {
-                    const fotoBase64 = reader.result;
-                    const firmaBase64 = !isCanvasBlank(canvas) ? canvas.toDataURL() : "";
+                reader.readAsDataURL(file);
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = function() {
+                        const canvasImg = document.createElement('canvas');
+                        const MAX_WIDTH = 800;
+                        const scaleSize = MAX_WIDTH / img.width;
+                        canvasImg.width = MAX_WIDTH;
+                        canvasImg.height = img.height * (scaleSize < 1 ? scaleSize : 1);
 
-                    const abierto = clienteAbiertoSelect.value;
-                    let puntaje = 0;
-                    let calificacion = "N/A (CERRADO)";
-                    let tipoCierre = "-";
+                        const ctxImg = canvasImg.getContext('2d');
+                        ctxImg.drawImage(img, 0, 0, canvasImg.width, canvasImg.height);
+                        
+                        const fotoBase64 = canvasImg.toDataURL('image/jpeg', 0.7);
+                        const firmaBase64 = !isCanvasBlank(canvas) ? canvas.toDataURL('image/png', 0.7) : "";
 
-                    if (abierto === "SI") {
-                        Object.values(window.checklistEstado).forEach(v => {
-                            if (v === "SI") puntaje += 10;
-                        });
-                        if (puntaje >= 70) calificacion = "OK";
-                        else if (puntaje >= 50) calificacion = "OCUPA REFUERZO";
-                        else calificacion = "OCUPA CAPACITACION";
-                    } else {
-                        tipoCierre = document.getElementById("tipo-cierre-select").value;
-                    }
+                        const abierto = clienteAbiertoSelect.value;
+                        let aciertos = 0;
+                        let detalleChecklistReg = {};
 
-                    const registro = {
-                        fecha: new Date().toLocaleString(),
-                        cedis: cedisSelect.value,
-                        ruta: rutaSelect.value,
-                        asesor: asesorInput.value,
-                        tipoRuta: tipoRutaInput.value,
-                        objetivo: objetivoPrincipal.value + (subobjetivoContainer.style.display !== 'none' ? ` (${objetivoDetalle.value})` : ''),
-                        clienteAbierto: abierto,
-                        tipoCierre: tipoCierre,
-                        cliente: document.getElementById("cliente-input").value,
-                        telefono: abierto === "SI" ? document.getElementById("telefono-input").value : "",
-                        quienRecibe: abierto === "SI" ? document.getElementById("quien-recibe-input").value : "",
-                        tipoCliente: abierto === "SI" ? document.getElementById("tipo-cte-input").value : "-",
-                        impactoPrioridades: abierto === "SI" ? document.getElementById("impacto-prioridades-select").value : "-",
-                        compraEfectiva: abierto === "SI" ? compraEfectivaSelect.value : "NO",
-                        motivoNoCompra: abierto === "SI" && compraEfectivaSelect.value === "NO" ? document.getElementById("motivo-no-compra").value : "-",
-                        codigos: abierto === "SI" ? document.getElementById("codigos-input").value : "-",
-                        notas: abierto === "SI" ? document.getElementById("notas-input").value : `Cierre: ${tipoCierre}`,
-                        puntaje: puntaje,
-                        calificacion: calificacion,
-                        lat: currentLat,
-                        lng: currentLng,
-                        foto: fotoBase64,
-                        firma: firmaBase64
+                        if (abierto === "SI") {
+                            pasosChecklist.forEach((paso, idx) => {
+                                const resp = window.checklistEstado[idx] || "NO";
+                                detalleChecklistReg[paso] = resp;
+                                if (resp === "SI") aciertos++;
+                            });
+                        }
+
+                        let calificacionAsesor = "CERRADO / NA";
+                        if (abierto === "SI") {
+                            if (aciertos <= 5) calificacionAsesor = "INEFICIENTE";
+                            else if (aciertos <= 7) calificacionAsesor = "AREAS DE OPORTUNIDAD";
+                            else if (aciertos <= 9) calificacionAsesor = "BIEN";
+                            else calificacionAsesor = "EXCELENTE";
+                        }
+
+                        const registro = {
+                            fecha: new Date().toLocaleString(),
+                            cedis: cedisSelect.value,
+                            ruta: rutaSelect.value,
+                            asesor: asesorInput.value,
+                            tipoRuta: tipoRutaInput.value,
+                            objetivo: objetivoPrincipal.value + (subobjetivoContainer.style.display !== 'none' ? ` (${objetivoDetalle.value})` : ''),
+                            clienteAbierto: abierto,
+                            tipoCierre: abierto === "NO" ? document.getElementById("tipo-cierre-select").value : "-",
+                            cliente: document.getElementById("cliente-input").value,
+                            telefono: abierto === "SI" ? document.getElementById("telefono-input").value : "",
+                            quienRecibe: abierto === "SI" ? document.getElementById("quien-recibe-input").value : "",
+                            tipoCliente: abierto === "SI" ? document.getElementById("tipo-cte-input").value : "-",
+                            impactoPrioridades: abierto === "SI" ? document.getElementById("impacto-prioridades-select").value : "-",
+                            compraEfectiva: abierto === "SI" ? compraEfectivaSelect.value : "NO",
+                            motivoNoCompra: abierto === "SI" && compraEfectivaSelect.value === "NO" ? document.getElementById("motivo-no-compra").value : "-",
+                            codigos: abierto === "SI" ? document.getElementById("codigos-input").value : "-",
+                            notas: abierto === "SI" ? document.getElementById("notas-input").value : "-",
+                            aciertos: aciertos,
+                            detalleChecklist: detalleChecklistReg,
+                            calificacion: calificacionAsesor,
+                            lat: currentLat,
+                            lng: currentLng,
+                            foto: fotoBase64,
+                            firma: firmaBase64
+                        };
+
+                        let registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
+                        registros.push(registro);
+                        localStorage.setItem("registros_supervision", JSON.stringify(registros));
+
+                        alert(`¡Guardado con éxito! Calificación: ${calificacionAsesor} (${aciertos}/10 aciertos)`);
+                        
+                        document.getElementById("cliente-input").value = "";
+                        document.getElementById("telefono-input").value = "";
+                        document.getElementById("quien-recibe-input").value = "";
+                        document.getElementById("codigos-input").value = "";
+                        document.getElementById("notas-input").value = "";
+                        document.getElementById("foto-fachada").value = "";
+                        ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        
+                        document.querySelectorAll('.check-btn').forEach(b => b.classList.remove('active-ok', 'active-no'));
+                        window.checklistEstado = {};
+
+                        if(clienteAbiertoSelect.value === "NO") {
+                            clienteAbiertoSelect.value = "SI";
+                            clienteAbiertoSelect.dispatchEvent(new Event('change'));
+                        }
                     };
-
-                    let registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
-                    registros.push(registro);
-                    localStorage.setItem("registros_supervision", JSON.stringify(registros));
-
-                    alert(`¡Guardado con éxito! Calificación: ${calificacion}`);
-                    
-                    document.getElementById("cliente-input").value = "";
-                    document.getElementById("telefono-input").value = "";
-                    document.getElementById("quien-recibe-input").value = "";
-                    document.getElementById("codigos-input").value = "";
-                    document.getElementById("notas-input").value = "";
-                    document.getElementById("foto-fachada").value = "";
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    
-                    document.querySelectorAll('.check-btn').forEach(b => b.classList.remove('active-ok', 'active-no'));
-                    window.checklistEstado = {};
-
-                    if(clienteAbiertoSelect.value === "NO") {
-                        clienteAbiertoSelect.value = "SI";
-                        clienteAbiertoSelect.dispatchEvent(new Event('change'));
-                    }
                 };
             });
 
@@ -625,18 +643,26 @@
                 let segC = abiertos.filter(r => r.tipoCliente === 'Tipo C').length;
                 let segD = abiertos.filter(r => r.tipoCliente === 'Tipo D').length;
 
-                let sumaPuntajes = abiertos.reduce((acc, r) => acc + r.puntaje, 0);
-                let promedioPuntaje = abiertos.length > 0 ? (sumaPuntajes / abiertos.length).toFixed(1) : 0;
+                // Calcular promedio de aciertos
+                let sumaAciertos = abiertos.reduce((acc, r) => acc + r.aciertos, 0);
+                let promedioAciertos = abiertos.length > 0 ? (sumaAciertos / abiertos.length).toFixed(1) : 0;
 
-                let calificacionAsesor = "EXCELENTE (OK)";
-                let colorAsesor = "#10b981";
-                if (promedioPuntaje < 50) {
-                    calificacionAsesor = "REQUIERE CAPACITACIÓN";
-                    colorAsesor = "#ef4444";
-                } else if (promedioPuntaje < 70) {
-                    calificacionAsesor = "REQUIERE REFUERZO";
-                    colorAsesor = "#f59e0b";
-                }
+                let estatusGeneral = "EXCELENTE";
+                let colorEstatus = "#10b981";
+                if (promedioAciertos <= 5) { estatusGeneral = "INEFICIENTE"; colorEstatus = "#ef4444"; }
+                else if (promedioAciertos <= 7) { estatusGeneral = "ÁREAS DE OPORTUNIDAD"; colorEstatus = "#f59e0b"; }
+                else if (promedioAciertos <= 9) { estatusGeneral = "BIEN"; colorEstatus = "#38bdf8"; }
+
+                // Detectar qué pasos fallan más
+                let fallosPorPaso = {};
+                pasosChecklist.forEach(p => fallosPorPaso[p] = 0);
+                abiertos.forEach(r => {
+                    if (r.detalleChecklist) {
+                        for (let [paso, res] of Object.entries(r.detalleChecklist)) {
+                            if (res === 'NO') fallosPorPaso[paso] = (fallosPorPaso[paso] || 0) + 1;
+                        }
+                    }
+                });
 
                 let html = `
                     <div class="section-title">📊 Panel Ejecutivo Gerencial de Supervisión</div>
@@ -655,12 +681,23 @@
                         <div class="kpi-card" style="border-left-color: #38bdf8;"><div class="kpi-label">% Impacto Prioridades</div><div class="kpi-value" style="color: #38bdf8;">${pctImpacto}%</div></div>
                     </div>
 
+                    <!-- Evaluación del Asesor con Áreas de Mejora -->
                     <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 25px;">
                         <h3 style="font-size: 14px; color: var(--accent); margin-bottom: 10px;">EVALUACIÓN Y CALIFICACIÓN DEL ASESOR</h3>
-                        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">Promedio General de Checklist: <b style="color: #fff; font-size: 16px;">${promedioPuntaje} pts / 100</b></div>
-                        <div style="padding: 10px; background: #0f172a; border-radius: 6px; border-left: 4px solid ${colorAsesor}; font-size: 14px;">
-                            Estatus de Desempeño: <b style="color: ${colorAsesor};">${calificacionAsesor}</b>
+                        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">Promedio de Aciertos en Checklist: <b style="color: #fff; font-size: 16px;">${promedioAciertos} / 10</b></div>
+                        <div style="padding: 10px; background: #0f172a; border-radius: 6px; border-left: 4px solid ${colorEstatus}; font-size: 14px; margin-bottom: 15px;">
+                            Estatus de Desempeño: <b style="color: ${colorEstatus};">${estatusGeneral}</b>
                         </div>
+                        <div style="font-size: 13px; color: var(--accent); font-weight: bold; margin-bottom: 5px;">⚠️ Áreas donde requiere capacitación (Pasos con más fallos):</div>
+                        <ul style="font-size: 12px; color: var(--text-muted); padding-left: 20px;">
+                `;
+
+                for (let [paso, cant] of Object.entries(fallosPorPaso)) {
+                    html += `<li>${paso}: <b>${cant} fallos registrados</b></li>`;
+                }
+
+                html += `
+                        </ul>
                     </div>
 
                     <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 25px;">
@@ -683,7 +720,7 @@
                         html += `<div style="background:var(--bg-card); padding:12px; border-radius:8px; margin-bottom:10px; border-left:4px solid ${r.clienteAbierto==='SI'?'#10b981':'#ef4444'}">
                             <b>${r.cliente}</b> (${r.cedis} - ${r.ruta})<br>
                             <small>Fecha: ${r.fecha} | Asesor: ${r.asesor} | Segmento: ${r.tipoCliente}</small><br>
-                            <small>Estado: <b>${r.clienteAbierto === 'SI' ? 'Abierto (' + r.calificacion + ')' : 'Cerrado'}</b> | Compra: <b>${r.compraEfectiva}</b> | Impacto Prioridades: <b>${r.impactoPrioridades}</b></small>
+                            <small>Estado: <b>${r.clienteAbierto === 'SI' ? 'Abierto (' + r.calificacion + ' - ' + r.aciertos + '/10)' : 'Cerrado'}</b> | Compra: <b>${r.compraEfectiva}</b></small>
                         </div>`;
                     });
                 }
@@ -696,7 +733,7 @@
                 const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
                 if (!mapInitialized) {
                     leafletMap = L.map('map').setView([currentLat, currentLng], 12);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}<i>/{y}.png', {</i>
                         attribution: '&copy; OpenStreetMap contributors'
                     }).addTo(leafletMap);
                     mapInitialized = true;
@@ -717,9 +754,9 @@
             const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
             if (registros.length === 0) { alert("No hay datos para exportar"); return; }
 
-            let csv = "\uFEFFFecha,CEDIS,Ruta,Asesor,Tipo Ruta,Objetivo,Cliente Abierto,Tipo Cierre,Cliente,Teléfono,Atiende,Segmento,Impacto Prioridades,Compra Efectiva,Motivo No Compra,Puntaje,Calificación,Códigos,Notas,Latitud,Longitud\n";
+            let csv = "\uFEFFFecha,CEDIS,Ruta,Asesor,Tipo Ruta,Objetivo,Cliente Abierto,Tipo Cierre,Cliente,Teléfono,Atiende,Segmento,Impacto Prioridades,Compra Efectiva,Motivo No Compra,Aciertos Checklist,Calificación Asesor,Códigos,Notas,Latitud,Longitud\n";
             registros.forEach(r => {
-                csv += `"${r.fecha}","${r.cedis}","${r.ruta}","${r.asesor}","${r.tipoRuta}","${r.objetivo}","${r.clienteAbierto}","${r.tipoCierre}","${r.cliente}","${r.telefono}","${r.quienRecibe}","${r.tipoCliente}","${r.impactoPrioridades}","${r.compraEfectiva}","${r.motivoNoCompra}",${r.puntaje},"${r.calificacion}","${r.codigos}","${r.notas}",${r.lat},${r.lng}\n`;
+                csv += `"${r.fecha}","${r.cedis}","${r.ruta}","${r.asesor}","${r.tipoRuta}","${r.objetivo}","${r.clienteAbierto}","${r.tipoCierre}","${r.cliente}","${r.telefono}","${r.quienRecibe}","${r.tipoCliente}","${r.impactoPrioridades}","${r.compraEfectiva}","${r.motivoNoCompra}",${r.aciertos},"${r.calificacion}","${r.codigos}","${r.notas}",${r.lat},${r.lng}\n`;
             });
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -735,9 +772,9 @@
             if (registros.length === 0) { alert("No hay datos para generar el reporte ejecutivo"); return; }
 
             let win = window.open('', '_blank');
-            let html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Reporte Ejecutivo Gerencial</title><style>body{font-family:Arial,sans-serif;padding:20px;text-align:center;}table{width:100%;border-collapse:collapse;font-size:11px;margin-top:20px;text-align:left;}th,td{border:1px solid #cbd5e1;padding:6px;}th{background:#0f172a;color:#fff;}.foto-min{max-height:60px;width:auto;}</style></head><body><h1>REPORTE EJECUTIVO CON EVIDENCIAS</h1><table><thead><tr><th>Fecha</th><th>Ruta</th><th>Asesor</th><th>Cliente</th><th>Calificación</th><th>Foto Fachada</th><th>Firma</th></tr></thead><tbody>`;
+            let html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Reporte Ejecutivo Gerencial</title><style>body{font-family:Arial,sans-serif;padding:20px;text-align:center;}table{width:100%;border-collapse:collapse;font-size:11px;margin-top:20px;text-align:left;}th,td{border:1px solid #cbd5e1;padding:6px;}th{background:#0f172a;color:#fff;}.foto-min{max-height:60px;width:auto;}</style></head><body><h1>REPORTE EJECUTIVO CON EVIDENCIAS Y CAPACITACIÓN</h1><table><thead><tr><th>Fecha</th><th>Ruta</th><th>Asesor</th><th>Cliente</th><th>Aciertos</th><th>Calificación Asesor</th><th>Foto Fachada</th><th>Firma</th></tr></thead><tbody>`;
             registros.forEach(r => {
-                html += `<tr><td>${r.fecha}</td><td>${r.ruta}</td><td>${r.asesor}</td><td>${r.cliente}</td><td><b>${r.calificacion}</b></td><td>${r.foto ? '<img src="'+r.foto+'" class="foto-min">' : 'Sin foto'}</td><td>${r.firma ? '<img src="'+r.firma+'" class="foto-min">' : 'Sin firma'}</td></tr>`;
+                html += `<tr><td>${r.fecha}</td><td>${r.ruta}</td><td>${r.asesor}</td><td>${r.cliente}</td><td>${r.aciertos}/10</td><td><b>${r.calificacion}</b></td><td>${r.foto ? '<img src="'+r.foto+'" class="foto-min">' : 'Sin foto'}</td><td>${r.firma ? '<img src="'+r.firma+'" class="foto-min">' : 'Sin firma'}</td></tr>`;
             });
             html += `</tbody></table></body></html>`;
             win.document.write(html);
@@ -745,7 +782,6 @@
             win.print();
         };
 
-        // Reporte Ejecutivo Exportable a Excel (con fotos integradas en celdas)
         window.exportarReporteExcelConFotos = function() {
             const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
             if (registros.length === 0) { alert("No hay datos para exportar"); return; }
@@ -756,7 +792,7 @@
                 <style>table{border-collapse:collapse;}th,td{border:1px solid black;padding:8px;vertical-align:middle;text-align:center;}th{background:#0f172a;color:white;}.foto-celda{max-width:100px;max-height:80px;}</style>
                 </head>
                 <body>
-                <h2>REPORTE EJECUTIVO DE SUPERVISIÓN CON FOTOGRAFÍAS</h2>
+                <h2>REPORTE EJECUTIVO DE SUPERVISIÓN Y CAPACITACIÓN</h2>
                 <table>
                     <thead>
                         <tr>
@@ -769,7 +805,8 @@
                             <th>Segmento</th>
                             <th>Impacto Prioridades</th>
                             <th>Compra</th>
-                            <th>Calificación</th>
+                            <th>Aciertos</th>
+                            <th>Calificación Asesor</th>
                             <th>Foto de Fachada</th>
                             <th>Firma del Cliente</th>
                         </tr>
@@ -789,7 +826,8 @@
                         <td>${r.tipoCliente}</td>
                         <td>${r.impactoPrioridades}</td>
                         <td>${r.compraEfectiva}</td>
-                        <td><b>${r.calificacion}</b> (${r.puntaje} pts)</td>
+                        <td>${r.aciertos}/10</td>
+                        <td><b>${r.calificacion}</b></td>
                         <td>${r.foto ? `<img src="${r.foto}" class="foto-celda">` : 'Sin foto'}</td>
                         <td>${r.firma ? `<img src="${r.firma}" class="foto-celda">` : 'Sin firma'}</td>
                     </tr>
@@ -802,7 +840,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `Reporte_Ejecutivo_Con_Fotos_${new Date().toISOString().slice(0,10)}.xls`;
+            a.download = `Reporte_Capacitacion_Asesores_${new Date().toISOString().slice(0,10)}.xls`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
