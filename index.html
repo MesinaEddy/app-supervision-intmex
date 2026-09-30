@@ -45,16 +45,21 @@
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">CEDIS</label>
-                    <select id="f-cedis" onchange="saveRouteData()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:border-blue-500 outline-none">
+                    <select id="f-cedis" onchange="onCedisChange()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:border-blue-500 outline-none">
                         <option value="">Seleccione CEDIS</option>
-                        <option value="CEDIS Tijuana">CEDIS Tijuana</option>
-                        <option value="CEDIS Mexicali">CEDIS Mexicali</option>
-                        <option value="CEDIS Ensenada">CEDIS Ensenada</option>
+                        <option value="TIJ">TIJUANA</option>
+                        <option value="MXLI">MEXICALI</option>
+                        <option value="HILLO">HERMOSILLO</option>
+                        <option value="MOC">MOCHIS</option>
+                        <option value="CUL">CULIACAN</option>
+                        <option value="MZT">MAZATLAN</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">Ruta</label>
-                    <input type="text" id="f-ruta" placeholder="Ej. R-402" oninput="saveRouteData()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:border-blue-500 outline-none">
+                    <select id="f-ruta" onchange="saveRouteData()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:border-blue-500 outline-none">
+                        <option value="">Primero seleccione un CEDIS</option>
+                    </select>
                 </div>
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">Nombre del Asesor</label>
@@ -64,17 +69,16 @@
                     <label class="block text-xs text-slate-400 mb-1">Tipo de Ruta</label>
                     <select id="f-tipo-ruta" onchange="saveRouteData()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:border-blue-500 outline-none">
                         <option value="Ruta Activa">Ruta Activa</option>
-                        <option value="Preventa">Preventa</option>
-                        <option value="Reparto">Reparto</option>
+                        <option value="Ruta Nueva">Ruta Nueva</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">Objetivo de Supervisión</label>
                     <select id="f-objetivo" onchange="saveRouteData()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:border-blue-500 outline-none">
                         <option value="">Seleccione Objetivo</option>
-                        <option value="Auditoría de Estándares">Auditoría de Estándares</option>
-                        <option value="Acompañamiento y Capacitación">Acompañamiento</option>
-                        <option value="Revisión de Cartera">Revisión de Cartera</option>
+                        <option value="Venta">Venta</option>
+                        <option value="Capacitación">Capacitación</option>
+                        <option value="Territorio">Territorio</option>
                     </select>
                 </div>
             </div>
@@ -90,7 +94,7 @@
             <button onclick="switchTab('supervision')" id="btn-tab-supervision" class="tab-btn px-4 py-2.5 font-medium text-sm rounded-t-lg bg-slate-800 text-slate-400 hover:text-white transition">
                 <i class="fa-solid fa-clipboard-check mr-2"></i> 3. Supervisión / Checklist
             </button>
-            <button onclick="switchTab('mapa')" id="btn-tab-mapa" class="tab-btn px-4 py-2.5 font-medium text-sm rounded-t-lg bg-slate-800 text-slate-400 hover:text-white transition" onclick="setTimeout(invalidateMap, 200)">
+            <button onclick="switchTab('mapa')" id="btn-tab-mapa" class="tab-btn px-4 py-2.5 font-medium text-sm rounded-t-lg bg-slate-800 text-slate-400 hover:text-white transition">
                 <i class="fa-solid fa-map-location-dot mr-2"></i> 4. Mapa Interactivo
             </button>
             <button onclick="switchTab('historial')" id="btn-tab-historial" class="tab-btn px-4 py-2.5 font-medium text-sm rounded-t-lg bg-slate-800 text-slate-400 hover:text-white transition">
@@ -228,11 +232,9 @@
 
     <!-- Script de lógica de la aplicación -->
     <script>
-        // --- ESTADO GLOBAL Y PERSISTENCIA DE RUTA ---
         let currentLat = 32.47027;
         let lng = -116.83785;
         let map, markersLayer;
-        let clientSignaturePad;
 
         const checklistSteps = [
             "1. ID Cliente en Base de Datos",
@@ -257,7 +259,40 @@
             updateClientDropdown();
         });
 
-        // Guardar automáticamente datos de ruta en localStorage para que NO se pierdan ni se reinicien
+        // Generar dinámicamente las rutas según el CEDIS
+        function populateRoutes(cedisVal, selectedRuta = '') {
+            const rutaSelect = document.getElementById('f-ruta');
+            rutaSelect.innerHTML = '<option value="">Seleccione una Ruta</option>';
+            if (!cedisVal) return;
+
+            // Rutas numéricas standard (01 a 18)
+            for (let i = 1; i <= 18; i++) {
+                const num = i < 10 ? '0' + i : i;
+                const val = `${cedisVal}${num}`;
+                const opt = document.createElement("option");
+                opt.value = val; 
+                opt.textContent = val;
+                if(val === selectedRuta) opt.selected = true;
+                rutaSelect.appendChild(opt);
+            }
+            // Rutas especiales (301 a 306)
+            for (let i = 301; i <= 306; i++) {
+                const val = `${cedisVal}${i}`;
+                const opt = document.createElement("option");
+                opt.value = val; 
+                opt.textContent = val;
+                if(val === selectedRuta) opt.selected = true;
+                rutaSelect.appendChild(opt);
+            }
+        }
+
+        function onCedisChange() {
+            const cedisVal = document.getElementById('f-cedis').value;
+            populateRoutes(cedisVal);
+            saveRouteData();
+        }
+
+        // Guardar automáticamente datos de ruta en localStorage
         function saveRouteData() {
             const data = {
                 cedis: document.getElementById('f-cedis').value,
@@ -274,14 +309,15 @@
             if (saved) {
                 const data = JSON.parse(saved);
                 document.getElementById('f-cedis').value = data.cedis || '';
-                document.getElementById('f-ruta').value = data.ruta || '';
+                if(data.cedis) {
+                    populateRoutes(data.cedis, data.ruta);
+                }
                 document.getElementById('f-asesor').value = data.asesor || '';
                 document.getElementById('f-tipo-ruta').value = data.tipoRuta || 'Ruta Activa';
                 document.getElementById('f-objetivo').value = data.objetivo || '';
             }
         }
 
-        // GPS Real o Simulado
         function initGPS() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
@@ -297,7 +333,6 @@
             }
         }
 
-        // Navegación por pestañas
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -314,7 +349,6 @@
             }
         }
 
-        // Checklist generator
         function initChecklist() {
             const container = document.getElementById('checklist-container');
             container.innerHTML = '';
@@ -345,7 +379,6 @@
             }
         }
 
-        // Canvas de Firma
         let isDrawing = false;
         function initSignaturePad() {
             const canvas = document.getElementById('client-sig-pad');
@@ -379,7 +412,6 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
 
-        // Leaflet Map Initialization
         function initMap() {
             map = L.map('map').setView([currentLat, lng], 14);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -401,7 +433,6 @@
             });
         }
 
-        // Registro de Cliente
         function registerClient(e) {
             e.preventDefault();
             const clientData = {
@@ -441,7 +472,6 @@
             });
         }
 
-        // Enviar Supervisión
         function submitSupervision(e) {
             e.preventDefault();
             const clientId = document.getElementById('supervision-client-select').value;
@@ -474,7 +504,6 @@
             switchTab('historial');
         }
 
-        // Cargar Historial
         function loadHistory() {
             const container = document.getElementById('history-container');
             const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
@@ -498,7 +527,7 @@
                     <div class="bg-slate-900 border border-slate-700 rounded-lg p-4 shadow">
                         <div class="flex justify-between items-start border-b border-slate-800 pb-2 mb-2">
                             <div>
-                                <span class="text-xs bg-blue-900 text-blue-300 px-2 py-0.5 rounded font-semibold">${item.route.cedis || 'CEDIS N/D'} - Ruta: ${item.route.ruta || 'N/D'}</span>
+                                <span class="text-xs bg-blue-900 text-blue-300 px-2 py-0.5 rounded font-semibold">CEDIS: ${item.route.cedis || 'N/D'} - Ruta: ${item.route.ruta || 'N/D'}</span>
                                 <h3 class="text-base font-bold text-white mt-1">${item.client ? item.client.nombre : 'Cliente Desconocido'}</h3>
                                 <p class="text-xs text-slate-400">Asesor: ${item.route.asesor || 'N/D'} | Segmento: ${item.client ? item.client.segmento : 'N/D'}</p>
                             </div>
