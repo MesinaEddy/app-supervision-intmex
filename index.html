@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Supervisión Intmex - Control de Campo</title>
-    <!-- Leaflet CSS para el mapa -->
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root {
@@ -20,10 +20,9 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: var(--bg-main); color: var(--text-main); padding-bottom: 70px; }
+        body { background-color: var(--bg-main); color: var(--text-main); padding-bottom: 80px; }
 
         header { background: #0f172a; padding: 15px; text-align: center; border-bottom: 1px solid var(--border-color); }
-        header img { max-height: 45px; width: auto; margin-bottom: 5px; object-fit: contain; }
         header h1 { font-size: 16px; color: var(--text-main); margin-top: 5px; }
         header p { font-size: 11px; color: var(--text-muted); }
 
@@ -33,17 +32,8 @@
 
         .section-title { font-size: 15px; font-weight: bold; color: var(--accent); margin: 25px 0 12px 0; border-bottom: 2px solid var(--border-color); padding-bottom: 5px; text-transform: uppercase; }
 
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
-        }
-        @media (min-width: 768px) {
-            .form-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 15px;
-            }
-        }
+        .form-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        @media (min-width: 768px) { .form-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; } }
         .full-width { grid-column: 1 / -1; }
 
         .form-group { margin-bottom: 4px; }
@@ -72,30 +62,27 @@
         .kpi-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; }
 
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #0f172a; border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 10px 0; z-index: 1000; }
-        .nav-item { background: none; border: none; color: var(--text-muted); font-size: 11px; cursor: pointer; text-align: center; }
-        .nav-item.active { color: var(--accent); }
+        .nav-item { background: none; border: none; color: var(--text-muted); font-size: 12px; cursor: pointer; text-align: center; width: 33.33%; }
+        .nav-item.active { color: var(--accent); font-weight: bold; }
         .nav-item div { font-size: 18px; margin-bottom: 2px; }
 
         .view-section { display: none; }
-        .active-view { display: block; }
+        .view-section.active-view { display: block; }
     </style>
 </head>
 <body>
 
     <header>
-        <img src="logo.png" alt="Logo INTMEX" onerror="this.style.display='none'; document.getElementById('fallback-logo').style.display='block';">
-        <div id="fallback-logo" style="display:none; color: #38bdf8; font-weight: bold; font-size: 18px; margin-bottom: 2px;">INTMEX</div>
         <h1>SUPERVISION INTMEX</h1>
-        <p>Control de Campo y Auditoría</p>
+        <p>Control de Campo y Auditoría en Tiempo Real</p>
     </header>
 
     <div class="container">
         <!-- VISTA REGISTRO -->
         <div id="view-registro" class="view-section active-view">
-            <div id="gps-status" class="gps-banner">📍 Obteniendo ubicación GPS...</div>
+            <div id="gps-status" class="gps-banner">📍 Activando GPS en tiempo real...</div>
 
             <form id="form-supervision" class="form-grid">
-                
                 <div class="section-title full-width">Datos de Ruta y Asesor</div>
                 
                 <div class="form-group">
@@ -217,7 +204,6 @@
                 </div>
 
                 <div class="section-title full-width" id="titulo-checklist">Pasos de la Visita (Checklist)</div>
-                
                 <div id="checklist-container" class="full-width" style="display: grid; grid-template-columns: 1fr; gap: 8px;"></div>
 
                 <div class="form-group" id="grupo-codigos">
@@ -230,7 +216,6 @@
                     <textarea id="notas-input" placeholder="Observaciones adicionales..."></textarea>
                 </div>
 
-                <!-- SECCIÓN FINALIZAR SUPERVISIÓN Y EVALUACIÓN DEL ASESOR -->
                 <div class="section-title full-width">Finalizar Supervisión (Evaluación del Asesor)</div>
                 <div class="full-width" style="background: var(--bg-card); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 10px;">
                     <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">Resumen del Checklist Actual:</div>
@@ -260,25 +245,28 @@
             </form>
         </div>
 
-        <!-- VISTA HISTORIAL Y REPORTES -->
-        <div id="view-historial" class="view-section"></div>
+        <!-- VISTA HISTORIAL -->
+        <div id="view-historial" class="view-section">
+            <div class="section-title">📊 Panel Ejecutivo Gerencial</div>
+            <div id="historial-contenido"></div>
+        </div>
 
         <!-- VISTA MAPA -->
         <div id="view-mapa" class="view-section">
             <div class="section-title">Mapa de Ubicaciones en Tiempo Real</div>
-            <div id="map" style="width: 100%; height: 400px; border-radius: 8px; border: 1px solid var(--border-color);"></div>
+            <div id="map" style="width: 100%; height: 420px; border-radius: 8px; border: 1px solid var(--border-color); background: #111;"></div>
         </div>
     </div>
 
     <!-- Navegación Inferior -->
     <div class="bottom-nav">
-        <button class="nav-item active" id="tab-registro">
+        <button class="nav-item active" id="tab-registro" onclick="cambiarPestana('registro')">
             <div>📝</div>Registro
         </button>
-        <button class="nav-item" id="tab-historial">
-            <div>📊</div>Historial & Reportes
+        <button class="nav-item" id="tab-historial" onclick="cambiarPestana('historial')">
+            <div>📊</div>Historial
         </button>
-        <button class="nav-item" id="tab-mapa">
+        <button class="nav-item" id="tab-mapa" onclick="cambiarPestana('mapa')">
             <div>🗺️</div>Mapa
         </button>
     </div>
@@ -292,23 +280,58 @@
             "Cierre Promos", "Comunicar Venta a Cliente", "Manejo de Objecciones", "Despedida"
         ];
 
-        document.addEventListener("DOMContentLoaded", () => {
-            const cedisSelect = document.getElementById("cedis-select");
-            const rutaSelect = document.getElementById("ruta-select");
-            const asesorInput = document.getElementById("asesor-input");
-            const tipoRutaInput = document.getElementById("tipo-ruta-input");
-            const objetivoPrincipal = document.getElementById("objetivo-principal");
-            const objetivoDetalle = document.getElementById("objetivo-detalle");
-            const subobjetivoContainer = document.getElementById("subobjetivo-container");
+        let currentLat = 32.5149; // Coordenada inicial por defecto (Tijuana)
+        let currentLng = -116.9934;
+        let mapInstance = null;
+        let windowChecklistEstado = {};
 
+        // Control de Pestañas con actualización reactiva automática
+        window.cambiarPestana = function(pestana) {
+            ['registro', 'historial', 'mapa'].forEach(p => {
+                document.getElementById(`view-${p}`).classList.remove('active-view');
+                document.getElementById(`tab-${p}`).classList.remove('active');
+            });
+            document.getElementById(`view-${pestana}`).classList.add('active-view');
+            document.getElementById(`tab-${pestana}`).classList.add('active');
+
+            if (pestana === 'historial') {
+                renderHistorial(); // Renderiza el historial dinámicamente al entrar
+            } else if (pestana === 'mapa') {
+                setTimeout(initMap, 150); // Carga y reajusta el mapa Leaflet con los nuevos registros
+            }
+        };
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // 1. GPS EN TIEMPO REAL CON watchPosition (Se actualiza al moverte)
+            const gpsStatus = document.getElementById("gps-status");
+            if (navigator.geolocation) {
+                navigator.geolocation.watchPosition(
+                    pos => {
+                        currentLat = pos.coords.latitude;
+                        currentLng = pos.coords.longitude;
+                        gpsStatus.innerText = `📍 GPS Activo y Actualizado: ${currentLat.toFixed(5)}, ${currentLng.toFixed(5)}`;
+                        gpsStatus.style.background = "#064e3b";
+                        gpsStatus.style.color = "#34d399";
+                    },
+                    err => {
+                        gpsStatus.innerText = "⚠️ Advertencia GPS: Usando última posición o predeterminada.";
+                        gpsStatus.style.background = "#78350f";
+                        gpsStatus.style.borderColor = "#b45309";
+                        gpsStatus.style.color = "#fde68a";
+                    },
+                    { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
+                );
+            } else {
+                gpsStatus.innerText = "⚠️ Geolocalización no soportada por este navegador.";
+            }
+
+            // 2. CONFIGURACIÓN DE FIRMA CANVAS
             const canvas = document.getElementById('signature-canvas');
             const ctx = canvas.getContext('2d');
             let isDrawing = false;
-
-            // Variables de control de doble firma
             let firmaSupervisorBase64 = "";
             let firmaAsesorBase64 = "";
-            let pasoFirmaActual = 1; // 1 = Supervisor, 2 = Asesor
+            let pasoFirmaActual = 1;
 
             function resizeCanvas() {
                 const ratio = Math.max(window.devicePixelRatio || 1, 1);
@@ -320,7 +343,7 @@
                 ctx.lineCap = 'round';
             }
             window.addEventListener('load', resizeCanvas);
-            window.addEventListener('resize', resizeCanvas);
+            setTimeout(resizeCanvas, 200);
 
             canvas.addEventListener('mousedown', (e) => { isDrawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); });
             canvas.addEventListener('mousemove', (e) => { if (!isDrawing) return; ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); });
@@ -349,14 +372,20 @@
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
             });
 
-            // Lógica de transición de doble firma
             const btnSiguienteFirma = document.getElementById('btn-siguiente-firma');
             const labelFirmaTitulo = document.getElementById('label-firma-titulo');
             const btnFinalGuardar = document.getElementById('btn-final-guardar');
 
+            function isCanvasBlank(cvs) {
+                const blank = document.createElement('canvas');
+                blank.width = cvs.width;
+                blank.height = cvs.height;
+                return cvs.toDataURL() === blank.toDataURL();
+            }
+
             btnSiguienteFirma.addEventListener('click', () => {
                 if (isCanvasBlank(canvas)) {
-                    alert("⚠️ El recuadro de firma está vacío. Por favor firme antes de continuar.");
+                    alert("⚠️ El recuadro de firma está vacío.");
                     return;
                 }
 
@@ -367,113 +396,73 @@
                     labelFirmaTitulo.textContent = "2. Firma del Asesor (Evaluado)";
                     btnSiguienteFirma.textContent = "Validar y Bloquear Firmas ✔️";
                     btnSiguienteFirma.style.background = "#10b981";
-                    alert("✅ Firma del supervisor guardada. Ahora entregue el dispositivo al Asesor para su firma.");
+                    alert("✅ Firma del supervisor guardada. Entregue el dispositivo al Asesor.");
                 } else if (pasoFirmaActual === 2) {
                     firmaAsesorBase64 = canvas.toDataURL('image/png', 0.7);
-                    alert("✅ ¡Ambas firmas capturadas correctamente! Ya puede finalizar el registro.");
+                    alert("✅ ¡Ambas firmas capturadas correctamente!");
                     btnSiguienteFirma.disabled = true;
                     btnSiguienteFirma.style.opacity = "0.5";
                     document.getElementById('clear-signature').disabled = true;
-                    
-                    // Habilitar botón final
                     btnFinalGuardar.disabled = false;
                     btnFinalGuardar.style.opacity = "1";
                     btnFinalGuardar.style.cursor = "pointer";
                 }
             });
 
+            // 3. SELECTORES DE CEDIS Y RUTAS
+            const cedisSelect = document.getElementById("cedis-select");
+            const rutaSelect = document.getElementById("ruta-select");
+
             function poblarRutas(cedisVal, rutaSeleccionada = "") {
                 rutaSelect.innerHTML = '<option value="">Seleccione una Ruta</option>';
                 if (!cedisVal) return;
-
                 for (let i = 1; i <= 18; i++) {
                     const num = i < 10 ? '0' + i : i;
                     const val = `${cedisVal}${num}`;
                     const opt = document.createElement("option");
-                    opt.value = val;
-                    opt.textContent = val;
+                    opt.value = val; opt.textContent = val;
                     if (val === rutaSeleccionada) opt.selected = true;
                     rutaSelect.appendChild(opt);
                 }
                 for (let i = 301; i <= 306; i++) {
                     const val = `${cedisVal}${i}`;
                     const opt = document.createElement("option");
-                    opt.value = val;
-                    opt.textContent = val;
+                    opt.value = val; opt.textContent = val;
                     if (val === rutaSeleccionada) opt.selected = true;
                     rutaSelect.appendChild(opt);
                 }
             }
 
-            function cargarMemoriaBloque1() {
-                const mem = JSON.parse(localStorage.getItem("intmex_bloque1"));
-                if (mem) {
-                    if (mem.cedis) {
-                        cedisSelect.value = mem.cedis;
-                        poblarRutas(mem.cedis, mem.ruta);
-                    }
-                    if (mem.asesor) asesorInput.value = mem.asesor;
-                    if (mem.tipoRuta) tipoRutaInput.value = mem.tipoRuta;
-                    if (mem.objetivoPrincipal) {
-                        objetivoPrincipal.value = mem.objetivoPrincipal;
-                        actualizarSubobjetivos(mem.objetivoPrincipal, mem.objetivoDetalle);
-                    }
-                }
-            }
+            cedisSelect.addEventListener("change", function() {
+                poblarRutas(this.value);
+            });
 
-            function actualizarSubobjetivos(val, detalleSeleccionado = "") {
+            // OBJETIVOS Y SUBJETIVOS
+            const objetivoPrincipal = document.getElementById("objetivo-principal");
+            const objetivoDetalle = document.getElementById("objetivo-detalle");
+            const subobjetivoContainer = document.getElementById("subobjetivo-container");
+
+            objetivoPrincipal.addEventListener("change", function() {
+                const val = this.value;
                 objetivoDetalle.innerHTML = "";
                 if (val === "Venta") {
                     subobjetivoContainer.style.display = "block";
                     ["Efectividad de Venta", "Impulso"].forEach(sub => {
-                        const opt = document.createElement("option");
-                        opt.value = sub;
-                        opt.textContent = sub;
-                        if (sub === detalleSeleccionado) opt.selected = true;
+                        const opt = document.createElement("option"); opt.value = sub; opt.textContent = sub;
                         objetivoDetalle.appendChild(opt);
                     });
                 } else if (val === "Capacitación" || val === "Territorio") {
                     subobjetivoContainer.style.display = "block";
                     ["Nuevo Ingreso", "Reestructura"].forEach(sub => {
-                        const opt = document.createElement("option");
-                        opt.value = sub;
-                        opt.textContent = sub;
-                        if (sub === detalleSeleccionado) opt.selected = true;
+                        const opt = document.createElement("option"); opt.value = sub; opt.textContent = sub;
                         objetivoDetalle.appendChild(opt);
                     });
                 } else {
                     subobjetivoContainer.style.display = "none";
                 }
-            }
-
-            cedisSelect.addEventListener("change", function() {
-                poblarRutas(this.value);
-                guardarMemoriaBloque1();
             });
 
-            [rutaSelect, asesorInput, tipoRutaInput, objetivoPrincipal, objetivoDetalle].forEach(el => {
-                el.addEventListener("change", guardarMemoriaBloque1);
-                el.addEventListener("input", guardarMemoriaBloque1);
-            });
-
-            objetivoPrincipal.addEventListener("change", function() {
-                actualizarSubobjetivos(this.value);
-            });
-
-            function guardarMemoriaBloque1() {
-                const data = {
-                    cedis: cedisSelect.value,
-                    ruta: rutaSelect.value,
-                    asesor: asesorInput.value,
-                    tipoRuta: tipoRutaInput.value,
-                    objetivoPrincipal: objetivoPrincipal.value,
-                    objetivoDetalle: objetivoDetalle.value
-                };
-                localStorage.setItem("intmex_bloque1", JSON.stringify(data));
-            }
-
-            cargarMemoriaBloque1();
-
+            // CLIENTE ABIERTO / CERRADO
             const clienteAbiertoSelect = document.getElementById("cliente-abierto-select");
             const camposClienteAbiertoExtra = document.getElementById("campos-cliente-abierto-extra");
             const subopcionCerradoContainer = document.getElementById("subopcion-cerrado-container");
@@ -504,14 +493,7 @@
                 actualizarEvaluacionEnVivo();
             });
 
-            const compraEfectivaSelect = document.getElementById("compra-efectiva-select");
-            const motivoNoCompraContainer = document.getElementById("motivo-no-compra-container");
-
-            compraEfectivaSelect.addEventListener("change", function() {
-                motivoNoCompraContainer.style.display = this.value === "NO" ? "block" : "none";
-            });
-
-            const checklistEl = document.getElementById("checklist-container");
+            // CHECKLIST RENDER
             pasosChecklist.forEach((paso, index) => {
                 const div = document.createElement("div");
                 div.className = "checklist-item";
@@ -522,16 +504,15 @@
                         <button type="button" class="check-btn" onclick="marcarCheck(${index}, 'NO', this)">NO</button>
                     </div>
                 `;
-                checklistEl.appendChild(div);
+                checklistContainer.appendChild(div);
             });
 
-            window.checklistEstado = {};
             window.marcarCheck = function(index, valor, btn) {
                 const parent = btn.parentElement;
                 parent.querySelectorAll('.check-btn').forEach(b => b.classList.remove('active-ok', 'active-no'));
                 if(valor === 'SI') btn.classList.add('active-ok');
                 else btn.classList.add('active-no');
-                window.checklistEstado[index] = valor;
+                windowChecklistEstado[index] = valor;
                 actualizarEvaluacionEnVivo();
             };
 
@@ -540,32 +521,17 @@
                 const abierto = clienteAbiertoSelect.value;
                 if (abierto === "SI") {
                     pasosChecklist.forEach((paso, idx) => {
-                        if (window.checklistEstado[idx] === "SI") aciertos++;
+                        if (windowChecklistEstado[idx] === "SI") aciertos++;
                     });
                 }
                 const porcentaje = (aciertos / 10) * 100;
-                
                 let estatus = "CERRADO / NA";
                 let colorBg = "#334155";
                 if (abierto === "SI") {
-                    // Criterios actualizados:
-                    // 0 - 59% (0 a 5 aciertos): INEFICIENTE
-                    // 60 - 79% (6 a 7 aciertos): AREAS DE OPORTUNIDAD
-                    // 80 - 99% (8 a 9 aciertos): BIEN
-                    // 100% (10 aciertos): EXCELENTE
-                    if (porcentaje <= 59) {
-                        estatus = "INEFICIENTE";
-                        colorBg = "#ef4444";
-                    } else if (porcentaje <= 79) {
-                        estatus = "AREAS DE OPORTUNIDAD";
-                        colorBg = "#f59e0b";
-                    } else if (porcentaje <= 99) {
-                        estatus = "BIEN";
-                        colorBg = "#38bdf8";
-                    } else {
-                        estatus = "EXCELENTE";
-                        colorBg = "#10b981";
-                    }
+                    if (porcentaje <= 59) { estatus = "INEFICIENTE"; colorBg = "#ef4444"; }
+                    else if (porcentaje <= 79) { estatus = "ÁREAS DE OPORTUNIDAD"; colorBg = "#f59e0b"; }
+                    else if (porcentaje <= 99) { estatus = "BIEN"; colorBg = "#38bdf8"; }
+                    else { estatus = "EXCELENTE"; colorBg = "#10b981"; }
                 }
                 return { aciertos, porcentaje, estatus, colorBg };
             }
@@ -576,7 +542,7 @@
                 const badgeEstatus = document.getElementById("badge-estatus-asesor");
 
                 if (clienteAbiertoSelect.value === "NO") {
-                    textoResumen.textContent = "Visita Cerrada / No aplica evaluación de checklist";
+                    textoResumen.textContent = "Visita Cerrada / No aplica evaluación";
                     badgeEstatus.textContent = "ESTATUS: N/A";
                     badgeEstatus.style.background = "#334155";
                 } else {
@@ -586,31 +552,19 @@
                 }
             }
 
-            let currentLat = 32.4703;
-            let currentLng = -116.8378;
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(pos => {
-                    currentLat = pos.coords.latitude;
-                    currentLng = pos.coords.longitude;
-                    document.getElementById("gps-status").innerText = `📍 GPS Activo: ${currentLat.toFixed(4)}, ${currentLng.toFixed(4)}`;
-                }, err => {
-                    console.warn("GPS no disponible.");
-                });
-            }
-
+            // FORM SUBMIT
             const form = document.getElementById("form-supervision");
             form.addEventListener("submit", e => {
                 e.preventDefault();
 
                 if (!firmaSupervisorBase64 || !firmaAsesorBase64) {
-                    alert("⚠️ Debe completar la firma del Supervisor y la firma del Asesor antes de finalizar.");
+                    alert("⚠️ Debe completar ambas firmas.");
                     return;
                 }
 
                 const fotoInput = document.getElementById("foto-fachada");
                 if (!fotoInput.files || fotoInput.files.length === 0) {
-                    alert("⚠ Es obligatorio tomar o adjuntar la foto de la fachada.");
-                    fotoInput.focus();
+                    alert("⚠️ Es obligatorio adjuntar la foto de la fachada.");
                     return;
                 }
 
@@ -626,18 +580,16 @@
                         const scaleSize = MAX_WIDTH / img.width;
                         canvasImg.width = MAX_WIDTH;
                         canvasImg.height = img.height * (scaleSize < 1 ? scaleSize : 1);
-
                         const ctxImg = canvasImg.getContext('2d');
                         ctxImg.drawImage(img, 0, 0, canvasImg.width, canvasImg.height);
                         
                         const fotoBase64 = canvasImg.toDataURL('image/jpeg', 0.7);
                         const resEval = calcularResultadosAsesor();
-
                         const abierto = clienteAbiertoSelect.value;
                         let detalleChecklistReg = {};
                         if (abierto === "SI") {
                             pasosChecklist.forEach((paso, idx) => {
-                                detalleChecklistReg[paso] = window.checklistEstado[idx] || "NO";
+                                detalleChecklistReg[paso] = windowChecklistEstado[idx] || "NO";
                             });
                         }
 
@@ -649,42 +601,31 @@
                             tipoRuta: tipoRutaInput.value,
                             objetivo: objetivoPrincipal.value + (subobjetivoContainer.style.display !== 'none' ? ` (${objetivoDetalle.value})` : ''),
                             clienteAbierto: abierto,
-                            tipoCierre: abierto === "NO" ? document.getElementById("tipo-cierre-select").value : "-",
                             cliente: document.getElementById("cliente-input").value,
                             telefono: abierto === "SI" ? document.getElementById("telefono-input").value : "",
                             quienRecibe: abierto === "SI" ? document.getElementById("quien-recibe-input").value : "",
                             tipoCliente: abierto === "SI" ? document.getElementById("tipo-cte-input").value : "-",
                             impactoPrioridades: abierto === "SI" ? document.getElementById("impacto-prioridades-select").value : "-",
-                            compraEfectiva: abierto === "SI" ? compraEfectivaSelect.value : "NO",
-                            motivoNoCompra: abierto === "SI" && compraEfectivaSelect.value === "NO" ? document.getElementById("motivo-no-compra").value : "-",
-                            codigos: abierto === "SI" ? document.getElementById("codigos-input").value : "-",
-                            notas: abierto === "SI" ? document.getElementById("notas-input").value : "-",
+                            compraEfectiva: abierto === "SI" ? document.getElementById("compra-efectiva-select").value : "NO",
                             aciertos: Number(resEval.aciertos) || 0,
                             porcentaje: resEval.porcentaje,
                             detalleChecklist: detalleChecklistReg,
                             calificacion: resEval.estatus,
-                            lat: currentLat,
+                            lat: currentLat, // Coordenada actual real en el momento exacto del guardado
                             lng: currentLng,
                             foto: fotoBase64,
                             firmaSupervisor: firmaSupervisorBase64,
-                            firmaAsesor: firmaAsesorBase64,
-                            firma: firmaSupervisorBase64
+                            firmaAsesor: firmaAsesorBase64
                         };
 
                         let registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
                         registros.push(registro);
                         localStorage.setItem("registros_supervision", JSON.stringify(registros));
 
-                        alert(`¡Guardado con éxito! Estatus del Asesor: ${resEval.estatus} (${resEval.porcentaje}%)`);
+                        alert(`¡Guardado con éxito con ubicación GPS (${currentLat.toFixed(4)}, ${currentLng.toFixed(4)})! Estatus: ${resEval.estatus}`);
                         
-                        // Limpiar formulario y restablecer firmas
-                        document.getElementById("cliente-input").value = "";
-                        document.getElementById("telefono-input").value = "";
-                        document.getElementById("quien-recibe-input").value = "";
-                        document.getElementById("codigos-input").value = "";
-                        document.getElementById("notas-input").value = "";
-                        document.getElementById("foto-fachada").value = "";
-                        
+                        // Resetear formulario
+                        form.reset();
                         ctx.clearRect(0, 0, canvas.width, canvas.height);
                         pasoFirmaActual = 1;
                         firmaSupervisorBase64 = "";
@@ -697,252 +638,121 @@
                         document.getElementById('clear-signature').disabled = false;
                         btnFinalGuardar.disabled = true;
                         btnFinalGuardar.style.opacity = "0.5";
-                        btnFinalGuardar.style.cursor = "not-allowed";
-                        
+                        windowChecklistEstado = {};
                         document.querySelectorAll('.check-btn').forEach(b => b.classList.remove('active-ok', 'active-no'));
-                        window.checklistEstado = {};
                         actualizarEvaluacionEnVivo();
-
-                        if(clienteAbiertoSelect.value === "NO") {
-                            clienteAbiertoSelect.value = "SI";
-                            clienteAbiertoSelect.dispatchEvent(new Event('change'));
-                        }
+                        cambiarPestana('historial');
                     };
                 };
             });
-
-            function isCanvasBlank(cvs) {
-                const blank = document.createElement('canvas');
-                blank.width = cvs.width;
-                blank.height = cvs.height;
-                return cvs.toDataURL() === blank.toDataURL();
-            }
-
-            const tabReg = document.getElementById("tab-registro");
-            const tabHist = document.getElementById("tab-historial");
-            const tabMap = document.getElementById("tab-mapa");
-            const viewReg = document.getElementById("view-registro");
-            const viewHist = document.getElementById("view-historial");
-            const viewMap = document.getElementById("view-mapa");
-
-            function cambiarVista(actBtn, actView) {
-                [tabReg, tabHist, tabMap].forEach(b => b.classList.remove("active"));
-                [viewReg, viewHist, viewMap].forEach(v => v.classList.remove("active-view"));
-                actBtn.classList.add("active");
-                actView.classList.add("active-view");
-            }
-
-            tabReg.addEventListener("click", () => cambiarVista(tabReg, viewReg));
-            tabHist.addEventListener("click", () => {
-                cambiarVista(tabHist, viewHist);
-                renderHistorial();
-            });
-            tabMap.addEventListener("click", () => {
-                cambiarVista(tabMap, viewMap);
-                initMap();
-            });
-
-            function renderHistorial() {
-                const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
-                
-                const total = registros.length;
-                let abiertos = registros.filter(r => r.clienteAbierto === 'SI');
-                let efectivos = abiertos.filter(r => r.compraEfectiva === 'SI').length;
-                let impactoSi = abiertos.filter(r => r.impactoPrioridades === 'SI').length;
-
-                let pctAbiertos = total > 0 ? ((abiertos.length / total) * 100).toFixed(1) : 0;
-                let pctEfectivos = abiertos.length > 0 ? ((efectivos / abiertos.length) * 100).toFixed(1) : 0;
-                let pctImpacto = abiertos.length > 0 ? ((impactoSi / abiertos.length) * 100).toFixed(1) : 0;
-
-                let sumaAciertos = abiertos.reduce((acc, r) => acc + (Number(r.aciertos) || 0), 0);
-                let promedioAciertos = abiertos.length > 0 ? (sumaAciertos / abiertos.length).toFixed(1) : 0;
-                let promedioPct = (promedioAciertos / 10) * 100;
-
-                let estatusGeneral = "EXCELENTE";
-                let colorEstatus = "#10b981";
-                if (promedioPct <= 59) { estatusGeneral = "INEFICIENTE"; colorEstatus = "#ef4444"; }
-                else if (promedioPct <= 79) { estatusGeneral = "ÁREAS DE OPORTUNIDAD"; colorEstatus = "#f59e0b"; }
-                else if (promedioPct <= 99) { estatusGeneral = "BIEN"; colorEstatus = "#38bdf8"; }
-
-                let fallosPorPaso = {};
-                pasosChecklist.forEach(p => fallosPorPaso[p] = 0);
-                abiertos.forEach(r => {
-                    if (r.detalleChecklist) {
-                        for (let [paso, res] of Object.entries(r.detalleChecklist)) {
-                            if (res === 'NO') fallosPorPaso[paso] = (fallosPorPaso[paso] || 0) + 1;
-                        }
-                    }
-                });
-
-                let html = `
-                    <div class="section-title">📊 Panel Ejecutivo Gerencial de Supervisión</div>
-                    
-                    <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
-                        <button onclick="exportarCSVBaseDatos()" style="background: #2563eb; color: white; border: none; padding: 12px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1;">📥 CSV Base de Datos</button>
-                        <button onclick="exportarReporteEjecutivoHTML()" style="background: #10b981; color: white; border: none; padding: 12px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1;">📈 Ver Reporte Visual</button>
-                        <button onclick="exportarReporteExcelConFotos()" style="background: #f59e0b; color: #0f172a; border: none; padding: 12px 15px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1;">📑 Descargar Excel con Fotos</button>
-                        <button onclick="localStorage.removeItem('registros_supervision'); renderHistorial();" style="background: #ef4444; color: white; border: none; padding: 12px 15px; border-radius: 6px; font-weight: bold; cursor: pointer;">🗑️ Borrar</button>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px;">
-                        <div class="kpi-card"><div class="kpi-label">Total Visitas</div><div class="kpi-value">${total}</div></div>
-                        <div class="kpi-card" style="border-left-color: #10b981;"><div class="kpi-label">% Clientes Abiertos</div><div class="kpi-value" style="color: #34d399;">${pctAbiertos}%</div></div>
-                        <div class="kpi-card" style="border-left-color: #f59e0b;"><div class="kpi-label">% Compra Efectiva</div><div class="kpi-value" style="color: #fbbf24;">${pctEfectivos}%</div></div>
-                        <div class="kpi-card" style="border-left-color: #38bdf8;"><div class="kpi-label">% Impacto Prioridades</div><div class="kpi-value" style="color: #38bdf8;">${pctImpacto}%</div></div>
-                    </div>
-
-                    <div style="background: var(--bg-card); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 25px;">
-                        <h3 style="font-size: 14px; color: var(--accent); margin-bottom: 10px;">EVALUACIÓN Y CALIFICACIÓN GENERAL DEL ASESOR</h3>
-                        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;">Promedio de Aciertos: <b style="color: #fff; font-size: 16px;">${promedioAciertos} / 10 (${promedioPct}%)</b></div>
-                        <div style="padding: 10px; background: #0f172a; border-radius: 6px; border-left: 4px solid ${colorEstatus}; font-size: 14px; margin-bottom: 15px;">
-                            Estatus Global: <b style="color: ${colorEstatus};">${estatusGeneral}</b>
-                        </div>
-                        <div style="font-size: 13px; color: var(--accent); font-weight: bold; margin-bottom: 5px;">⚠️ Áreas donde requiere refuerzo / capacitación:</div>
-                        <ul style="font-size: 12px; color: var(--text-muted); padding-left: 20px;">
-                `;
-
-                for (let [paso, cant] of Object.entries(fallosPorPaso)) {
-                    html += `<li>${paso}: <b>${cant} fallos registrados</b></li>`;
-                }
-
-                html += `
-                        </ul>
-                    </div>
-
-                    <div class="section-title">Registro Detallado</div>
-                `;
-
-                if (registros.length === 0) {
-                    html += `<p style="color:var(--text-muted)">No hay registros guardados en el dispositivo.</p>`;
-                } else {
-                    registros.forEach(r => {
-                        html += `<div style="background:var(--bg-card); padding:12px; border-radius:8px; margin-bottom:10px; border-left:4px solid ${r.clienteAbierto==='SI'?'#10b981':'#ef4444'}">
-                            <b>${r.cliente}</b> (${r.cedis} - ${r.ruta})<br>
-                            <small>Fecha: ${r.fecha} | Asesor: ${r.asesor} | Segmento: ${r.tipoCliente}</small><br>
-                            <small>Estado: <b>${r.clienteAbierto === 'SI' ? 'Abierto (' + r.calificacion + ' - ' + (r.porcentaje || 0) + '%)' : 'Cerrado'}</b> | Compra: <b>${r.compraEfectiva}</b></small>
-                        </div>`;
-                    });
-                }
-                viewHist.innerHTML = html;
-            }
-
-            let mapInitialized = false;
-            let leafletMap = null;
-            function initMap() {
-                const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
-                if (!mapInitialized) {
-                    leafletMap = L.map('map').setView([currentLat, currentLng], 12);
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        attribution: '&copy; OpenStreetMap contributors'
-                    }).addTo(leafletMap);
-                    mapInitialized = true;
-                } else {
-                    leafletMap.invalidateSize();
-                }
-
-                registros.forEach(r => {
-                    if(r.lat && r.lng) {
-                        L.marker([r.lat, r.lng]).addTo(leafletMap)
-                          .bindPopup(`<b>${r.cliente}</b><br>Ruta: ${r.ruta}<br>Estado: ${r.clienteAbierto === 'SI' ? 'Abierto' : 'Cerrado'}`);
-                    }
-                });
-            }
         });
+
+        // 4. HISTORIAL Y PANEL DINÁMICO REACTIVO
+        function renderHistorial() {
+            const contenido = document.getElementById("historial-contenido");
+            const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
+            
+            const total = registros.length;
+            let abiertos = registros.filter(r => r.clienteAbierto === 'SI');
+            let efectivos = abiertos.filter(r => r.compraEfectiva === 'SI').length;
+            let pctAbiertos = total > 0 ? ((abiertos.length / total) * 100).toFixed(1) : 0;
+            let pctEfectivos = abiertos.length > 0 ? ((efectivos / abiertos.length) * 100).toFixed(1) : 0;
+            let sumaAciertos = abiertos.reduce((acc, r) => acc + (Number(r.aciertos) || 0), 0);
+            let promedioAciertos = abiertos.length > 0 ? (sumaAciertos / abiertos.length).toFixed(1) : 0;
+            let promedioPct = (promedioAciertos / 10) * 100;
+
+            let estatusGeneral = "EXCELENTE";
+            let colorEstatus = "#10b981";
+            if (promedioPct <= 59) { estatusGeneral = "INEFICIENTE"; colorEstatus = "#ef4444"; }
+            else if (promedioPct <= 79) { estatusGeneral = "ÁREAS DE OPORTUNIDAD"; colorEstatus = "#f59e0b"; }
+            else if (promedioPct <= 99) { estatusGeneral = "BIEN"; colorEstatus = "#38bdf8"; }
+
+            let html = `
+                <div style="display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <button onclick="exportarCSVBaseDatos()" style="background: #2563eb; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; flex: 1;">📥 CSV Base</button>
+                    <button onclick="localStorage.removeItem('registros_supervision'); renderHistorial();" style="background: #ef4444; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer;">🗑️ Borrar Todo</button>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                    <div class="kpi-card"><div class="kpi-label">Total Visitas</div><div class="kpi-value">${total}</div></div>
+                    <div class="kpi-card"><div class="kpi-label">% Abiertos</div><div class="kpi-value">${pctAbiertos}%</div></div>
+                    <div class="kpi-card"><div class="kpi-label">% Efectivos</div><div class="kpi-value">${pctEfectivos}%</div></div>
+                </div>
+
+                <div style="background: var(--bg-card); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px;">
+                    <div style="font-size: 13px; color: var(--accent); font-weight: bold; margin-bottom: 5px;">EVALUACIÓN GLOBAL</div>
+                    <div style="font-size: 13px; color: var(--text-muted);">Promedio Aciertos: <b>${promedioAciertos} / 10 (${promedioPct}%)</b></div>
+                    <div style="margin-top: 8px; padding: 6px; background: #0f172a; border-left: 4px solid ${colorEstatus}; font-size: 13px;">
+                        Estatus: <b style="color: ${colorEstatus};">${estatusGeneral}</b>
+                    </div>
+                </div>
+
+                <div class="section-title">Detalle de Registros</div>
+            `;
+
+            if (registros.length === 0) {
+                html += `<p style="color:var(--text-muted); font-size: 13px;">No hay registros guardados todavía.</p>`;
+            } else {
+                registros.forEach((r, idx) => {
+                    html += `<div style="background:var(--bg-card); padding:12px; border-radius:8px; margin-bottom:10px; border-left:4px solid ${r.clienteAbierto==='SI'?'#10b981':'#ef4444'}">
+                        <b>${idx + 1}. ${r.cliente}</b> (${r.cedis} - Ruta: ${r.ruta})<br>
+                        <small style="color: var(--text-muted);">Fecha: ${r.fecha} | Asesor: ${r.asesor}</small><br>
+                        <small style="color: var(--accent);">Calificación: <b>${r.calificacion} (${r.porcentaje || 0}%)</b> | GPS: ${r.lat.toFixed(4)}, ${r.lng.toFixed(4)}</small>
+                    </div>`;
+                });
+            }
+            contenido.innerHTML = html;
+        }
+
+        // 5. MAPA LEAFLET DINÁMICO CON TODOS LOS REGISTROS
+        function initMap() {
+            const container = document.getElementById('map');
+            if (!container) return;
+
+            if (mapInstance) {
+                mapInstance.remove();
+                mapInstance = null;
+            }
+
+            mapInstance = L.map('map').setView([currentLat, currentLng], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(mapInstance);
+
+            // Agregar marcador de la ubicación actual en vivo del supervisor
+            L.marker([currentLat, currentLng], {
+                icon: L.divIcon({
+                    className: 'current-pos-icon',
+                    html: '<div style="background:#38bdf8; width:14px; height:14px; border-radius:50%; border:2px solid #fff; box-shadow: 0 0 10px #38bdf8;"></div>',
+                    iconSize: [14, 14]
+                })
+            }).addTo(mapInstance).bindPopup("<b>📍 Tu ubicación actual en tiempo real</b>");
+
+            // Cargar todos los puntos guardados en localStorage
+            const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
+            registros.forEach(r => {
+                if (r.lat && r.lng) {
+                    L.marker([r.lat, r.lng]).addTo(mapInstance)
+                      .bindPopup(`<b>${r.cliente}</b><br>Ruta: ${r.ruta}<br>Estatus: ${r.calificacion}<br><small>${r.fecha}</small>`);
+                }
+            });
+            
+            setTimeout(() => { mapInstance.invalidateSize(); }, 200);
+        }
 
         window.exportarCSVBaseDatos = function() {
             const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
             if (registros.length === 0) { alert("No hay datos para exportar"); return; }
-
-            let csv = "\uFEFFFecha,CEDIS,Ruta,Asesor,Tipo Ruta,Objetivo,Cliente Abierto,Tipo Cierre,Cliente,Teléfono,Atiende,Segmento,Impacto Prioridades,Compra Efectiva,Motivo No Compra,Aciertos Checklist,Porcentaje,Calificación Asesor,Códigos,Notas,Latitud,Longitud\n";
+            let csv = "\uFEFFFecha,CEDIS,Ruta,Asesor,Cliente,Calificación,Porcentaje,Latitud,Longitud\n";
             registros.forEach(r => {
-                csv += `"${r.fecha}","${r.cedis}","${r.ruta}","${r.asesor}","${r.tipoRuta}","${r.objetivo}","${r.clienteAbierto}","${r.tipoCierre}","${r.cliente}","${r.telefono}","${r.quienRecibe}","${r.tipoCliente}","${r.impactoPrioridades}","${r.compraEfectiva}","${r.motivoNoCompra}",${r.aciertos || 0},"${r.porcentaje || 0}%","${r.calificacion}","${r.codigos}","${r.notas}",${r.lat},${r.lng}\n`;
+                csv += `"${r.fecha}","${r.cedis}","${r.ruta}","${r.asesor}","${r.cliente}","${r.calificacion}","${r.porcentaje}%","${r.lat}","${r.lng}"\n`;
             });
-
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
-            a.download = `BaseDatos_Supervision_${new Date().toISOString().slice(0,10)}.csv`;
+            a.download = `Supervision_${new Date().toISOString().slice(0,10)}.csv`;
             a.click();
-        };
-
-        window.exportarReporteEjecutivoHTML = function() {
-            const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
-            if (registros.length === 0) { alert("No hay datos para generar el reporte ejecutivo"); return; }
-
-            let win = window.open('', '_blank');
-            let html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Reporte Ejecutivo Gerencial</title><style>body{font-family:Arial,sans-serif;padding:20px;text-align:center;}table{width:100%;border-collapse:collapse;font-size:11px;margin-top:20px;text-align:left;}th,td{border:1px solid #cbd5e1;padding:6px;}th{background:#0f172a;color:#fff;}.foto-min{max-height:60px;width:auto;}</style></head><body><h1>REPORTE EJECUTIVO CON DOBLE FIRMA Y EVALUACIÓN</h1><table><thead><tr><th>Fecha</th><th>Ruta</th><th>Asesor</th><th>Cliente</th><th>Evaluación Asesor</th><th>Foto Fachada</th><th>Firma Supervisor</th><th>Firma Asesor</th></tr></thead><tbody>`;
-            registros.forEach(r => {
-                html += `<tr><td>${r.fecha}</td><td>${r.ruta}</td><td>${r.asesor}</td><td>${r.cliente}</td><td><b>${r.calificacion}</b> (${r.porcentaje || 0}%)</td><td>${r.foto ? '<img src="'+r.foto+'" class="foto-min">' : 'Sin foto'}</td><td>${r.firmaSupervisor ? '<img src="'+r.firmaSupervisor+'" class="foto-min">' : 'Sin firma'}</td><td>${r.firmaAsesor ? '<img src="'+r.firmaAsesor+'" class="foto-min">' : 'Sin firma'}</td></tr>`;
-            });
-            html += `</tbody></table></body></html>`;
-            win.document.write(html);
-            win.document.close();
-            win.print();
-        };
-
-        window.exportarReporteExcelConFotos = function() {
-            const registros = JSON.parse(localStorage.getItem("registros_supervision")) || [];
-            if (registros.length === 0) { alert("No hay datos para exportar"); return; }
-
-            let excelContent = `
-                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
-                <head><meta charset="UTF-8"><title>Reporte Ejecutivo Excel</title>
-                <style>table{border-collapse:collapse;}th,td{border:1px solid black;padding:8px;vertical-align:middle;text-align:center;}th{background:#0f172a;color:white;}.foto-celda{max-width:100px;max-height:80px;}</style>
-                </head>
-                <body>
-                <h2>REPORTE EJECUTIVO DE SUPERVISIÓN Y DOBLE FIRMA</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>CEDIS</th>
-                            <th>Ruta</th>
-                            <th>Asesor</th>
-                            <th>Cliente</th>
-                            <th>Estado</th>
-                            <th>Segmento</th>
-                            <th>Impacto Prioridades</th>
-                            <th>Compra</th>
-                            <th>Desempeño Asesor</th>
-                            <th>Foto de Fachada</th>
-                            <th>Firma Supervisor</th>
-                            <th>Firma Asesor</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-
-            registros.forEach(r => {
-                excelContent += `
-                    <tr>
-                        <td>${r.fecha}</td>
-                        <td>${r.cedis}</td>
-                        <td>${r.ruta}</td>
-                        <td>${r.asesor}</td>
-                        <td>${r.cliente}</td>
-                        <td>${r.clienteAbierto === 'SI' ? 'Abierto' : 'Cerrado'}</td>
-                        <td>${r.tipoCliente}</td>
-                        <td>${r.impactoPrioridades}</td>
-                        <td>${r.compraEfectiva}</td>
-                        <td><b>${r.calificacion}</b> (${r.porcentaje || 0}%)</td>
-                        <td>${r.foto ? `<img src="${r.foto}" class="foto-celda">` : 'Sin foto'}</td>
-                        <td>${r.firmaSupervisor ? `<img src="${r.firmaSupervisor}" class="foto-celda">` : 'Sin firma'}</td>
-                        <td>${r.firmaAsesor ? `<img src="${r.firmaAsesor}" class="foto-celda">` : 'Sin firma'}</td>
-                    </tr>
-                `;
-            });
-
-            excelContent += `</tbody></table></body></html>`;
-
-            const blob = new Blob([excelContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `Reporte_DobleFirma_Asesores_${new Date().toISOString().slice(0,10)}.xls`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
         };
     </script>
 </body>
