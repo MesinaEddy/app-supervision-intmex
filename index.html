@@ -124,7 +124,7 @@
                 <i class="fa-solid fa-map-location-dot mr-2"></i> 4. Mapa Interactivo (GPS)
             </button>
             <button onclick="switchTab('historial')" id="btn-tab-historial" class="tab-btn px-4 py-2.5 font-medium text-sm rounded-t-lg bg-slate-800 text-slate-400 hover:text-white transition">
-                <i class="fa-solid fa-chart-line mr-2"></i> 5. Reporte Ejecutivo y Panel Gerencial[cite: 5]
+                <i class="fa-solid fa-chart-line mr-2"></i> 5. Reporte Ejecutivo y Panel Gerencial
             </button>
         </div>
 
@@ -242,23 +242,28 @@
             </form>
         </div>
 
-        <!-- TAB 3: MAPA INTERACTIVO CON CORRECCIÓN MANUAL -->
+        <!-- TAB 3: MAPA INTERACTIVO CON BOTÓN DE GUARDADO MANUAL -->
         <div id="tab-mapa" class="tab-content hidden bg-slate-800 border border-slate-700 border-t-0 rounded-b-xl p-6 shadow-xl">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2">
                 <div>
                     <h2 class="text-lg font-semibold text-blue-400 flex items-center gap-2">
                         <i class="fa-solid fa-map"></i> Mapa Interactivo y Corrección de GPS
                     </h2>
-                    <p class="text-xs text-slate-400">Si el GPS está desfasado, <b>haz clic exactamente sobre la ubicación del negocio en el mapa</b> para corregir las coordenadas.</p>
+                    <p class="text-xs text-slate-400">Haz clic exactamente sobre la ubicación del negocio en el mapa y presiona <b>Guardar Ubicación</b>.</p>
                 </div>
-                <button onclick="resetGpsToDevice()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-2 rounded-lg font-medium shadow flex items-center gap-1.5">
-                    <i class="fa-solid fa-location-crosshairs"></i> Volver a mi GPS Actual
-                </button>
+                <div class="flex gap-2">
+                    <button onclick="saveCurrentMapLocation()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-4 py-2 rounded-lg font-semibold shadow flex items-center gap-1.5 animate-bounce">
+                        <i class="fa-solid fa-floppy-disk"></i> Guardar Ubicación Actual
+                    </button>
+                    <button onclick="resetGpsToDevice()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-3 py-2 rounded-lg font-medium shadow flex items-center gap-1.5">
+                        <i class="fa-solid fa-location-crosshairs"></i> Mi GPS Real
+                    </button>
+                </div>
             </div>
             
             <div id="map-notice" class="bg-blue-950/80 border border-blue-500 text-blue-200 text-xs p-2.5 rounded-lg mb-3 flex items-center justify-between">
                 <span><i class="fa-solid fa-circle-info"></i> Coordenadas seleccionadas: <strong id="selected-coords-text">Cargando...</strong></span>
-                <span class="text-slate-400 italic">Haz clic en el mapa para ajustar el pin</span>
+                <span class="text-emerald-400 font-semibold" id="save-status-msg">Haz clic en el mapa para ajustar el pin</span>
             </div>
 
             <div id="map"></div>
@@ -270,35 +275,35 @@
             <!-- Barra superior estilo Panel Gerencial -->
             <div class="flex flex-wrap gap-2 mb-6 bg-slate-900 p-3 rounded-lg border border-slate-700">
                 <button onclick="exportCSV()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded shadow flex items-center gap-2">
-                    <i class="fa-solid fa-file-csv"></i> CSV Base de Datos[cite: 5]
+                    <i class="fa-solid fa-file-csv"></i> CSV Base de Datos
                 </button>
                 <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded shadow flex items-center gap-2">
-                    <i class="fa-solid fa-eye"></i> Ver Reporte Visual[cite: 5]
+                    <i class="fa-solid fa-eye"></i> Ver Reporte Visual
                 </button>
                 <button onclick="exportExcelWithPhotos()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-4 py-2 rounded shadow flex items-center gap-2">
-                    <i class="fa-solid fa-file-excel"></i> Descargar Excel con Fotos[cite: 5]
+                    <i class="fa-solid fa-file-excel"></i> Descargar Excel con Fotos
                 </button>
                 <button onclick="clearHistory()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-4 py-2 rounded shadow flex items-center gap-2 ml-auto">
-                    <i class="fa-solid fa-trash"></i> Borrar[cite: 5]
+                    <i class="fa-solid fa-trash"></i> Borrar
                 </button>
             </div>
 
             <!-- Tarjetas de KPIs Superiores -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div class="bg-slate-900 border border-slate-700 p-4 rounded-lg text-center shadow">
-                    <span class="text-xs text-slate-400 uppercase tracking-wide block mb-1">TOTAL VISITAS[cite: 5]</span>
+                    <span class="text-xs text-slate-400 uppercase tracking-wide block mb-1">TOTAL VISITAS</span>
                     <span id="kpi-total-visitas" class="text-2xl font-bold text-blue-400">0</span>
                 </div>
                 <div class="bg-slate-900 border border-slate-700 p-4 rounded-lg text-center shadow">
-                    <span class="text-xs text-slate-400 uppercase tracking-wide block mb-1">% CLIENTES ABIERTOS[cite: 5]</span>
+                    <span class="text-xs text-slate-400 uppercase tracking-wide block mb-1">% CLIENTES ABIERTOS</span>
                     <span id="kpi-clientes-abiertos" class="text-2xl font-bold text-emerald-400">0.0%</span>
                 </div>
                 <div class="bg-slate-900 border border-slate-700 p-4 rounded-lg text-center shadow">
-                    <span class="text-xs text-slate-400 uppercase tracking-wide block mb-1">% COMPRA EFECTIVA[cite: 5]</span>
+                    <span class="text-xs text-slate-400 uppercase tracking-wide block mb-1">% COMPRA EFECTIVA</span>
                     <span id="kpi-compra-efectiva" class="text-2xl font-bold text-amber-400">0.0%</span>
                 </div>
                 <div class="bg-slate-900 border border-slate-700 p-4 rounded-lg text-center shadow">
-                    <span class="text-xs text-slate-400 uppercase tracking-wide block mb-1">% IMPACTO PRIORIDADES[cite: 5]</span>
+                    <span class="text-xs text-slate-400 uppercase tracking-wide block mb-1">% IMPACTO PRIORIDADES</span>
                     <span id="kpi-impacto-prioridades" class="text-2xl font-bold text-purple-400">0.0%</span>
                 </div>
             </div>
@@ -306,47 +311,45 @@
             <!-- Evaluación y Calificación del Asesor -->
             <div class="bg-slate-900 border border-slate-700 p-5 rounded-lg mb-6 shadow">
                 <h3 class="text-sm font-bold text-blue-400 uppercase tracking-wide mb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-award"></i> EVALUACIÓN Y CALIFICACIÓN DEL ASESOR[cite: 5]
+                    <i class="fa-solid fa-award"></i> EVALUACIÓN Y CALIFICACIÓN DEL ASESOR
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
                     <div>
-                        <p class="text-xs text-slate-400">Promedio de Aciertos en Checklist: <strong id="asesor-promedio-aciertos" class="text-slate-100 text-sm">0.0 / 10</strong>[cite: 5]</p>
+                        <p class="text-xs text-slate-400">Promedio de Aciertos en Checklist: <strong id="asesor-promedio-aciertos" class="text-slate-100 text-sm">0.0 / 10</strong></p>
                     </div>
                     <div>
-                        <p class="text-xs text-slate-400">Estatus de Desempeño: <span id="asesor-estatus-desempeno" class="px-2 py-0.5 rounded text-xs font-bold bg-red-900 text-red-300">INEFICIENTE</span>[cite: 5]</p>
+                        <p class="text-xs text-slate-400">Estatus de Desempeño: <span id="asesor-estatus-desempeno" class="px-2 py-0.5 rounded text-xs font-bold bg-red-900 text-red-300">INEFICIENTE</span></p>
                     </div>
                 </div>
                 <div class="mt-3 pt-3 border-t border-slate-800">
                     <p class="text-xs font-semibold text-amber-400 mb-2 flex items-center gap-1.5">
-                        <i class="fa-solid fa-triangle-exclamation"></i> Áreas donde requiere capacitación (Pasos con más fallos)[cite: 5]:
+                        <i class="fa-solid fa-triangle-exclamation"></i> Áreas donde requiere capacitación (Pasos con más fallos):
                     </p>
-                    <div id="asesor-fallos-list" class="grid grid-cols-1 md:grid-cols-2 gap-1 text-xs text-slate-300">
-                        <!-- Relleno dinámico -->
-                    </div>
+                    <div id="asesor-fallos-list" class="grid grid-cols-1 md:grid-cols-2 gap-1 text-xs text-slate-300"></div>
                 </div>
             </div>
 
             <!-- Distribución de Clientes Segmentados -->
             <div class="bg-slate-900 border border-slate-700 p-5 rounded-lg mb-6 shadow">
                 <h3 class="text-sm font-bold text-blue-400 uppercase tracking-wide mb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-chart-pie"></i> DISTRIBUCIÓN DE CLIENTES SEGMENTADOS[cite: 5]
+                    <i class="fa-solid fa-chart-pie"></i> DISTRIBUCIÓN DE CLIENTES SEGMENTADOS
                 </h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
                     <div class="bg-slate-800 p-3 rounded border border-slate-700">
                         <span class="text-xs text-slate-400 block">Tipo A</span>
-                        <span id="seg-tipo-a" class="text-xl font-bold text-blue-300">0</span>[cite: 5]
+                        <span id="seg-tipo-a" class="text-xl font-bold text-blue-300">0</span>
                     </div>
                     <div class="bg-slate-800 p-3 rounded border border-slate-700">
                         <span class="text-xs text-slate-400 block">Tipo B</span>
-                        <span id="seg-tipo-b" class="text-xl font-bold text-emerald-300">0</span>[cite: 5]
+                        <span id="seg-tipo-b" class="text-xl font-bold text-emerald-300">0</span>
                     </div>
                     <div class="bg-slate-800 p-3 rounded border border-slate-700">
                         <span class="text-xs text-slate-400 block">Tipo C</span>
-                        <span id="seg-tipo-c" class="text-xl font-bold text-amber-300">0</span>[cite: 5]
+                        <span id="seg-tipo-c" class="text-xl font-bold text-amber-300">0</span>
                     </div>
                     <div class="bg-slate-800 p-3 rounded border border-slate-700">
                         <span class="text-xs text-slate-400 block">Tipo D</span>
-                        <span id="seg-tipo-d" class="text-xl font-bold text-purple-300">0</span>[cite: 5]
+                        <span id="seg-tipo-d" class="text-xl font-bold text-purple-300">0</span>
                     </div>
                 </div>
             </div>
@@ -354,7 +357,7 @@
             <!-- Registro Detallado -->
             <div class="mb-3">
                 <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wide mb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-list-ul"></i> REGISTRO DETALLADO[cite: 5]
+                    <i class="fa-solid fa-list-ul"></i> REGISTRO DETALLADO
                 </h3>
             </div>
             <div id="history-container" class="space-y-4">
@@ -443,7 +446,7 @@
 
         function exportExcelWithPhotos() {
             alert('Generando archivo Excel consolidado con reporte ejecutivo y firmas incrustadas...');
-            exportCSV(); // Respaldo tabular en CSV compatible con Excel
+            exportCSV();
         }
 
         function populateRoutes(cedisVal, selectedRuta = '') {
@@ -520,11 +523,20 @@
                 currentLng = originalDeviceLng;
                 map.setView([currentLat, currentLng], 17);
                 updateTempMarker();
-                alert('¡Ubicación restablecida a tu GPS real!');
+                document.getElementById('save-status-msg').innerText = "Ubicación restablecida al GPS real";
             } else {
                 initGPS();
                 alert('Buscando señal GPS...');
             }
+        }
+
+        // NUEVA FUNCIÓN: Guarda explícitamente la ubicación seleccionada en el mapa
+        function saveCurrentMapLocation() {
+            localStorage.setItem('intmex_manual_lat', currentLat);
+            localStorage.setItem('intmex_manual_lng', currentLng);
+            updateCoordsDisplay();
+            document.getElementById('save-status-msg').innerHTML = `<i class="fa-solid fa-check-circle"></i> ¡Ubicación guardada con éxito (${currentLat.toFixed(4)}, ${currentLng.toFixed(4)})!`;
+            alert(`¡Ubicación fijada y guardada correctamente!\nLat: ${currentLat.toFixed(5)}, Lng: ${currentLng.toFixed(5)}`);
         }
 
         function updateCoordsDisplay() {
@@ -621,17 +633,27 @@
         }
 
         function initMap() {
+            // Verificar si hay una ubicación manual guardada previamente
+            const savedLat = localStorage.getItem('intmex_manual_lat');
+            const savedLng = localStorage.getItem('intmex_manual_lng');
+            if(savedLat && savedLng) {
+                currentLat = parseFloat(savedLat);
+                currentLng = parseFloat(savedLng);
+            }
+
             map = L.map('map').setView([currentLat, currentLng], 16);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
             markersLayer = L.layerGroup().addTo(map);
             updateMapMarkers();
             updateTempMarker();
+            updateCoordsDisplay();
 
             map.on('click', function(e) {
                 currentLat = e.latlng.lat;
                 currentLng = e.latlng.lng;
                 updateCoordsDisplay();
                 updateTempMarker();
+                document.getElementById('save-status-msg').innerText = "Pin movido. ¡Recuerda presionar Guardar Ubicación!";
             });
         }
 
@@ -644,7 +666,7 @@
                 iconSize: [22, 22], iconAnchor: [11, 11]
             });
             tempMarker = L.marker([currentLat, currentLng], {icon: customIcon}).addTo(map);
-            tempMarker.bindPopup("<b>📍 Ubicación Seleccionada</b><br>Haz clic en otro punto del mapa para mover el pin.").openPopup();
+            tempMarker.bindPopup("<b>📍 Ubicación Seleccionada</b><br>Haz clic en 'Guardar Ubicación Actual' para fijarla.").openPopup();
         }
 
         function updateMapMarkers() {
@@ -658,9 +680,15 @@
             });
         }
 
-        // REGISTRAR CLIENTE: Va directo al Historial / Reporte Ejecutivo
+        // REGISTRAR CLIENTE: Utiliza la ubicación guardada explícitamente en el mapa
         function registerClient(e) {
             e.preventDefault();
+            const manualLat = localStorage.getItem('intmex_manual_lat');
+            const manualLng = localStorage.getItem('intmex_manual_lng');
+
+            const finalLat = manualLat ? parseFloat(manualLat) : currentLat;
+            const finalLng = manualLng ? parseFloat(manualLng) : currentLng;
+
             const clientRecord = {
                 id: Date.now(),
                 tipoRegistro: 'CLIENTE',
@@ -674,7 +702,7 @@
                 compra: document.getElementById('c-compra').value,
                 codigos: document.getElementById('c-codigos').value,
                 notas: document.getElementById('c-notas').value,
-                lat: currentLat, lng: currentLng,
+                lat: finalLat, lng: finalLng,
                 supervision: null,
                 timestamp: new Date().toLocaleString()
             };
@@ -683,7 +711,7 @@
             history.unshift(clientRecord);
             localStorage.setItem('intmex_history', JSON.stringify(history));
 
-            alert('¡Cliente registrado con éxito y agregado al Reporte Ejecutivo!');
+            alert('¡Cliente registrado con éxito utilizando la ubicación seleccionada!');
             document.getElementById('client-form').reset();
             updateClientDropdown();
             updateMapMarkers();
@@ -698,7 +726,6 @@
             clientsOnly.forEach(c => select.innerHTML += `<option value="${c.id}">${c.nombre} (${c.segmento || 'General'})</option>`);
         }
 
-        // FINALIZAR SUPERVISIÓN
         function submitSupervision(e) {
             e.preventDefault();
             const recordId = document.getElementById('supervision-client-select').value;
@@ -746,12 +773,10 @@
             }
         }
 
-        // CARGAR HISTORIAL Y REPORTE EJECUTIVO GERENCIAL
         function loadHistory() {
             const container = document.getElementById('history-container');
             const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
             
-            // 1. Calcular KPIs
             const totalVisitas = history.length;
             let abiertosCount = 0, compraCount = 0, impactoCount = 0;
             let segCounts = { 'Tipo A': 0, 'Tipo B': 0, 'Tipo C': 0, 'Tipo D': 0 };
@@ -786,19 +811,16 @@
             const pCompra = totalVisitas > 0 ? ((compraCount / totalVisitas) * 100).toFixed(1) : '0.0';
             const pImpacto = totalVisitas > 0 ? ((impactoCount / totalVisitas) * 100).toFixed(1) : '0.0';
 
-            // Actualizar DOM de KPIs[cite: 5]
             document.getElementById('kpi-total-visitas').innerText = totalVisitas;
             document.getElementById('kpi-clientes-abiertos').innerText = `${pAbiertos}%`;
             document.getElementById('kpi-compra-efectiva').innerText = `${pCompra}%`;
             document.getElementById('kpi-impacto-prioridades').innerText = `${pImpacto}%`;
 
-            // Actualizar Segmentos[cite: 5]
             document.getElementById('seg-tipo-a').innerText = segCounts['Tipo A'];
             document.getElementById('seg-tipo-b').innerText = segCounts['Tipo B'];
             document.getElementById('seg-tipo-c').innerText = segCounts['Tipo C'];
             document.getElementById('seg-tipo-d').innerText = segCounts['Tipo D'];
 
-            // Promedio de Asesor y Desempeño[cite: 5]
             let promedioAsesor = supervisionCount > 0 ? (totalScoreSum / supervisionCount).toFixed(1) : '0.0';
             document.getElementById('asesor-promedio-aciertos').innerText = `${promedioAsesor} / 10`;
             
@@ -814,7 +836,6 @@
                 estatusBadge.innerText = "INEFICIENTE";
             }
 
-            // Fallos del Asesor[cite: 5]
             const fallosContainer = document.getElementById('asesor-fallos-list');
             fallosContainer.innerHTML = '';
             checklistSteps.forEach(step => {
@@ -822,7 +843,6 @@
                 fallosContainer.innerHTML += `<div>• ${step}: <span class="text-amber-300 font-semibold">${count} fallos registrados</span></div>`;
             });
 
-            // 2. Renderizar Registros Detallados
             if (history.length === 0) {
                 container.innerHTML = '<p class="text-sm text-slate-400 text-center py-8">No hay registros guardados todavía.</p>';
                 return;
