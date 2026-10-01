@@ -126,7 +126,7 @@
             </button>
         </div>
 
-        <!-- TAB 1: REGISTRO DE CLIENTES -->
+        <!-- TAB 1: REGISTRO DE CLIENTES CON TODOS LOS CAMPOS -->
         <div id="tab-clientes" class="tab-content bg-slate-800 border border-slate-700 border-t-0 rounded-b-xl p-6 shadow-xl">
             <h2 class="text-lg font-semibold text-blue-400 mb-4 flex items-center gap-2">
                 <i class="fa-solid fa-user-plus"></i> Alta de Cliente en Base de Datos
@@ -162,6 +162,13 @@
                         </select>
                     </div>
                     <div>
+                        <label class="block text-xs text-slate-400 mb-1">Impacto de Prioridades</label>
+                        <select id="c-impacto" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
+                            <option value="SÍ">SÍ</option>
+                            <option value="NO">NO</option>
+                        </select>
+                    </div>
+                    <div>
                         <label class="block text-xs text-slate-400 mb-1">¿Compra Efectiva?</label>
                         <select id="c-compra" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
                             <option value="SÍ">SÍ</option>
@@ -169,6 +176,18 @@
                         </select>
                     </div>
                 </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Códigos sin Impactar / Comentarios</label>
+                        <textarea id="c-codigos" rows="2" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">Ninguno</textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Notas de Auditoría</label>
+                        <textarea id="c-notas" rows="2" placeholder="Observaciones adicionales..." class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200"></textarea>
+                    </div>
+                </div>
+
                 <div class="pt-4 flex justify-end">
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2.5 rounded-lg shadow transition flex items-center gap-2 text-sm">
                         <i class="fa-solid fa-floppy-disk"></i> Guardar Cliente en Reporte Ejecutivo
@@ -243,7 +262,7 @@
         let currentLat = 32.47027;
         let currentLng = -116.83785;
         let map, markersLayer;
-        let clientBeingCorrected = null; // Almacena el cliente que se está editando
+        let clientBeingCorrected = null; 
         let pendingNewLat = null, pendingNewLng = null;
 
         const checklistSteps = [
@@ -286,8 +305,8 @@
         function exportCSV() {
             const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
             if(history.length === 0) { alert('No hay datos.'); return; }
-            let csv = 'ID,Cliente,Lat,Lng,Fecha\n';
-            history.forEach(i => { csv += `${i.id},"${i.nombre}",${i.lat},${i.lng},"${i.timestamp}"\n`; });
+            let csv = 'ID,Cliente,Segmento,Impacto,Compra,Lat,Lng,Fecha\n';
+            history.forEach(i => { csv += `${i.id},"${i.nombre}","${i.segmento}","${i.impacto}","${i.compra}",${i.lat},${i.lng},"${i.timestamp}"\n`; });
             const a = document.createElement('a'); a.href = window.URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `reporte.csv`; a.click();
         }
         function populateRoutes(cedisVal, selectedRuta = '') {
@@ -363,11 +382,8 @@
 
             map.on('click', function(e) {
                 if (clientBeingCorrected) {
-                    // SEGUNDO PASO: Ya seleccionamos el cliente, ahora el usuario hizo clic en la nueva ubicación
                     pendingNewLat = e.latlng.lat;
                     pendingNewLng = e.latlng.lng;
-
-                    // Mostrar botón flotante de confirmación final
                     showFloatingConfirmButton(`¿Es correcta la ubicación de ${clientBeingCorrected.nombre}?`);
                 }
             });
@@ -380,7 +396,6 @@
             history.forEach(item => {
                 if(item.lat && item.lng) {
                     const marker = L.marker([item.lat, item.lng]).addTo(markersLayer);
-                    // Al hacer clic en un pin de la lista, iniciamos el proceso de modificación que pediste
                     marker.on('click', () => {
                         if(confirm(`¿Desea modificar la ubicación de "${item.nombre}"?`)) {
                             clientBeingCorrected = item;
@@ -393,7 +408,6 @@
         }
 
         function showFloatingConfirmButton(text) {
-            // Eliminar botón anterior si existe
             let existing = document.getElementById('floating-confirm-box');
             if(existing) existing.remove();
 
@@ -419,16 +433,13 @@
                 let index = history.findIndex(h => h.id == clientBeingCorrected.id);
 
                 if(index !== -1) {
-                    // Modificar coordenadas en historial
                     history[index].lat = pendingNewLat;
                     history[index].lng = pendingNewLng;
                     localStorage.setItem('intmex_history', JSON.stringify(history));
-
                     alert(`¡Ubicación de "${clientBeingCorrected.nombre}" modificada con éxito en el mapa y en el historial!`);
                 }
             }
 
-            // Reiniciar variables de estado
             clientBeingCorrected = null;
             pendingNewLat = null;
             pendingNewLng = null;
@@ -436,19 +447,30 @@
             updateMapMarkers();
         }
 
+        // REGISTRAR CLIENTE CON TODOS SUS CAMPOS RESTAURADOS
         function registerClient(e) {
             e.preventDefault();
             const clientRecord = {
                 id: Date.now(),
+                route: JSON.parse(localStorage.getItem('intmex_route_data') || '{}'),
+                abierto: document.getElementById('c-abierto').value,
                 nombre: document.getElementById('c-nombre').value,
                 telefono: document.getElementById('c-telefono').value,
+                recibe: document.getElementById('c-recibe').value,
+                segmento: document.getElementById('c-segmento').value,
+                impacto: document.getElementById('c-impacto').value,
+                compra: document.getElementById('c-compra').value,
+                codigos: document.getElementById('c-codigos').value,
+                notas: document.getElementById('c-notas').value,
                 lat: currentLat, lng: currentLng,
                 timestamp: new Date().toLocaleString()
             };
+
             let history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
             history.unshift(clientRecord);
             localStorage.setItem('intmex_history', JSON.stringify(history));
-            alert('¡Cliente registrado con éxito!');
+
+            alert('¡Cliente registrado con éxito con todos sus campos y prioridades!');
             document.getElementById('client-form').reset();
             updateClientDropdown();
             switchTab('historial');
@@ -458,7 +480,7 @@
             const select = document.getElementById('supervision-client-select');
             const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
             select.innerHTML = '<option value="">-- Seleccione un cliente --</option>';
-            history.forEach(c => select.innerHTML += `<option value="${c.id}">${c.nombre}</option>`);
+            history.forEach(c => select.innerHTML += `<option value="${c.id}">${c.nombre} (${c.segmento || 'General'})</option>`);
         }
 
         function submitSupervision(e) {
@@ -475,10 +497,17 @@
                 container.innerHTML += `
                     <div class="bg-slate-900 border border-slate-700 p-4 rounded-lg shadow">
                         <div class="flex justify-between items-center mb-2">
-                            <span class="text-sm font-bold text-blue-400">${item.nombre}</span>
+                            <span class="text-sm font-bold text-blue-400">${item.nombre} <span class="text-xs text-slate-400">(${item.segmento || 'N/A'})</span></span>
                             <span class="text-xs text-slate-400">GPS: ${item.lat ? item.lat.toFixed(4) + ', ' + item.lng.toFixed(4) : 'N/A'}</span>
                         </div>
-                        <div class="text-[10px] text-slate-500 text-right">Fecha: ${item.timestamp}</div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-slate-300 my-1">
+                            <div><b>Abierto:</b> ${item.abierto}</div>
+                            <div><b>Compra:</b> ${item.compra}</div>
+                            <div><b>Impacto Prioridades:</b> ${item.impacto}</div>
+                            <div><b>Recibe:</b> ${item.recibe || 'N/A'}</div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-1"><b>Códigos sin impactar:</b> ${item.codigos || 'Ninguno'} | <b>Notas:</b> ${item.notas || 'Sin notas'}</p>
+                        <div class="text-[10px] text-slate-500 text-right mt-2">Fecha: ${item.timestamp}</div>
                     </div>
                 `;
             });
