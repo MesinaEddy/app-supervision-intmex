@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supervisión INTMEX - Panel Ejecutivo Gerencial</title>
+    <title>SUPERVISION INTMEX - Panel Ejecutivo Gerencial</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Leaflet CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></link>
     <style>
-        #map { height: 450px; border-radius: 0.5rem; cursor: crosshair; }
+        #map { height: 450px; border-radius: 0.5rem; }
         .signature-pad { border: 2px dashed #4b5563; background: #1f2937; border-radius: 0.5rem; cursor: crosshair; touch-action: none; }
     </style>
 </head>
@@ -26,7 +26,7 @@
                     <img src="logo.png" alt="INTMEX Logo" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentNode.innerHTML='INT';">
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-wide text-blue-400">PANEL EJECUTIVO GERENCIAL DE SUPERVISIÓN</h1>
+                    <h1 class="text-xl font-bold tracking-wide text-blue-400">SUPERVISION INTMEX</h1>
                     <p class="text-xs text-slate-400">INTMEX | Control de Campo y Auditoría</p>
                 </div>
             </div>
@@ -124,20 +124,21 @@
                 <i class="fa-solid fa-map-location-dot mr-2"></i> 4. Mapa Interactivo (GPS)
             </button>
             <button onclick="switchTab('historial')" id="btn-tab-historial" class="tab-btn px-4 py-2.5 font-medium text-sm rounded-t-lg bg-slate-800 text-slate-400 hover:text-white transition">
-                <i class="fa-solid fa-chart-line mr-2"></i> 5. Reporte Ejecutivo y Panel Gerencial
+                <i class="fa-solid fa-chart-line mr-2"></i> 5. Historial / Reportes
             </button>
         </div>
 
         <!-- TAB 2: REGISTRO DE CLIENTES -->
         <div id="tab-clientes" class="tab-content bg-slate-800 border border-slate-700 border-t-0 rounded-b-xl p-6 shadow-xl">
             <h2 class="text-lg font-semibold text-blue-400 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-user-plus"></i> Alta de Cliente en Base de Datos
+                <i class="fa-solid fa-user-plus"></i> <span id="form-mode-title">Alta de Cliente en Base de Datos</span>
             </h2>
+            <input type="hidden" id="edit-client-id" value="">
             <form id="client-form" onsubmit="registerClient(event)" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-xs text-slate-400 mb-1">¿Cliente Abierto?</label>
-                        <select id="c-abierto" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
+                        <select id="c-abierto" onchange="onClienteAbiertoChange()" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
                             <option value="SÍ">SÍ</option>
                             <option value="NO">NO</option>
                         </select>
@@ -146,15 +147,15 @@
                         <label class="block text-xs text-slate-400 mb-1">Nombre del Cliente</label>
                         <input type="text" id="c-nombre" required placeholder="Ej. Mini Super Alex" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
                     </div>
-                    <div>
+                    <div class="conditional-field">
                         <label class="block text-xs text-slate-400 mb-1">Teléfono</label>
                         <input type="tel" id="c-telefono" placeholder="Ej. 6641234567" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
                     </div>
-                    <div>
+                    <div class="conditional-field">
                         <label class="block text-xs text-slate-400 mb-1">¿Quién Recibe?</label>
                         <input type="text" id="c-recibe" placeholder="Persona que atiende" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
                     </div>
-                    <div>
+                    <div class="conditional-field">
                         <label class="block text-xs text-slate-400 mb-1">Segmento de Cliente</label>
                         <select id="c-segmento" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
                             <option value="Tipo A">Tipo A: Cobro, pasillos, refis y carnicería</option>
@@ -163,14 +164,14 @@
                             <option value="Tipo D">Tipo D: Fuera de ruta / Otro</option>
                         </select>
                     </div>
-                    <div>
+                    <div class="conditional-field">
                         <label class="block text-xs text-slate-400 mb-1">Impacto de Prioridades</label>
                         <select id="c-impacto" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
                             <option value="SÍ">SÍ</option>
                             <option value="NO">NO</option>
                         </select>
                     </div>
-                    <div>
+                    <div class="conditional-field">
                         <label class="block text-xs text-slate-400 mb-1">¿Compra Efectiva?</label>
                         <select id="c-compra" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
                             <option value="SÍ">SÍ</option>
@@ -179,7 +180,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 conditional-field">
                     <div>
                         <label class="block text-xs text-slate-400 mb-1">Códigos sin Impactar / Comentarios</label>
                         <textarea id="c-codigos" rows="2" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">Ninguno</textarea>
@@ -190,9 +191,19 @@
                     </div>
                 </div>
 
-                <div class="pt-4 flex justify-end">
+                <!-- Punto 2: Foto de Fachada obligatoria -->
+                <div class="pt-4 border-t border-slate-700 mt-4">
+                    <label class="block text-xs font-bold text-amber-400 mb-2"><i class="fa-solid fa-camera"></i> Foto de Fachada o Negocio (Obligatoria para registrar)</label>
+                    <input type="file" id="c-foto" accept="image/*" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-300 file:mr-4 file:py-1 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
+                    <div id="foto-preview" class="mt-2 hidden">
+                        <img id="img-preview-tag" src="" alt="Vista previa fachada" class="h-28 rounded border border-slate-600 object-cover">
+                    </div>
+                </div>
+
+                <div class="pt-4 flex justify-end gap-3">
+                    <button type="button" id="cancel-edit-btn" onclick="resetClientForm()" class="hidden bg-slate-700 hover:bg-slate-600 text-white font-medium px-4 py-2.5 rounded-lg text-sm">Cancelar Edición</button>
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2.5 rounded-lg shadow transition flex items-center gap-2 text-sm">
-                        <i class="fa-solid fa-floppy-disk"></i> Guardar Cliente en Reporte Ejecutivo
+                        <i class="fa-solid fa-floppy-disk"></i> <span id="submit-btn-text">Guardar Cliente en Reporte Ejecutivo</span>
                     </button>
                 </div>
             </form>
@@ -234,27 +245,21 @@
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2">
                 <div>
                     <h2 class="text-lg font-semibold text-blue-400 flex items-center gap-2">
-                        <i class="fa-solid fa-map"></i> Mapa Interactivo - Corrección de Pines de Clientes
+                        <i class="fa-solid fa-map"></i> Mapa Interactivo - Pines por Ruta e Identificadores
                     </h2>
-                    <p class="text-xs text-slate-400">Haz clic sobre el pin desfasado de un cliente registrado en el mapa para iniciar la corrección.</p>
+                    <p class="text-xs text-slate-400">Pines con color asignado por ruta y etiquetas con el nombre del cliente.</p>
                 </div>
             </div>
-            
-            <div id="map-notice" class="bg-blue-950/80 border border-blue-500 text-blue-200 text-xs p-3 rounded-lg mb-3 flex items-center justify-between">
-                <span id="map-instruction-text"><i class="fa-solid fa-circle-info"></i> Haz clic en el pin del cliente que deseas modificar.</span>
-            </div>
-
             <div id="map"></div>
         </div>
 
-        <!-- TAB 5: HISTORIAL Y REPORTE GERENCIAL -->
+        <!-- TAB 5: HISTORIAL / REPORTES -->
         <div id="tab-historial" class="tab-content hidden bg-slate-800 border border-slate-700 border-t-0 rounded-b-xl p-6 shadow-xl">
-            <!-- Botones Superiores del Panel Gerencial -->
             <div class="flex flex-wrap gap-3 mb-6 bg-slate-900/80 p-3 rounded-xl border border-slate-700 items-center">
                 <button onclick="exportCSV()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow flex items-center gap-2">
                     <i class="fa-solid fa-file-csv"></i> CSV Base de Datos
                 </button>
-                <button onclick="alert('Abriendo reporte visual...')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow flex items-center gap-2">
+                <button onclick="openVisualReportModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow flex items-center gap-2">
                     <i class="fa-solid fa-chart-pie"></i> Ver Reporte Visual
                 </button>
                 <button onclick="exportExcelWithPhotos()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow flex items-center gap-2">
@@ -265,7 +270,7 @@
                 </button>
             </div>
 
-            <!-- 4 Tarjetas de Métricas Principales -->
+            <!-- 4 Tarjetas de Métricas -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <div class="bg-slate-900 border-l-4 border-blue-500 p-4 rounded-xl shadow">
                     <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Visitas</p>
@@ -285,59 +290,50 @@
                 </div>
             </div>
 
-            <!-- Evaluación y Calificación del Asesor -->
+            <!-- Punto 5: Evaluación y Calificación del Asesor con Aciertos y Oportunidades -->
             <div class="bg-slate-900 border border-slate-700 p-5 rounded-xl shadow mb-6">
                 <h3 class="text-sm font-bold text-blue-400 uppercase tracking-wide mb-2"><i class="fa-solid fa-award"></i> Evaluación y Calificación del Asesor</h3>
-                <p id="eval-score" class="text-sm text-slate-300 font-medium mb-2">Promedio de Aciertos en Checklist: 0.0 / 10</p>
+                <p id="eval-score" class="text-sm text-slate-300 font-medium mb-1">Promedio de Aciertos en Checklist: 0.0 / 10</p>
+                <p id="eval-desglose" class="text-xs text-slate-400 mb-3">Aciertos totales: 0 de 0 evaluaciones</p>
                 <div id="eval-status" class="bg-red-950/80 border border-red-600 text-red-300 text-xs font-bold px-3 py-2 rounded-lg mb-3 inline-block">
                     Estatus de Desempeño: INEFICIENTE
                 </div>
                 <div class="mt-2 text-xs text-slate-400">
-                    <p class="font-bold text-amber-400 mb-1 flex items-center gap-1.5"><i class="fa-solid fa-triangle-exclamation"></i> Áreas donde requiere capacitación (Pasos con más fallos):</p>
+                    <p class="font-bold text-amber-400 mb-1 flex items-center gap-1.5"><i class="fa-solid fa-triangle-exclamation"></i> Áreas de Oportunidad / Capacitación (Pasos con más fallos):</p>
                     <ul id="eval-fallos-list" class="list-disc list-inside space-y-0.5 text-slate-300 pl-2">
-                        <!-- Generado Dinámicamente -->
+                        <li>Sin fallos registrados</li>
                     </ul>
                 </div>
             </div>
 
-            <!-- Distribución de Clientes Segmentados -->
-            <div class="bg-slate-900 border border-slate-700 p-5 rounded-xl shadow mb-6">
-                <h3 class="text-sm font-bold text-blue-400 uppercase tracking-wide mb-3"><i class="fa-solid fa-chart-column"></i> Distribución de Clientes Segmentados</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
-                    <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
-                        <p class="text-xs text-slate-400 font-semibold">Tipo A</p>
-                        <p id="seg-a" class="text-xl font-bold text-white mt-1">0</p>
-                    </div>
-                    <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
-                        <p class="text-xs text-slate-400 font-semibold">Tipo B</p>
-                        <p id="seg-b" class="text-xl font-bold text-white mt-1">0</p>
-                    </div>
-                    <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
-                        <p class="text-xs text-slate-400 font-semibold">Tipo C</p>
-                        <p id="seg-c" class="text-xl font-bold text-white mt-1">0</p>
-                    </div>
-                    <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
-                        <p class="text-xs text-slate-400 font-semibold">Tipo D</p>
-                        <p id="seg-d" class="text-xl font-bold text-white mt-1">0</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Registro Detallado -->
-            <h3 class="text-sm font-bold text-blue-400 uppercase tracking-wide mb-3">Registro Detallado</h3>
+            <!-- Registro Detallado con Opción de Modificar -->
+            <h3 class="text-sm font-bold text-blue-400 uppercase tracking-wide mb-3 flex items-center justify-between">
+                <span>Registro Detallado (Haz clic en "Modificar" para corregir errores de captura)</span>
+            </h3>
             <div id="history-container" class="space-y-4">
                 <p class="text-sm text-slate-400 text-center py-8">No hay registros guardados todavía.</p>
             </div>
         </div>
     </main>
 
-    <!-- Script Principal Completo -->
+    <!-- MODAL REPORTE VISUAL -->
+    <div id="visual-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 max-w-lg w-full shadow-2xl">
+            <h3 class="text-base font-bold text-blue-400 mb-3"><i class="fa-solid fa-chart-pie"></i> Reporte Visual Gerencial</h3>
+            <div id="visual-report-content" class="text-xs text-slate-300 space-y-2 mb-4">
+                <!-- Gráfica visual rápida -->
+            </div>
+            <div class="flex justify-end">
+                <button onclick="closeVisualReportModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-xs">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Principal con la lógica de los 5 puntos -->
     <script>
         let currentLat = 32.47027;
         let currentLng = -116.83785;
         let map, markersLayer;
-        let clientBeingCorrected = null; 
-        let pendingNewLat = null, pendingNewLng = null;
 
         const checklistSteps = [
             "1. ID Cliente en Base de Datos", "2. Saludo a Cliente", "3. ID Nuestras Marcas",
@@ -353,11 +349,41 @@
             initMap();
             loadHistory();
             updateClientDropdown();
+            onClienteAbiertoChange();
         });
 
         function toggleRescuePanel() { document.getElementById('rescue-panel').classList.toggle('hidden'); }
+        
+        // Punto 3: Condicionante Cliente Abierto NO
+        function onClienteAbiertoChange() {
+            const abierto = document.getElementById('c-abierto').value;
+            const conditionalFields = document.querySelectorAll('.conditional-field');
+            conditionalFields.forEach(el => {
+                if(abierto === 'NO') {
+                    el.style.display = 'none';
+                    // Quitar required si lo tuviera
+                    el.querySelectorAll('input, select, textarea').forEach(inp => inp.removeAttribute('required'));
+                } else {
+                    el.style.display = 'block';
+                }
+            });
+        }
+
+        // Previsualizar foto
+        document.getElementById('c-foto').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    document.getElementById('img-preview-tag').src = ev.target.result;
+                    document.getElementById('foto-preview').classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
         function exportBackup() {
-            const backupData = { history: JSON.parse(localStorage.getItem('intmex_history') || '[]'), route: JSON.parse(localStorage.getItem('intmex_route_data') || '{}') };
+            const backupData = { history: JSON.parse(localStorage.getItem('intmex_history') || '[]'), supervision: JSON.parse(localStorage.getItem('intmex_supervision') || '{}'), route: JSON.parse(localStorage.getItem('intmex_route_data') || '{}') };
             const blob = new Blob([JSON.stringify(backupData, null, 2)], {type: 'application/json'});
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `respaldo_intmex.json`; a.click();
         }
@@ -368,6 +394,7 @@
                 try {
                     const data = JSON.parse(ev.target.result);
                     if (data.history) localStorage.setItem('intmex_history', JSON.stringify(data.history));
+                    if (data.supervision) localStorage.setItem('intmex_supervision', JSON.stringify(data.supervision));
                     if (data.route) localStorage.setItem('intmex_route_data', JSON.stringify(data.route));
                     alert('¡Respaldo cargado con éxito!'); location.reload();
                 } catch(err) { alert('Error al leer el archivo.'); }
@@ -375,18 +402,33 @@
             reader.readAsText(file);
         }
         function clearHistory() {
-            if(confirm('¿Vaciar todo el historial?')) { localStorage.removeItem('intmex_history'); loadHistory(); updateClientDropdown(); updateMapMarkers(); }
+            if(confirm('¿Vaciar todo el historial y registros?')) { 
+                localStorage.removeItem('intmex_history'); 
+                localStorage.removeItem('intmex_supervision');
+                loadHistory(); updateClientDropdown(); updateMapMarkers(); 
+            }
         }
         function exportCSV() {
             const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
             if(history.length === 0) { alert('No hay datos.'); return; }
-            let csv = 'ID,Cliente,Segmento,Impacto,Compra,Lat,Lng,Fecha\n';
-            history.forEach(i => { csv += `${i.id},"${i.nombre}","${i.segmento}","${i.impacto}","${i.compra}",${i.lat},${i.lng},"${i.timestamp}"\n`; });
-            const a = document.createElement('a'); a.href = window.URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `reporte.csv`; a.click();
+            let csv = 'ID,Cliente,Abierto,Segmento,Impacto,Compra,Lat,Lng,Fecha\n';
+            history.forEach(i => { csv += `${i.id},"${i.nombre}","${i.abierto}","${i.segmento}","${i.impacto}","${i.compra}",${i.lat},${i.lng},"${i.timestamp}"\n`; });
+            const a = document.createElement('a'); a.href = window.URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `reporte_base.csv`; a.click();
         }
+
+        // Punto 5: Descarga Excel con fotos y registros simulados / reales
         function exportExcelWithPhotos() {
-            alert('Generando archivo Excel con registros fotográficos y métricas gerenciales...');
+            const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
+            if(history.length === 0) { alert('No hay registros para exportar.'); return; }
+            let htmlContent = `<table><tr><th>ID</th><th>Cliente</th><th>Abierto</th><th>Teléfono</th><th>Segmento</th><th>Compra</th><th>Fecha</th><th>Tiene Foto</th></tr>`;
+            history.forEach(i => {
+                htmlContent += `<tr><td>${i.id}</td><td>${i.nombre}</td><td>${i.abierto}</td><td>${i.telefono||''}</td><td>${i.segmento||''}</td><td>${i.compra||''}</td><td>${i.timestamp}</td><td>${i.foto ? 'SÍ' : 'NO'}</td></tr>`;
+            });
+            htmlContent += `</table>`;
+            const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `reporte_intmex_con_fotos.xls`; a.click();
         }
+
         function populateRoutes(cedisVal, selectedRuta = '') {
             const rutaSelect = document.getElementById('f-ruta');
             rutaSelect.innerHTML = '<option value="">Seleccione Ruta</option>';
@@ -396,12 +438,13 @@
                 rutaSelect.innerHTML += `<option value="${val}" ${val===selectedRuta?'selected':''}>${val}</option>`;
             }
         }
-        function onCedisChange() { populateRoutes(document.getElementById('f-cedis').value); saveRouteData(); }
+        function onCedisChange() { populateRoutes(document.getElementById('f-cedis').value); saveRouteData(); updateMapMarkers(); }
         function saveRouteData() {
             localStorage.setItem('intmex_route_data', JSON.stringify({
                 cedis: document.getElementById('f-cedis').value, ruta: document.getElementById('f-ruta').value,
                 asesor: document.getElementById('f-asesor').value, tipoRuta: document.getElementById('f-tipo-ruta').value, objetivo: document.getElementById('f-objetivo').value
             }));
+            updateMapMarkers();
         }
         function loadRouteData() {
             const saved = localStorage.getItem('intmex_route_data');
@@ -455,82 +498,149 @@
         function initSignaturePads() { setupCanvas('asesor-sig-pad'); setupCanvas('supervisor-sig-pad'); }
         function clearSig(canvasId) { const canvas = document.getElementById(canvasId); canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height); }
 
+        // Punto 4: Mapa Interactivo con colores por ruta y tooltips de nombres de clientes
         function initMap() {
             map = L.map('map').setView([currentLat, currentLng], 16);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
             markersLayer = L.layerGroup().addTo(map);
             updateMapMarkers();
-
-            map.on('click', function(e) {
-                if (clientBeingCorrected) {
-                    pendingNewLat = e.latlng.lat;
-                    pendingNewLng = e.latlng.lng;
-                    if(confirm(`¿Actualizar ubicación del cliente "${clientBeingCorrected.nombre}" a estas coordenadas?`)) {
-                        updateClientLocation(clientBeingCorrected.id, pendingNewLat, pendingNewLng);
-                        clientBeingCorrected = null;
-                    }
-                }
-            });
         }
 
         function updateMapMarkers() {
             if(!markersLayer) return;
             markersLayer.clearLayers();
             const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
+            const routeData = JSON.parse(localStorage.getItem('intmex_route_data') || '{}');
+            const rutaActual = routeData.ruta || 'General';
+
+            // Color basado en la ruta (hash simple o asignación)
+            let pinColor = '#3b82f6'; // Azul por defecto
+            if(rutaActual.includes('01')) pinColor = '#10b981'; // Verde
+            else if(rutaActual.includes('02')) pinColor = '#f59e0b'; // Naranja
+            else if(rutaActual.includes('03')) pinColor = '#ef4444'; // Rojo
+
             history.forEach(item => {
                 if(item.lat && item.lng) {
-                    const marker = L.marker([item.lat, item.lng]).addTo(markersLayer);
-                    marker.bindPopup(`<b>${item.nombre}</b><br>Segmento: ${item.segmento}<br><button onclick="startCorrectLocation(${item.id})" class="mt-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">Corregir Ubicación</button>`);
+                    const svgIcon = L.divIcon({
+                        className: 'custom-pin',
+                        html: `<div style="background-color: ${pinColor}; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px; font-weight: bold;"><i class="fa-solid fa-store"></i></div>`,
+                        iconSize: [24, 24]
+                    });
+                    const marker = L.marker([item.lat, item.lng], {icon: svgIcon}).addTo(markersLayer);
+                    // Tooltip visible con nombre del cliente
+                    marker.bindTooltip(item.nombre, {permanent: true, direction: 'top', offset: [0, -10]});
+                    marker.bindPopup(`<b>${item.nombre}</b><br>Ruta: ${rutaActual}<br>Segmento: ${item.segmento || 'N/D'}`);
                 }
             });
         }
 
-        function startCorrectLocation(id) {
-            const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
-            clientBeingCorrected = history.find(i => i.id === id);
-            if(clientBeingCorrected) {
-                alert(`Haz clic en el mapa donde deba ubicarse correctamente el cliente: ${clientBeingCorrected.nombre}`);
-                switchTab('mapa');
+        // Punto 2 y 5: Registro de Cliente con validación de Foto y edición
+        function registerClient(e) {
+            e.preventDefault();
+            const fotoInput = document.getElementById('c-foto');
+            const editId = document.getElementById('edit-client-id').value;
+
+            if(!editId && fotoInput.files.length === 0) {
+                alert('⚠️ Error: Es obligatorio tomar o adjuntar la foto de fachada para registrar al cliente.');
+                return;
+            }
+
+            const abiertoVal = document.getElementById('c-abierto').value;
+            const reader = new FileReader();
+
+            const saveRecord = (fotoData) => {
+                let history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
+                
+                if(editId) {
+                    // Editar existente
+                    history = history.map(item => {
+                        if(item.id == editId) {
+                            item.abierto = abiertoVal;
+                            item.nombre = document.getElementById('c-nombre').value;
+                            if(abiertoVal === 'SÍ') {
+                                item.telefono = document.getElementById('c-telefono').value;
+                                item.recibe = document.getElementById('c-recibe').value;
+                                item.segmento = document.getElementById('c-segmento').value;
+                                item.impacto = document.getElementById('c-impacto').value;
+                                item.compra = document.getElementById('c-compra').value;
+                                item.codigos = document.getElementById('c-codigos').value;
+                                item.notas = document.getElementById('c-notas').value;
+                            }
+                            if(fotoData) item.foto = fotoData;
+                        }
+                        return item;
+                    });
+                    alert('¡Cliente modificado y actualizado con éxito!');
+                } else {
+                    // Crear nuevo
+                    const newClient = {
+                        id: Date.now(),
+                        abierto: abiertoVal,
+                        nombre: document.getElementById('c-nombre').value,
+                        telefono: abiertoVal === 'SÍ' ? document.getElementById('c-telefono').value : '',
+                        recibe: abiertoVal === 'SÍ' ? document.getElementById('c-recibe').value : '',
+                        segmento: abiertoVal === 'SÍ' ? document.getElementById('c-segmento').value : 'N/A',
+                        impacto: abiertoVal === 'SÍ' ? document.getElementById('c-impacto').value : 'NO',
+                        compra: abiertoVal === 'SÍ' ? document.getElementById('c-compra').value : 'NO',
+                        codigos: abiertoVal === 'SÍ' ? document.getElementById('c-codigos').value : '',
+                        notas: abiertoVal === 'SÍ' ? document.getElementById('c-notas').value : '',
+                        foto: fotoData,
+                        lat: currentLat + (Math.random() - 0.5) * 0.002,
+                        lng: currentLng + (Math.random() - 0.5) * 0.002,
+                        timestamp: new Date().toLocaleString()
+                    };
+                    history.push(newClient);
+                    alert('¡Cliente registrado correctamente con su foto de fachada!');
+                }
+
+                localStorage.setItem('intmex_history', JSON.stringify(history));
+                resetClientForm();
+                updateClientDropdown();
+                loadHistory();
+                updateMapMarkers();
+            };
+
+            if(fotoInput.files.length > 0) {
+                reader.onload = function(ev) { saveRecord(ev.target.result); };
+                reader.readAsDataURL(fotoInput.files[0]);
+            } else {
+                // Mantener foto anterior si se está editando y no se seleccionó otra
+                saveRecord(null);
             }
         }
 
-        function updateClientLocation(id, newLat, newLng) {
-            let history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
-            history = history.map(item => {
-                if(item.id === id) { item.lat = newLat; item.lng = newLng; }
-                return item;
-            });
-            localStorage.setItem('intmex_history', JSON.stringify(history));
-            updateMapMarkers();
-            alert('¡Ubicación actualizada con éxito!');
+        function editClient(id) {
+            const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
+            const client = history.find(i => i.id == id);
+            if(!client) return;
+
+            document.getElementById('edit-client-id').value = client.id;
+            document.getElementById('c-abierto').value = client.abierto || 'SÍ';
+            onClienteAbiertoChange();
+            document.getElementById('c-nombre').value = client.nombre || '';
+            document.getElementById('c-telefono').value = client.telefono || '';
+            document.getElementById('c-recibe').value = client.recibe || '';
+            document.getElementById('c-segmento').value = client.segmento || 'Tipo A';
+            document.getElementById('c-impacto').value = client.impacto || 'SÍ';
+            document.getElementById('c-compra').value = client.compra || 'SÍ';
+            document.getElementById('c-codigos').value = client.codigos || '';
+            document.getElementById('c-notas').value = client.notas || '';
+
+            document.getElementById('form-mode-title').innerText = `Modificar Cliente: ${client.nombre}`;
+            document.getElementById('submit-btn-text').innerText = 'Actualizar Datos del Cliente';
+            document.getElementById('cancel-edit-btn').classList.remove('hidden');
+
+            switchTab('clientes');
         }
 
-        function registerClient(e) {
-            e.preventDefault();
-            const newClient = {
-                id: Date.now(),
-                abierto: document.getElementById('c-abierto').value,
-                nombre: document.getElementById('c-nombre').value,
-                telefono: document.getElementById('c-telefono').value,
-                recibe: document.getElementById('c-recibe').value,
-                segmento: document.getElementById('c-segmento').value,
-                impacto: document.getElementById('c-impacto').value,
-                compra: document.getElementById('c-compra').value,
-                codigos: document.getElementById('c-codigos').value,
-                notas: document.getElementById('c-notas').value,
-                lat: currentLat + (Math.random() - 0.5) * 0.002,
-                lng: currentLng + (Math.random() - 0.5) * 0.002,
-                timestamp: new Date().toLocaleString()
-            };
-
-            let history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
-            history.push(newClient);
-            localStorage.setItem('intmex_history', JSON.stringify(history));
-
-            alert('¡Cliente registrado correctamente!');
+        function resetClientForm() {
             document.getElementById('client-form').reset();
-            updateClientDropdown();
-            loadHistory();
+            document.getElementById('edit-client-id').value = '';
+            document.getElementById('form-mode-title').innerText = 'Alta de Cliente en Base de Datos';
+            document.getElementById('submit-btn-text').innerText = 'Guardar Cliente en Reporte Ejecutivo';
+            document.getElementById('cancel-edit-btn').classList.add('hidden');
+            document.getElementById('foto-preview').classList.add('hidden');
+            onClienteAbiertoChange();
         }
 
         function updateClientDropdown() {
@@ -547,14 +657,33 @@
             e.preventDefault();
             const clientId = document.getElementById('supervision-client-select').value;
             if(!clientId) { alert('Por favor seleccione un cliente para supervisar.'); return; }
-            alert('¡Supervisión finalizada y guardada con éxito!');
+            
+            // Guardar resultados checklist para calcular aciertos y fallos
+            let checklistResults = JSON.parse(localStorage.getItem('intmex_supervision') || '{}');
+            let aciertos = 0;
+            let fallosPorPaso = {};
+
+            checklistSteps.forEach((step, idx) => {
+                const val = checkValues[idx] || 'NO';
+                if(val === 'SÍ') aciertos++;
+                else {
+                    fallosPorPaso[step] = (fallosPorPaso[step] || 0) + 1;
+                }
+            });
+
+            checklistResults[clientId] = { aciertos: aciertos, fallos: fallosPorPaso, timestamp: new Date().toLocaleString() };
+            localStorage.setItem('intmex_supervision', JSON.stringify(checklistResults));
+
+            alert('¡Supervisión finalizada y evaluada con éxito!');
+            loadHistory();
         }
 
+        // Punto 5: Cargar historial, calificaciones desglosadas y áreas de oportunidad
         function loadHistory() {
             const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
+            const supervisionData = JSON.parse(localStorage.getItem('intmex_supervision') || '{}');
             const container = document.getElementById('history-container');
             
-            // Métricas
             const total = history.length;
             document.getElementById('metric-total').innerText = total;
 
@@ -563,15 +692,25 @@
                 document.getElementById('metric-abiertos').innerText = '0.0%';
                 document.getElementById('metric-compra').innerText = '0.0%';
                 document.getElementById('metric-impacto').innerText = '0.0%';
-                document.getElementById('seg-a').innerText = '0';
-                document.getElementById('seg-b').innerText = '0';
-                document.getElementById('seg-c').innerText = '0';
-                document.getElementById('seg-d').innerText = '0';
+                document.getElementById('eval-score').innerText = 'Promedio de Aciertos en Checklist: 0.0 / 10';
+                document.getElementById('eval-desglose').innerText = 'Aciertos totales: 0 de 0 evaluaciones';
+                document.getElementById('eval-fallos-list').innerHTML = '<li>Sin evaluaciones registradas</li>';
                 return;
             }
 
             let abiertos = 0, compras = 0, impactos = 0;
-            let segA = 0, segB = 0, segC = 0, segD = 0;
+            let totalAciertosSuma = 0;
+            let totalEvaluaciones = Object.keys(supervisionData).length;
+            let fallosGlobales = {};
+
+            Object.values(supervisionData).forEach(sup => {
+                totalAciertosSuma += sup.aciertos;
+                if(sup.fallos) {
+                    for(let paso in sup.fallos) {
+                        fallosGlobales[paso] = (fallosGlobales[paso] || 0) + sup.fallos[paso];
+                    }
+                }
+            });
 
             let html = '';
             history.forEach(item => {
@@ -579,20 +718,15 @@
                 if(item.compra === 'SÍ') compras++;
                 if(item.impacto === 'SÍ') impactos++;
 
-                if(item.segmento === 'Tipo A') segA++;
-                else if(item.segmento === 'Tipo B') segB++;
-                else if(item.segmento === 'Tipo C') segC++;
-                else if(item.segmento === 'Tipo D') segD++;
-
                 html += `<div class="bg-slate-900 border border-slate-700 p-4 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                     <div>
                         <h4 class="font-bold text-white text-sm">${item.nombre} <span class="text-xs text-blue-400 font-normal">(${item.segmento})</span></h4>
                         <p class="text-xs text-slate-400">Recibe: ${item.recibe || 'N/D'} | Tel: ${item.telefono || 'N/D'} | Fecha: ${item.timestamp}</p>
-                        <p class="text-xs text-slate-300 mt-1">Abierto: <b>${item.abierto}</b> | Compra: <b>${item.compra}</b> | Impacto: <b>${item.impacto}</b></p>
+                        <p class="text-xs text-slate-300 mt-1">Abierto: <b>${item.abierto}</b> | Compra: <b>${item.compra}</b> | Impacto: <b>${item.impacto}</b> ${item.foto ? '| <i class="fa-solid fa-camera text-emerald-400"></i> Con Foto' : ''}</p>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="startCorrectLocation(${item.id})" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded border border-slate-600 text-slate-300">
-                            <i class="fa-solid fa-location-crosshairs"></i> Ubicación
+                        <button onclick="editClient(${item.id})" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded shadow">
+                            <i class="fa-solid fa-pen-to-square"></i> Modificar
                         </button>
                     </div>
                 </div>`;
@@ -603,10 +737,55 @@
             document.getElementById('metric-compra').innerText = ((compras / total) * 100).toFixed(1) + '%';
             document.getElementById('metric-impacto').innerText = ((impactos / total) * 100).toFixed(1) + '%';
 
-            document.getElementById('seg-a').innerText = segA;
-            document.getElementById('seg-b').innerText = segB;
-            document.getElementById('seg-c').innerText = segC;
-            document.getElementById('seg-d').innerText = segD;
+            // Actualizar sección de evaluación
+            if(totalEvaluaciones > 0) {
+                const promedioAciertos = (totalAciertosSuma / totalEvaluaciones).toFixed(1);
+                document.getElementById('eval-score').innerText = `Promedio de Aciertos en Checklist: ${promedioAciertos} / 10`;
+                document.getElementById('eval-desglose').innerText = `Evaluaciones completadas: ${totalEvaluaciones} | Total de aciertos acumulados: ${totalAciertosSuma}`;
+                
+                const statusEl = document.getElementById('eval-status');
+                if(promedioAciertos >= 8) {
+                    statusEl.className = "bg-emerald-950/80 border border-emerald-600 text-emerald-300 text-xs font-bold px-3 py-2 rounded-lg mb-3 inline-block";
+                    statusEl.innerText = "Estatus de Desempeño: EXCELENTE";
+                } else if(promedioAciertos >= 6) {
+                    statusEl.className = "bg-amber-950/80 border border-amber-600 text-amber-300 text-xs font-bold px-3 py-2 rounded-lg mb-3 inline-block";
+                    statusEl.innerText = "Estatus de Desempeño: REGULAR / EN DESARROLLO";
+                } else {
+                    statusEl.className = "bg-red-950/80 border border-red-600 text-red-300 text-xs font-bold px-3 py-2 rounded-lg mb-3 inline-block";
+                    statusEl.innerText = "Estatus de Desempeño: INEFICIENTE";
+                }
+
+                // Ordenar fallos de mayor a menor
+                let sortedFallos = Object.entries(fallosGlobales).sort((a,b) => b[1] - a[1]);
+                let fallosHtml = '';
+                if(sortedFallos.length > 0) {
+                    sortedFallos.forEach(([paso, count]) => {
+                        fallosHtml += `<li><b>${paso}</b> (${count} incidencias de fallo detectadas)</li>`;
+                    });
+                } else {
+                    fallosHtml = '<li>¡Sin áreas de oportunidad críticas detectadas!</li>';
+                }
+                document.getElementById('eval-fallos-list').innerHTML = fallosHtml;
+            }
+        }
+
+        function openVisualReportModal() {
+            const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
+            const content = document.getElementById('visual-report-content');
+            content.innerHTML = `
+                <p><b>Total Clientes Registrados:</b> ${history.length}</p>
+                <p><b>Cumplimiento de Visitas:</b> 100%</p>
+                <div class="mt-3 bg-slate-900 p-3 rounded border border-slate-700">
+                    <p class="text-amber-400 font-bold mb-1">Resumen Gráfico Rápido:</p>
+                    <p>• Clientes Abiertos: ${history.filter(i=>i.abierto==='SÍ').length}</p>
+                    <p>• Clientes Cerrados: ${history.filter(i=>i.abierto==='NO').length}</p>
+                </div>
+            `;
+            document.getElementById('visual-modal').classList.remove('hidden');
+        }
+
+        function closeVisualReportModal() {
+            document.getElementById('visual-modal').classList.add('hidden');
         }
     </script>
 </body>
