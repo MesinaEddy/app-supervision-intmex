@@ -18,12 +18,12 @@
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen pb-12">
 
-    <!-- Header con tu Logotipo Oficial -->
+    <!-- Header con tu Logotipo Oficial de GitHub -->
     <header class="bg-slate-800 border-b border-slate-700 py-3 px-6 shadow-md">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
             <div class="flex items-center gap-3">
-                <!-- Logotipo integrado -->
-                <img src="logo1.jpg" alt="INTMEX Logo" class="w-12 h-12 rounded-full object-cover border-2 border-blue-400 shadow">
+                <!-- Logotipo oficial conectado a logo.png -->
+                <img src="logo.png" alt="INTMEX Logo" class="w-12 h-12 rounded-full object-cover border-2 border-blue-400 shadow">
                 <div>
                     <h1 class="text-xl font-bold tracking-wide text-blue-400">SUPERVISIÓN INTMEX</h1>
                     <p class="text-xs text-slate-400">Directo a tu tienda | Control de Campo</p>
@@ -242,7 +242,7 @@
         </div>
     </main>
 
-    <!-- Script con Recuperación Avanzada -->
+    <!-- Script con Rescate Automático Profundo -->
     <script>
         let currentLat = 32.47027;
         let lng = -116.83785;
@@ -265,15 +265,14 @@
             updateClientDropdown();
         });
 
-        // Función para rastrear y fusionar datos de cualquier versión anterior guardada en el navegador
         function emergencyRescue() {
             try {
-                const possibleKeys = ['intmex_clients', 'clients', 'clientes', 'intmex_history', 'history', 'historial'];
-                let allClients = [];
-                let allHistory = [];
+                const keys = ['intmex_clients', 'clients', 'clientes', 'intmex_history', 'history', 'historial'];
+                let allClients = JSON.parse(localStorage.getItem('intmex_clients') || '[]');
+                let allHistory = JSON.parse(localStorage.getItem('intmex_history') || '[]');
 
-                possibleKeys.forEach(key => {
-                    const data = localStorage.getItem(key);
+                keys.forEach(k => {
+                    const data = localStorage.getItem(k);
                     if (data) {
                         try {
                             const parsed = JSON.parse(data);
@@ -287,16 +286,12 @@
                                     }
                                 });
                             }
-                        } catch(err) {}
+                        } catch(e) {}
                     }
                 });
 
-                if (allClients.length > 0) {
-                    localStorage.setItem('intmex_clients', JSON.stringify(allClients));
-                }
-                if (allHistory.length > 0) {
-                    localStorage.setItem('intmex_history', JSON.stringify(allHistory));
-                }
+                localStorage.setItem('intmex_clients', JSON.stringify(allClients));
+                localStorage.setItem('intmex_history', JSON.stringify(allHistory));
             } catch(e) {
                 console.error("Error en rescate", e);
             }
@@ -501,7 +496,7 @@
             const container = document.getElementById('history-container');
             const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
             if(history.length === 0) {
-                container.innerHTML = `<p class="text-sm text-slate-400 text-center py-8">No hay registros guardados todavía. Si los hiciste en otro archivo, presiona el botón naranja arriba "Rescatar Registros Perdidos".</p>`;
+                container.innerHTML = `<p class="text-sm text-slate-400 text-center py-8">No hay registros guardados todavía. Toca el botón naranja "Rescatar Registros Perdidos" arriba.</p>`;
                 return;
             }
             container.innerHTML = '';
