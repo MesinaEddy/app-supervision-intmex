@@ -33,7 +33,7 @@
         </div>
     </header>
 
-    <!-- SECCIÓN FIJA: DATOS DE RUTA Y ASESOR (NO SE REINICIAN) -->
+    <!-- SECCIÓN FIJA: DATOS DE RUTA Y ASESOR -->
     <section class="max-w-7xl mx-auto px-4 mt-6">
         <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-4 shadow-lg">
             <div class="flex justify-between items-center mb-3 border-b border-slate-700 pb-2">
@@ -155,7 +155,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                     <div>
                         <label class="block text-xs text-slate-400 mb-1">Códigos sin Impactar / Comentarios</label>
-                        <textarea id="c-codigos" rows="2" placeholder="Ninguno" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">Ninguno</textarea>
+                        <textarea id="c-codigos" rows="2" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">Ninguno</textarea>
                     </div>
                     <div>
                         <label class="block text-xs text-slate-400 mb-1">Notas de Auditoría</label>
@@ -198,9 +198,7 @@
             </div>
 
             <form id="supervision-form" onsubmit="submitSupervision(event)" class="space-y-3">
-                <div id="checklist-container" class="space-y-2">
-                    <!-- Generado dinámicamente -->
-                </div>
+                <div id="checklist-container" class="space-y-2"></div>
 
                 <div class="pt-6 flex justify-end">
                     <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-6 py-2.5 rounded-lg shadow transition flex items-center gap-2 text-sm">
@@ -222,7 +220,7 @@
         <!-- TAB 4: HISTORIAL Y REPORTES -->
         <div id="tab-historial" class="tab-content hidden bg-slate-800 border border-slate-700 border-t-0 rounded-b-xl p-6 shadow-xl">
             <h2 class="text-lg font-semibold text-blue-400 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-list-check"></i> Historial Consolidado de Visitas y Auditorías
+                <i class="fa-solid fa-list-check"></i> Historial Consolidado de Visitas
             </h2>
             <div id="history-container" class="space-y-4">
                 <p class="text-sm text-slate-400 text-center py-8">No hay registros guardados todavía.</p>
@@ -230,26 +228,22 @@
         </div>
     </main>
 
-    <!-- Script de lógica de la aplicación -->
+    <!-- Script de lógica con migración y rescate automático oculto -->
     <script>
         let currentLat = 32.47027;
         let lng = -116.83785;
         let map, markersLayer;
 
         const checklistSteps = [
-            "1. ID Cliente en Base de Datos",
-            "2. Saludo a Cliente",
-            "3. ID Nuestras Marcas",
-            "4. ID Stock",
-            "5. Revisión de Caducidades",
-            "6. Impulso de Variantes",
-            "7. Cierre Promos",
-            "8. Comunicar Venta a Cliente",
-            "9. Manejo de Objeciones",
-            "10. Despedida"
+            "1. ID Cliente en Base de Datos", "2. Saludo a Cliente", "3. ID Nuestras Marcas",
+            "4. ID Stock", "5. Revisión de Caducidades", "6. Impulso de Variantes",
+            "7. Cierre Promos", "8. Comunicar Venta a Cliente", "9. Manejo de Objeciones", "10. Despedida"
         ];
 
         window.addEventListener('DOMContentLoaded', () => {
+            // SCRIPT OCULTO DE RECUPERACIÓN AUTOMÁTICA DESDE ANDROID
+            autoRecoverPreviousData();
+
             loadRouteData();
             initGPS();
             initChecklist();
@@ -259,40 +253,49 @@
             updateClientDropdown();
         });
 
-        // Generar dinámicamente las rutas según el CEDIS
+        // Función interna que rescata datos guardados en versiones anteriores de localStorage
+        function autoRecoverPreviousData() {
+            try {
+                // Si ya existen datos nuevos, no sobreescribir innecesariamente, pero si faltan, rescatar de llaves antiguas
+                if (!localStorage.getItem('intmex_clients')) {
+                    const oldClients = localStorage.getItem('clients') || localStorage.getItem('clientes');
+                    if (oldClients) localStorage.setItem('intmex_clients', oldClients);
+                }
+                if (!localStorage.getItem('intmex_history')) {
+                    const oldHistory = localStorage.getItem('history') || localStorage.getItem('historial');
+                    if (oldHistory) localStorage.setItem('intmex_history', oldHistory);
+                }
+            } catch (e) {
+                console.error("Error en recuperación automática", e);
+            }
+        }
+
         function populateRoutes(cedisVal, selectedRuta = '') {
             const rutaSelect = document.getElementById('f-ruta');
             rutaSelect.innerHTML = '<option value="">Seleccione una Ruta</option>';
             if (!cedisVal) return;
-
-            // Rutas numéricas standard (01 a 18)
             for (let i = 1; i <= 18; i++) {
                 const num = i < 10 ? '0' + i : i;
                 const val = `${cedisVal}${num}`;
                 const opt = document.createElement("option");
-                opt.value = val; 
-                opt.textContent = val;
+                opt.value = val; opt.textContent = val;
                 if(val === selectedRuta) opt.selected = true;
                 rutaSelect.appendChild(opt);
             }
-            // Rutas especiales (301 a 306)
             for (let i = 301; i <= 306; i++) {
                 const val = `${cedisVal}${i}`;
                 const opt = document.createElement("option");
-                opt.value = val; 
-                opt.textContent = val;
+                opt.value = val; opt.textContent = val;
                 if(val === selectedRuta) opt.selected = true;
                 rutaSelect.appendChild(opt);
             }
         }
 
         function onCedisChange() {
-            const cedisVal = document.getElementById('f-cedis').value;
-            populateRoutes(cedisVal);
+            populateRoutes(document.getElementById('f-cedis').value);
             saveRouteData();
         }
 
-        // Guardar automáticamente datos de ruta en localStorage
         function saveRouteData() {
             const data = {
                 cedis: document.getElementById('f-cedis').value,
@@ -309,9 +312,7 @@
             if (saved) {
                 const data = JSON.parse(saved);
                 document.getElementById('f-cedis').value = data.cedis || '';
-                if(data.cedis) {
-                    populateRoutes(data.cedis, data.ruta);
-                }
+                if(data.cedis) populateRoutes(data.cedis, data.ruta);
                 document.getElementById('f-asesor').value = data.asesor || '';
                 document.getElementById('f-tipo-ruta').value = data.tipoRuta || 'Ruta Activa';
                 document.getElementById('f-objetivo').value = data.objetivo || '';
@@ -321,14 +322,12 @@
         function initGPS() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        currentLat = position.coords.latitude;
-                        lng = position.coords.longitude;
-                        document.getElementById('gps-text').innerText = `GPS Activo y Actualizado: ${currentLat.toFixed(5)}, ${lng.toFixed(5)}`;
+                    (pos) => {
+                        currentLat = pos.coords.latitude;
+                        lng = pos.coords.longitude;
+                        document.getElementById('gps-text').innerText = `GPS Activo: ${currentLat.toFixed(4)}, ${lng.toFixed(4)}`;
                     },
-                    () => {
-                        document.getElementById('gps-text').innerText = `GPS por defecto: ${currentLat}, ${lng}`;
-                    }
+                    () => { document.getElementById('gps-text').innerText = `GPS por defecto activo`; }
                 );
             }
         }
@@ -344,9 +343,7 @@
             activeBtn.classList.remove('bg-slate-800', 'text-slate-400');
             activeBtn.classList.add('bg-blue-600', 'text-white');
 
-            if(tabId === 'mapa' && map) {
-                setTimeout(() => map.invalidateSize(), 200);
-            }
+            if(tabId === 'mapa' && map) setTimeout(() => map.invalidateSize(), 200);
         }
 
         function initChecklist() {
@@ -357,8 +354,8 @@
                     <div class="flex items-center justify-between bg-slate-900 border border-slate-700/60 p-3 rounded-lg">
                         <span class="text-sm font-medium text-slate-200">${step}</span>
                         <div class="flex gap-2">
-                            <button type="button" onclick="setCheck(${idx}, 'SÍ')" id="chk-${idx}-si" class="px-4 py-1.5 text-xs font-bold rounded bg-slate-800 text-slate-300 border border-slate-600 hover:bg-emerald-600 hover:border-emerald-500 transition">SÍ</button>
-                            <button type="button" onclick="setCheck(${idx}, 'NO')" id="chk-${idx}-no" class="px-4 py-1.5 text-xs font-bold rounded bg-slate-800 text-slate-300 border border-slate-600 hover:bg-red-600 hover:border-red-500 transition">NO</button>
+                            <button type="button" onclick="setCheck(${idx}, 'SÍ')" id="chk-${idx}-si" class="px-4 py-1.5 text-xs font-bold rounded bg-slate-800 text-slate-300 border border-slate-600">SÍ</button>
+                            <button type="button" onclick="setCheck(${idx}, 'NO')" id="chk-${idx}-no" class="px-4 py-1.5 text-xs font-bold rounded bg-slate-800 text-slate-300 border border-slate-600">NO</button>
                         </div>
                     </div>
                 `;
@@ -383,40 +380,20 @@
         function initSignaturePad() {
             const canvas = document.getElementById('client-sig-pad');
             const ctx = canvas.getContext('2d');
-            ctx.strokeStyle = '#ffffff';
-            ctx.lineWidth = 2;
-
-            canvas.addEventListener('mousedown', startDraw);
-            canvas.addEventListener('mousemove', draw);
-            canvas.addEventListener('mouseup', stopDraw);
-            canvas.addEventListener('touchstart', handleTouch);
-            canvas.addEventListener('touchmove', handleTouch);
-            canvas.addEventListener('touchend', stopDraw);
-
-            function startDraw(e) { isDrawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); }
-            function draw(e) { if(!isDrawing) return; ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); }
-            function stopDraw() { isDrawing = false; }
-            function handleTouch(e) {
-                const rect = canvas.getBoundingClientRect();
-                const touch = e.touches[0];
-                const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' : e.type === 'touchmove' ? 'mousemove' : 'mouseup', {
-                    clientX: touch.clientX, clientY: touch.clientY
-                });
-                canvas.dispatchEvent(mouseEvent);
-            }
+            ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2;
+            canvas.addEventListener('mousedown', (e) => { isDrawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); });
+            canvas.addEventListener('mousemove', (e) => { if(isDrawing){ ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } });
+            canvas.addEventListener('mouseup', () => isDrawing = false);
         }
 
         function clearClientSig() {
             const canvas = document.getElementById('client-sig-pad');
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
         }
 
         function initMap() {
             map = L.map('map').setView([currentLat, lng], 14);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(map);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
             markersLayer = L.layerGroup().addTo(map);
             updateMapMarkers();
         }
@@ -426,10 +403,7 @@
             markersLayer.clearLayers();
             const clients = JSON.parse(localStorage.getItem('intmex_clients') || '[]');
             clients.forEach(c => {
-                if(c.lat && c.lng) {
-                    L.marker([c.lat, c.lng]).addTo(markersLayer)
-                      .bindPopup(`<b>${c.nombre}</b><br>Tel: ${c.telefono}<br>Segmento: ${c.segmento}`);
-                }
+                if(c.lat && c.lng) L.marker([c.lat, c.lng]).addTo(markersLayer).bindPopup(`<b>${c.nombre}</b>`);
             });
         }
 
@@ -446,16 +420,13 @@
                 compra: document.getElementById('c-compra').value,
                 codigos: document.getElementById('c-codigos').value,
                 notas: document.getElementById('c-notas').value,
-                lat: currentLat,
-                lng: lng,
+                lat: currentLat, lng: lng,
                 timestamp: new Date().toLocaleString()
             };
-
             let clients = JSON.parse(localStorage.getItem('intmex_clients') || '[]');
             clients.push(clientData);
             localStorage.setItem('intmex_clients', JSON.stringify(clients));
-
-            alert('¡Cliente registrado correctamente en la base de datos!');
+            alert('¡Cliente registrado con éxito!');
             document.getElementById('client-form').reset();
             clearClientSig();
             updateClientDropdown();
@@ -467,36 +438,24 @@
             const select = document.getElementById('supervision-client-select');
             const clients = JSON.parse(localStorage.getItem('intmex_clients') || '[]');
             select.innerHTML = '<option value="">-- Seleccione un cliente registrado --</option>';
-            clients.forEach(c => {
-                select.innerHTML += `<option value="${c.id}">${c.nombre} (${c.segmento})</option>`;
-            });
+            clients.forEach(c => select.innerHTML += `<option value="${c.id}">${c.nombre} (${c.segmento})</option>`);
         }
 
         function submitSupervision(e) {
             e.preventDefault();
             const clientId = document.getElementById('supervision-client-select').value;
-            if(!clientId) {
-                alert('Por favor seleccione un cliente para asociar la supervisión.');
-                return;
-            }
-
-            const routeData = JSON.parse(localStorage.getItem('intmex_route_data') || '{}');
-            const clients = JSON.parse(localStorage.getItem('intmex_clients') || '[]');
-            const client = clients.find(c => c.id == clientId);
-
+            if(!clientId) { alert('Seleccione un cliente.'); return; }
             const record = {
                 id: Date.now(),
-                route: routeData,
-                client: client,
+                route: JSON.parse(localStorage.getItem('intmex_route_data') || '{}'),
+                client: JSON.parse(localStorage.getItem('intmex_clients') || '[]').find(c => c.id == clientId),
                 checklist: { ...checkValues },
                 timestamp: new Date().toLocaleString()
             };
-
             let history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
             history.unshift(record);
             localStorage.setItem('intmex_history', JSON.stringify(history));
-
-            alert('¡Auditoría y Checklist guardados exitosamente!');
+            alert('¡Auditoría guardada!');
             document.getElementById('supervision-form').reset();
             for (let k in checkValues) delete checkValues[k];
             initChecklist();
@@ -507,12 +466,10 @@
         function loadHistory() {
             const container = document.getElementById('history-container');
             const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
-            
             if(history.length === 0) {
                 container.innerHTML = `<p class="text-sm text-slate-400 text-center py-8">No hay registros guardados todavía.</p>`;
                 return;
             }
-
             container.innerHTML = '';
             history.forEach(item => {
                 let checklistHtml = '<ul class="grid grid-cols-1 md:grid-cols-2 gap-1 text-xs text-slate-300 mt-2">';
@@ -527,16 +484,13 @@
                     <div class="bg-slate-900 border border-slate-700 rounded-lg p-4 shadow">
                         <div class="flex justify-between items-start border-b border-slate-800 pb-2 mb-2">
                             <div>
-                                <span class="text-xs bg-blue-900 text-blue-300 px-2 py-0.5 rounded font-semibold">CEDIS: ${item.route.cedis || 'N/D'} - Ruta: ${item.route.ruta || 'N/D'}</span>
+                                <span class="text-xs bg-blue-900 text-blue-300 px-2 py-0.5 rounded font-semibold">Ruta: ${item.route.ruta || 'N/D'}</span>
                                 <h3 class="text-base font-bold text-white mt-1">${item.client ? item.client.nombre : 'Cliente Desconocido'}</h3>
                                 <p class="text-xs text-slate-400">Asesor: ${item.route.asesor || 'N/D'} | Segmento: ${item.client ? item.client.segmento : 'N/D'}</p>
                             </div>
                             <span class="text-xs text-slate-400">${item.timestamp}</span>
                         </div>
-                        <div class="mt-2">
-                            <p class="text-xs font-semibold text-blue-300 uppercase tracking-wider">Resultados del Checklist:</p>
-                            ${checklistHtml}
-                        </div>
+                        <div class="mt-2"><p class="text-xs font-semibold text-blue-300 uppercase">Checklist:</p>${checklistHtml}</div>
                     </div>
                 `;
             });
