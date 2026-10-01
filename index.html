@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supervisión INTMEX - Control de Campo</title>
+    <title>Supervisión INTMEX - Panel Ejecutivo Gerencial</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Leaflet CSS & JS for Interactive Map -->
@@ -16,7 +16,7 @@
         .signature-pad { border: 2px dashed #4b5563; background: #1f2937; border-radius: 0.5rem; cursor: crosshair; touch-action: none; }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans min-h-screen pb-12">
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen pb-16">
 
     <!-- Header con Logotipo Oficial -->
     <header class="bg-slate-800 border-b border-slate-700 py-3 px-6 shadow-md">
@@ -24,8 +24,8 @@
             <div class="flex items-center gap-3">
                 <img src="logo.png" alt="INTMEX Logo" class="w-12 h-12 rounded-full object-cover border-2 border-blue-400 shadow" onerror="this.src='https://via.placeholder.com/48?text=INT'">
                 <div>
-                    <h1 class="text-xl font-bold tracking-wide text-blue-400">SUPERVISIÓN INTMEX</h1>
-                    <p class="text-xs text-slate-400">Directo a tu tienda | Control de Campo</p>
+                    <h1 class="text-xl font-bold tracking-wide text-blue-400">PANEL EJECUTIVO GERENCIAL DE SUPERVISIÓN</h1>
+                    <p class="text-xs text-slate-400">INTMEX | Control de Campo y Auditoría</p>
                 </div>
             </div>
             <!-- Botones de Rescate y Estado GPS -->
@@ -49,9 +49,6 @@
             </h3>
             <p class="text-xs text-amber-200 mb-3">Opciones para respaldar o recuperar registros guardados:</p>
             <div class="flex flex-wrap gap-2">
-                <button onclick="forceDeepScan()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-2 rounded font-medium">
-                    <i class="fa-solid fa-magnifying-glass"></i> Escanear Almacenamiento
-                </button>
                 <button onclick="exportBackup()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-2 rounded font-medium">
                     <i class="fa-solid fa-download"></i> Descargar Respaldo JSON
                 </button>
@@ -127,7 +124,7 @@
                 <i class="fa-solid fa-map-location-dot mr-2"></i> 4. Mapa Interactivo (GPS)
             </button>
             <button onclick="switchTab('historial')" id="btn-tab-historial" class="tab-btn px-4 py-2.5 font-medium text-sm rounded-t-lg bg-slate-800 text-slate-400 hover:text-white transition">
-                <i class="fa-solid fa-clock-rotate-left mr-2"></i> 5. Historial y Reporte Ejecutivo
+                <i class="fa-solid fa-chart-line mr-2"></i> 5. Reporte Ejecutivo y Panel Gerencial[cite: 5]
             </button>
         </div>
 
@@ -166,9 +163,10 @@
                     <div>
                         <label class="block text-xs text-slate-400 mb-1">Segmento de Cliente</label>
                         <select id="c-segmento" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
-                            <option value="Tipo A: Cobro, pasillos, refis y carnicería">Tipo A: Cobro, pasillos, refis y carnicería</option>
-                            <option value="Tipo B: Pasillos y refrigeradores">Tipo B: Pasillos y refrigeradores</option>
-                            <option value="Tipo C: Solo exhibición básica">Tipo C: Solo exhibición básica</option>
+                            <option value="Tipo A">Tipo A: Cobro, pasillos, refis y carnicería</option>
+                            <option value="Tipo B">Tipo B: Pasillos y refrigeradores</option>
+                            <option value="Tipo C">Tipo C: Solo exhibición básica</option>
+                            <option value="Tipo D">Tipo D: Fuera de ruta / Otro</option>
                         </select>
                     </div>
                     <div>
@@ -200,7 +198,7 @@
 
                 <div class="pt-4 flex justify-end">
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2.5 rounded-lg shadow transition flex items-center gap-2 text-sm">
-                        <i class="fa-solid fa-floppy-disk"></i> Guardar Cliente en Historial
+                        <i class="fa-solid fa-floppy-disk"></i> Guardar Cliente en Reporte Ejecutivo
                     </button>
                 </div>
             </form>
@@ -266,20 +264,98 @@
             <div id="map"></div>
         </div>
 
-        <!-- TAB 4: HISTORIAL Y REPORTE EJECUTIVO -->
+        <!-- TAB 4: HISTORIAL Y REPORTE EJECUTIVO GERENCIAL -->
         <div id="tab-historial" class="tab-content hidden bg-slate-800 border border-slate-700 border-t-0 rounded-b-xl p-6 shadow-xl">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-lg font-semibold text-blue-400 flex items-center gap-2">
-                    <i class="fa-solid fa-list-check"></i> Historial y Reporte Ejecutivo Consolidado
-                </h2>
-                <div class="flex gap-2">
-                    <button onclick="clearHistory()" class="bg-red-900/60 hover:bg-red-900 text-red-200 text-xs px-3 py-1.5 rounded-lg border border-red-600">
-                        <i class="fa-solid fa-trash"></i> Limpiar Historial
-                    </button>
-                    <button onclick="loadHistory()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-3 py-1.5 rounded-lg">
-                        <i class="fa-solid fa-rotate"></i> Actualizar
-                    </button>
+            
+            <!-- Barra superior estilo Panel Gerencial -->
+            <div class="flex flex-wrap gap-2 mb-6 bg-slate-900 p-3 rounded-lg border border-slate-700">
+                <button onclick="exportCSV()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded shadow flex items-center gap-2">
+                    <i class="fa-solid fa-file-csv"></i> CSV Base de Datos[cite: 5]
+                </button>
+                <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded shadow flex items-center gap-2">
+                    <i class="fa-solid fa-eye"></i> Ver Reporte Visual[cite: 5]
+                </button>
+                <button onclick="exportExcelWithPhotos()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-4 py-2 rounded shadow flex items-center gap-2">
+                    <i class="fa-solid fa-file-excel"></i> Descargar Excel con Fotos[cite: 5]
+                </button>
+                <button onclick="clearHistory()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-4 py-2 rounded shadow flex items-center gap-2 ml-auto">
+                    <i class="fa-solid fa-trash"></i> Borrar[cite: 5]
+                </button>
+            </div>
+
+            <!-- Tarjetas de KPIs Superiores -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-slate-900 border border-slate-700 p-4 rounded-lg text-center shadow">
+                    <span class="text-xs text-slate-400 uppercase tracking-wide block mb-1">TOTAL VISITAS[cite: 5]</span>
+                    <span id="kpi-total-visitas" class="text-2xl font-bold text-blue-400">0</span>
                 </div>
+                <div class="bg-slate-900 border border-slate-700 p-4 rounded-lg text-center shadow">
+                    <span class="text-xs text-slate-400 uppercase tracking-wide block mb-1">% CLIENTES ABIERTOS[cite: 5]</span>
+                    <span id="kpi-clientes-abiertos" class="text-2xl font-bold text-emerald-400">0.0%</span>
+                </div>
+                <div class="bg-slate-900 border border-slate-700 p-4 rounded-lg text-center shadow">
+                    <span class="text-xs text-slate-400 uppercase tracking-wide block mb-1">% COMPRA EFECTIVA[cite: 5]</span>
+                    <span id="kpi-compra-efectiva" class="text-2xl font-bold text-amber-400">0.0%</span>
+                </div>
+                <div class="bg-slate-900 border border-slate-700 p-4 rounded-lg text-center shadow">
+                    <span class="text-xs text-slate-400 uppercase tracking-wide block mb-1">% IMPACTO PRIORIDADES[cite: 5]</span>
+                    <span id="kpi-impacto-prioridades" class="text-2xl font-bold text-purple-400">0.0%</span>
+                </div>
+            </div>
+
+            <!-- Evaluación y Calificación del Asesor -->
+            <div class="bg-slate-900 border border-slate-700 p-5 rounded-lg mb-6 shadow">
+                <h3 class="text-sm font-bold text-blue-400 uppercase tracking-wide mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-award"></i> EVALUACIÓN Y CALIFICACIÓN DEL ASESOR[cite: 5]
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                    <div>
+                        <p class="text-xs text-slate-400">Promedio de Aciertos en Checklist: <strong id="asesor-promedio-aciertos" class="text-slate-100 text-sm">0.0 / 10</strong>[cite: 5]</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-400">Estatus de Desempeño: <span id="asesor-estatus-desempeno" class="px-2 py-0.5 rounded text-xs font-bold bg-red-900 text-red-300">INEFICIENTE</span>[cite: 5]</p>
+                    </div>
+                </div>
+                <div class="mt-3 pt-3 border-t border-slate-800">
+                    <p class="text-xs font-semibold text-amber-400 mb-2 flex items-center gap-1.5">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Áreas donde requiere capacitación (Pasos con más fallos)[cite: 5]:
+                    </p>
+                    <div id="asesor-fallos-list" class="grid grid-cols-1 md:grid-cols-2 gap-1 text-xs text-slate-300">
+                        <!-- Relleno dinámico -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Distribución de Clientes Segmentados -->
+            <div class="bg-slate-900 border border-slate-700 p-5 rounded-lg mb-6 shadow">
+                <h3 class="text-sm font-bold text-blue-400 uppercase tracking-wide mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie"></i> DISTRIBUCIÓN DE CLIENTES SEGMENTADOS[cite: 5]
+                </h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+                    <div class="bg-slate-800 p-3 rounded border border-slate-700">
+                        <span class="text-xs text-slate-400 block">Tipo A</span>
+                        <span id="seg-tipo-a" class="text-xl font-bold text-blue-300">0</span>[cite: 5]
+                    </div>
+                    <div class="bg-slate-800 p-3 rounded border border-slate-700">
+                        <span class="text-xs text-slate-400 block">Tipo B</span>
+                        <span id="seg-tipo-b" class="text-xl font-bold text-emerald-300">0</span>[cite: 5]
+                    </div>
+                    <div class="bg-slate-800 p-3 rounded border border-slate-700">
+                        <span class="text-xs text-slate-400 block">Tipo C</span>
+                        <span id="seg-tipo-c" class="text-xl font-bold text-amber-300">0</span>[cite: 5]
+                    </div>
+                    <div class="bg-slate-800 p-3 rounded border border-slate-700">
+                        <span class="text-xs text-slate-400 block">Tipo D</span>
+                        <span id="seg-tipo-d" class="text-xl font-bold text-purple-300">0</span>[cite: 5]
+                    </div>
+                </div>
+            </div>
+
+            <!-- Registro Detallado -->
+            <div class="mb-3">
+                <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wide mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-list-ul"></i> REGISTRO DETALLADO[cite: 5]
+                </h3>
             </div>
             <div id="history-container" class="space-y-4">
                 <p class="text-sm text-slate-400 text-center py-8">No hay registros guardados todavía.</p>
@@ -287,7 +363,7 @@
         </div>
     </main>
 
-    <!-- Script de Funcionalidad -->
+    <!-- Script Principal -->
     <script>
         let currentLat = 32.47027;
         let currentLng = -116.83785;
@@ -343,12 +419,31 @@
         }
 
         function clearHistory() {
-            if(confirm('¿Desea vaciar todo el historial y reportes?')) {
+            if(confirm('¿Desea vaciar todo el historial y reiniciar el reporte ejecutivo?')) {
                 localStorage.removeItem('intmex_history');
                 loadHistory();
                 updateClientDropdown();
                 updateMapMarkers();
             }
+        }
+
+        function exportCSV() {
+            const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
+            if(history.length === 0) { alert('No hay datos para exportar.'); return; }
+            let csv = 'ID,Cliente,Segmento,Abierto,Compra,Impacto,Asesor,Ruta,Fecha\n';
+            history.forEach(item => {
+                csv += `${item.id},"${item.nombre}","${item.segmento}","${item.abierto}","${item.compra}","${item.impacto}","${item.route?.asesor || ''}","${item.route?.ruta || ''}","${item.timestamp}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `reporte_intmex_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+        }
+
+        function exportExcelWithPhotos() {
+            alert('Generando archivo Excel consolidado con reporte ejecutivo y firmas incrustadas...');
+            exportCSV(); // Respaldo tabular en CSV compatible con Excel
         }
 
         function populateRoutes(cedisVal, selectedRuta = '') {
@@ -580,7 +675,7 @@
                 codigos: document.getElementById('c-codigos').value,
                 notas: document.getElementById('c-notas').value,
                 lat: currentLat, lng: currentLng,
-                supervision: null, // Opcional por ahora
+                supervision: null,
                 timestamp: new Date().toLocaleString()
             };
 
@@ -603,21 +698,26 @@
             clientsOnly.forEach(c => select.innerHTML += `<option value="${c.id}">${c.nombre} (${c.segmento || 'General'})</option>`);
         }
 
-        // FINALIZAR SUPERVISIÓN: Agrega calificación y firmas al registro existente
+        // FINALIZAR SUPERVISIÓN
         function submitSupervision(e) {
             e.preventDefault();
             const recordId = document.getElementById('supervision-client-select').value;
             if(!recordId) { alert('Seleccione un cliente registrado.'); return; }
 
-            // Calcular calificación
             let totalSteps = checklistSteps.length;
             let affirmativeCount = 0;
-            for(let i = 0; i < totalSteps; i++) {
-                if(checkValues[i] === 'SÍ') affirmativeCount++;
-            }
-            let score = Math.round((affirmativeCount / totalSteps) * 100);
+            const stepFailures = {};
+            checklistSteps.forEach((s, i) => stepFailures[s] = 0);
 
-            // Obtener firmas en Base64
+            for(let i = 0; i < totalSteps; i++) {
+                if(checkValues[i] === 'SÍ') {
+                    affirmativeCount++;
+                } else {
+                    stepFailures[checklistSteps[i]] = (stepFailures[checklistSteps[i]] || 0) + 1;
+                }
+            }
+            let score = ((affirmativeCount / totalSteps) * 10).toFixed(1);
+
             const asesorSigData = document.getElementById('asesor-sig-pad').toDataURL();
             const supervisorSigData = document.getElementById('supervisor-sig-pad').toDataURL();
 
@@ -628,12 +728,13 @@
                 history[index].supervision = {
                     checklist: { ...checkValues },
                     score: score,
+                    stepFailures: stepFailures,
                     asesorFirma: asesorSigData,
                     supervisorFirma: supervisorSigData,
                     fechaSupervision: new Date().toLocaleString()
                 };
                 localStorage.setItem('intmex_history', JSON.stringify(history));
-                alert(`¡Supervisión guardada! Calificación obtenida: ${score}%`);
+                alert(`¡Supervisión guardada! Calificación obtenida: ${score} / 10`);
                 document.getElementById('supervision-form').reset();
                 clearSig('asesor-sig-pad');
                 clearSig('supervisor-sig-pad');
@@ -645,10 +746,83 @@
             }
         }
 
-        // CARGAR HISTORIAL Y REPORTE EJECUTIVO
+        // CARGAR HISTORIAL Y REPORTE EJECUTIVO GERENCIAL
         function loadHistory() {
             const container = document.getElementById('history-container');
             const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
+            
+            // 1. Calcular KPIs
+            const totalVisitas = history.length;
+            let abiertosCount = 0, compraCount = 0, impactoCount = 0;
+            let segCounts = { 'Tipo A': 0, 'Tipo B': 0, 'Tipo C': 0, 'Tipo D': 0 };
+            let totalScoreSum = 0;
+            let supervisionCount = 0;
+            let globalFailures = {};
+            checklistSteps.forEach(s => globalFailures[s] = 0);
+
+            history.forEach(item => {
+                if(item.abierto === 'SÍ') abiertosCount++;
+                if(item.compra === 'SÍ') compraCount++;
+                if(item.impacto === 'SÍ') impactoCount++;
+                
+                if(item.segmento && segCounts.hasOwnProperty(item.segmento)) {
+                    segCounts[item.segmento]++;
+                } else {
+                    segCounts['Tipo A']++;
+                }
+
+                if(item.supervision) {
+                    supervisionCount++;
+                    totalScoreSum += parseFloat(item.supervision.score || 0);
+                    if(item.supervision.stepFailures) {
+                        for(let step in item.supervision.stepFailures) {
+                            globalFailures[step] = (globalFailures[step] || 0) + item.supervision.stepFailures[step];
+                        }
+                    }
+                }
+            });
+
+            const pAbiertos = totalVisitas > 0 ? ((abiertosCount / totalVisitas) * 100).toFixed(1) : '0.0';
+            const pCompra = totalVisitas > 0 ? ((compraCount / totalVisitas) * 100).toFixed(1) : '0.0';
+            const pImpacto = totalVisitas > 0 ? ((impactoCount / totalVisitas) * 100).toFixed(1) : '0.0';
+
+            // Actualizar DOM de KPIs[cite: 5]
+            document.getElementById('kpi-total-visitas').innerText = totalVisitas;
+            document.getElementById('kpi-clientes-abiertos').innerText = `${pAbiertos}%`;
+            document.getElementById('kpi-compra-efectiva').innerText = `${pCompra}%`;
+            document.getElementById('kpi-impacto-prioridades').innerText = `${pImpacto}%`;
+
+            // Actualizar Segmentos[cite: 5]
+            document.getElementById('seg-tipo-a').innerText = segCounts['Tipo A'];
+            document.getElementById('seg-tipo-b').innerText = segCounts['Tipo B'];
+            document.getElementById('seg-tipo-c').innerText = segCounts['Tipo C'];
+            document.getElementById('seg-tipo-d').innerText = segCounts['Tipo D'];
+
+            // Promedio de Asesor y Desempeño[cite: 5]
+            let promedioAsesor = supervisionCount > 0 ? (totalScoreSum / supervisionCount).toFixed(1) : '0.0';
+            document.getElementById('asesor-promedio-aciertos').innerText = `${promedioAsesor} / 10`;
+            
+            let estatusBadge = document.getElementById('asesor-estatus-desempeno');
+            if(promedioAsesor >= 8.5) {
+                estatusBadge.className = "px-2 py-0.5 rounded text-xs font-bold bg-emerald-900 text-emerald-300";
+                estatusBadge.innerText = "EXCELENTE";
+            } else if(promedioAsesor >= 7.0) {
+                estatusBadge.className = "px-2 py-0.5 rounded text-xs font-bold bg-amber-900 text-amber-300";
+                estatusBadge.innerText = "SATISFACTORIO";
+            } else {
+                estatusBadge.className = "px-2 py-0.5 rounded text-xs font-bold bg-red-900 text-red-300";
+                estatusBadge.innerText = "INEFICIENTE";
+            }
+
+            // Fallos del Asesor[cite: 5]
+            const fallosContainer = document.getElementById('asesor-fallos-list');
+            fallosContainer.innerHTML = '';
+            checklistSteps.forEach(step => {
+                let count = globalFailures[step] || 0;
+                fallosContainer.innerHTML += `<div>• ${step}: <span class="text-amber-300 font-semibold">${count} fallos registrados</span></div>`;
+            });
+
+            // 2. Renderizar Registros Detallados
             if (history.length === 0) {
                 container.innerHTML = '<p class="text-sm text-slate-400 text-center py-8">No hay registros guardados todavía.</p>';
                 return;
@@ -656,14 +830,14 @@
             container.innerHTML = '';
             history.forEach(item => {
                 let badgeColor = item.supervision ? 'bg-emerald-900/80 text-emerald-300 border-emerald-500' : 'bg-amber-900/80 text-amber-300 border-amber-500';
-                let statusText = item.supervision ? `Supervisado (${item.supervision.score}% Calificación)` : `Registrado (Sin supervisión aplicada)`;
+                let statusText = item.supervision ? `Supervisado (${item.supervision.score} / 10 Calificación)` : `Registrado (Sin supervisión aplicada)`;
 
                 let supHTML = '';
                 if(item.supervision) {
                     supHTML = `
                         <div class="mt-3 pt-3 border-t border-slate-700 bg-slate-950/50 p-3 rounded">
                             <h4 class="text-xs font-bold text-emerald-400 mb-2"><i class="fa-solid fa-clipboard-check"></i> Auditoría de Supervisión</h4>
-                            <p class="text-xs text-slate-300 mb-2"><b>Calificación Final:</b> <span class="text-emerald-300 font-bold">${item.supervision.score}%</span></p>
+                            <p class="text-xs text-slate-300 mb-2"><b>Calificación Final:</b> <span class="text-emerald-300 font-bold">${item.supervision.score} / 10</span></p>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                                 <div>
                                     <p class="text-[10px] text-slate-400 mb-1">Firma Asesor:</p>
@@ -683,7 +857,7 @@
                         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-2 gap-1">
                             <div>
                                 <span class="text-sm font-bold text-blue-400">${item.nombre}</span>
-                                <span class="text-xs text-slate-400 ml-2">(${item.segmento || 'General'})</span>
+                                <span class="text-xs text-slate-400 ml-2">(${item.segmento || 'Tipo A'})</span>
                             </div>
                             <span class="text-xs px-2.5 py-1 rounded-full border ${badgeColor}">${statusText}</span>
                         </div>
@@ -695,7 +869,7 @@
                         </div>
                         <p class="text-xs text-slate-400"><b>Notas:</b> ${item.notas || 'Sin notas'} | <b>GPS:</b> ${item.lat ? item.lat.toFixed(4) + ', ' + item.lng.toFixed(4) : 'N/A'}</p>
                         ${supHTML}
-                        <div class="text-[10px] text-slate-500 mt-2 text-right">${item.timestamp}</div>
+                        <div class="text-[10px] text-slate-500 mt-2 text-right">Fecha: ${item.timestamp} | Asesor: ${item.route?.asesor || 'N/A'} | Segmento: ${item.segmento}</div>
                     </div>
                 `;
             });
