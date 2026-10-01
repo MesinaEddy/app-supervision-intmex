@@ -18,21 +18,20 @@
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen pb-12">
 
-    <!-- Header con tu Logotipo Oficial de GitHub -->
+    <!-- Header con Logotipo Oficial -->
     <header class="bg-slate-800 border-b border-slate-700 py-3 px-6 shadow-md">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
             <div class="flex items-center gap-3">
-                <!-- Logotipo oficial conectado a logo.png -->
                 <img src="logo.png" alt="INTMEX Logo" class="w-12 h-12 rounded-full object-cover border-2 border-blue-400 shadow">
                 <div>
                     <h1 class="text-xl font-bold tracking-wide text-blue-400">SUPERVISIÓN INTMEX</h1>
                     <p class="text-xs text-slate-400">Directo a tu tienda | Control de Campo</p>
                 </div>
             </div>
-            <!-- GPS Status & Botón de Rescate de Emergencia -->
-            <div class="flex items-center gap-3 mt-2 md:mt-0">
-                <button onclick="emergencyRescue()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1.5">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> Rescatar Registros Perdidos
+            <!-- Botones de Rescate de Emergencia -->
+            <div class="flex items-center gap-2 mt-2 md:mt-0 flex-wrap">
+                <button onclick="toggleRescuePanel()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Panel de Rescate
                 </button>
                 <div id="gps-status" class="bg-emerald-900/60 border border-emerald-500 text-emerald-300 text-xs px-3 py-1.5 rounded-full flex items-center gap-2">
                     <i class="fa-solid fa-location-dot animate-pulse"></i>
@@ -41,6 +40,28 @@
             </div>
         </div>
     </header>
+
+    <!-- PANEL DE RESCATE PROFUNDO (OCULTO POR DEFECTO) -->
+    <div id="rescue-panel" class="max-w-7xl mx-auto px-4 mt-4 hidden">
+        <div class="bg-amber-950/80 border border-amber-600 rounded-xl p-4 shadow-xl">
+            <h3 class="text-sm font-bold text-amber-300 mb-2 flex items-center gap-2">
+                <i class="fa-solid fa-triangle-exclamation"></i> Centro de Recuperación de Datos del Navegador
+            </h3>
+            <p class="text-xs text-amber-200 mb-3">Si tus registros están en otra memoria o versión anterior, usa estas opciones para buscarlos o respaldarlos:</p>
+            <div class="flex flex-wrap gap-2">
+                <button onclick="forceDeepScan()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-2 rounded font-medium">
+                    <i class="fa-solid fa-magnifying-glass"></i> Escanear Todo el Almacenamiento
+                </button>
+                <button onclick="exportBackup()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-2 rounded font-medium">
+                    <i class="fa-solid fa-download"></i> Descargar Respaldo JSON
+                </button>
+                <label class="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-2 rounded font-medium cursor-pointer">
+                    <i class="fa-solid fa-upload"></i> Cargar Respaldo JSON <input type="file" accept=".json" onchange="importBackup(event)" class="hidden">
+                </label>
+            </div>
+            <div id="scan-results" class="mt-3 text-xs text-slate-300 bg-slate-900 p-2 rounded max-h-32 overflow-y-auto hidden"></div>
+        </div>
+    </div>
 
     <!-- SECCIÓN FIJA: DATOS DE RUTA Y ASESOR -->
     <section class="max-w-7xl mx-auto px-4 mt-6">
@@ -242,7 +263,7 @@
         </div>
     </main>
 
-    <!-- Script con Rescate Automático Profundo -->
+    <!-- Script de Rescate y Funcionalidad -->
     <script>
         let currentLat = 32.47027;
         let lng = -116.83785;
@@ -255,7 +276,7 @@
         ];
 
         window.addEventListener('DOMContentLoaded', () => {
-            emergencyRescue();
+            forceDeepScan();
             loadRouteData();
             initGPS();
             initChecklist();
@@ -265,36 +286,80 @@
             updateClientDropdown();
         });
 
-        function emergencyRescue() {
-            try {
-                const keys = ['intmex_clients', 'clients', 'clientes', 'intmex_history', 'history', 'historial'];
-                let allClients = JSON.parse(localStorage.getItem('intmex_clients') || '[]');
-                let allHistory = JSON.parse(localStorage.getItem('intmex_history') || '[]');
+        function toggleRescuePanel() {
+            const panel = document.getElementById('rescue-panel');
+            panel.classList.toggle('hidden');
+        }
 
-                keys.forEach(k => {
-                    const data = localStorage.getItem(k);
-                    if (data) {
-                        try {
-                            const parsed = JSON.parse(data);
-                            if (Array.isArray(parsed)) {
-                                parsed.forEach(item => {
-                                    if (item.nombre && !allClients.some(c => c.nombre === item.nombre)) {
-                                        allClients.push(item);
-                                    }
-                                    if (item.checklist && !allHistory.some(h => h.timestamp === item.timestamp)) {
-                                        allHistory.push(item);
-                                    }
-                                });
+        // Inspecciona TODO el navegador para encontrar cualquier dato guardado previamente
+        function forceDeepScan() {
+            let foundClients = JSON.parse(localStorage.getItem('intmex_clients') || '[]');
+            let foundHistory = JSON.parse(localStorage.getItem('intmex_history') || '[]');
+            let scanLog = [];
+
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const val = localStorage.getItem(key);
+                scanLog.push(`Llave: <b>${key}</b>`);
+                try {
+                    const parsed = JSON.parse(val);
+                    if (Array.isArray(parsed)) {
+                        parsed.forEach(item => {
+                            if (item.nombre && !foundClients.some(c => c.nombre === item.nombre)) {
+                                foundClients.push(item);
                             }
-                        } catch(e) {}
+                            if (item.checklist && !foundHistory.some(h => h.timestamp === item.timestamp)) {
+                                foundHistory.push(item);
+                            }
+                        });
                     }
-                });
-
-                localStorage.setItem('intmex_clients', JSON.stringify(allClients));
-                localStorage.setItem('intmex_history', JSON.stringify(allHistory));
-            } catch(e) {
-                console.error("Error en rescate", e);
+                } catch(e) {}
             }
+
+            localStorage.setItem('intmex_clients', JSON.stringify(foundClients));
+            localStorage.setItem('intmex_history', JSON.stringify(foundHistory));
+
+            const resDiv = document.getElementById('scan-results');
+            resDiv.classList.remove('hidden');
+            resDiv.innerHTML = `<b>Escaneo completado:</b> ${foundClients.length} clientes y ${foundHistory.length} auditorías encontradas.<br>` + scanLog.join('<br>');
+            
+            loadHistory();
+            updateClientDropdown();
+            updateMapMarkers();
+        }
+
+        function exportBackup() {
+            const backupData = {
+                clients: JSON.parse(localStorage.getItem('intmex_clients') || '[]'),
+                history: JSON.parse(localStorage.getItem('intmex_history') || '[]'),
+                route: JSON.parse(localStorage.getItem('intmex_route_data') || '{}'),
+                date: new Date().toISOString()
+            };
+            const blob = new Blob([JSON.stringify(backupData, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `respaldo_intmex_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+        }
+
+        function importBackup(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.clients) localStorage.setItem('intmex_clients', JSON.stringify(data.clients));
+                    if (data.history) localStorage.setItem('intmex_history', JSON.stringify(data.history));
+                    if (data.route) localStorage.setItem('intmex_route_data', JSON.stringify(data.route));
+                    alert('¡Respaldo cargado con éxito!');
+                    location.reload();
+                } catch(err) {
+                    alert('Error al leer el archivo JSON.');
+                }
+            };
+            reader.readAsText(file);
         }
 
         function populateRoutes(cedisVal, selectedRuta = '') {
@@ -492,11 +557,10 @@
         }
 
         function loadHistory() {
-            emergencyRescue();
             const container = document.getElementById('history-container');
             const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
             if(history.length === 0) {
-                container.innerHTML = `<p class="text-sm text-slate-400 text-center py-8">No hay registros guardados todavía. Toca el botón naranja "Rescatar Registros Perdidos" arriba.</p>`;
+                container.innerHTML = `<p class="text-sm text-slate-400 text-center py-8">No hay registros guardados todavía. Toca el botón superior <b class="text-amber-400">"Panel de Rescate"</b> para buscar en el navegador.</p>`;
                 return;
             }
             container.innerHTML = '';
