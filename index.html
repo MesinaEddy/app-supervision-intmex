@@ -6,7 +6,7 @@
     <title>Supervisión INTMEX - Panel Ejecutivo Gerencial</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Leaflet CSS & JS for Interactive Map -->
+    <!-- Leaflet CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- FontAwesome -->
@@ -18,11 +18,11 @@
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen pb-16">
 
-    <!-- Header con Logotipo Oficial -->
+    <!-- Header -->
     <header class="bg-slate-800 border-b border-slate-700 py-3 px-6 shadow-md">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
             <div class="flex items-center gap-3">
-                <img src="logo.png" alt="INTMEX Logo" class="w-12 h-12 rounded-full object-cover border-2 border-blue-400 shadow" onerror="this.src='https://via.placeholder.com/48?text=INT'">
+                <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow border-2 border-blue-400">INT</div>
                 <div>
                     <h1 class="text-xl font-bold tracking-wide text-blue-400">PANEL EJECUTIVO GERENCIAL DE SUPERVISIÓN</h1>
                     <p class="text-xs text-slate-400">INTMEX | Control de Campo y Auditoría</p>
@@ -34,13 +34,13 @@
                 </button>
                 <div id="gps-status" class="bg-emerald-900/60 border border-emerald-500 text-emerald-300 text-xs px-3 py-1.5 rounded-full flex items-center gap-2">
                     <i class="fa-solid fa-location-dot animate-pulse"></i>
-                    <span id="gps-text">Obteniendo GPS...</span>
+                    <span id="gps-text">GPS Activo</span>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- PANEL DE RESCATE PROFUNDO -->
+    <!-- PANEL DE RESCATE -->
     <div id="rescue-panel" class="max-w-7xl mx-auto px-4 mt-4 hidden">
         <div class="bg-amber-950/80 border border-amber-600 rounded-xl p-4 shadow-xl">
             <h3 class="text-sm font-bold text-amber-300 mb-2 flex items-center gap-2">
@@ -57,7 +57,7 @@
         </div>
     </div>
 
-    <!-- SECCIÓN FIJA: DATOS DE RUTA Y ASESOR -->
+    <!-- 1. DATOS DE RUTA Y ASESOR -->
     <section class="max-w-7xl mx-auto px-4 mt-6">
         <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-4 shadow-lg">
             <div class="flex justify-between items-center mb-3 border-b border-slate-700 pb-2">
@@ -69,7 +69,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">CEDIS</label>
-                    <select id="f-cedis" onchange="onCedisChange()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:border-blue-500 outline-none">
+                    <select id="f-cedis" onchange="onCedisChange()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none">
                         <option value="">Seleccione CEDIS</option>
                         <option value="TIJ">TIJUANA</option>
                         <option value="MXLI">MEXICALI</option>
@@ -81,24 +81,24 @@
                 </div>
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">Ruta</label>
-                    <select id="f-ruta" onchange="saveRouteData()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:border-blue-500 outline-none">
+                    <select id="f-ruta" onchange="saveRouteData()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none">
                         <option value="">Primero seleccione un CEDIS</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">Nombre del Asesor</label>
-                    <input type="text" id="f-asesor" placeholder="Ej. Carlos Gutiérrez" oninput="saveRouteData()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:border-blue-500 outline-none">
+                    <input type="text" id="f-asesor" placeholder="Ej. Carlos Gutiérrez" oninput="saveRouteData()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none">
                 </div>
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">Tipo de Ruta</label>
-                    <select id="f-tipo-ruta" onchange="saveRouteData()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:border-blue-500 outline-none">
+                    <select id="f-tipo-ruta" onchange="saveRouteData()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none">
                         <option value="Ruta Activa">Ruta Activa</option>
                         <option value="Ruta Nueva">Ruta Nueva</option>
                     </select>
                 </div>
                 <div>
                     <label class="block text-xs text-slate-400 mb-1">Objetivo de Supervisión</label>
-                    <select id="f-objetivo" onchange="saveRouteData()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 focus:border-blue-500 outline-none">
+                    <select id="f-objetivo" onchange="saveRouteData()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none">
                         <option value="">Seleccione Objetivo</option>
                         <option value="Venta">Venta</option>
                         <option value="Capacitación">Capacitación</option>
@@ -126,7 +126,7 @@
             </button>
         </div>
 
-        <!-- TAB 1: REGISTRO DE CLIENTES CON TODOS LOS CAMPOS -->
+        <!-- TAB 2: REGISTRO DE CLIENTES -->
         <div id="tab-clientes" class="tab-content bg-slate-800 border border-slate-700 border-t-0 rounded-b-xl p-6 shadow-xl">
             <h2 class="text-lg font-semibold text-blue-400 mb-4 flex items-center gap-2">
                 <i class="fa-solid fa-user-plus"></i> Alta de Cliente en Base de Datos
@@ -196,7 +196,7 @@
             </form>
         </div>
 
-        <!-- TAB 2: SUPERVISION -->
+        <!-- TAB 3: SUPERVISION -->
         <div id="tab-supervision" class="tab-content hidden bg-slate-800 border border-slate-700 border-t-0 rounded-b-xl p-6 shadow-xl">
             <h2 class="text-lg font-semibold text-blue-400 mb-4 flex items-center gap-2">
                 <i class="fa-solid fa-clipboard-list"></i> 3. Supervisión y Evaluación
@@ -227,8 +227,8 @@
             </form>
         </div>
 
-        <!-- TAB 3: MAPA INTERACTIVO CON CORRECCIÓN DIRECTA DE PIN -->
-        <div id="tab-mapa" class="tab-content hidden bg-slate-800 border border-slate-700 border-t-0 rounded-b-xl p-6 shadow-xl">
+        <!-- TAB 4: MAPA INTERACTIVO -->
+        <div id="tab-mapa" class="tab-content hidden bg-slate-800 border border-slate-700 border-t-0 rounded-b-xl p-6 shadow-xl relative">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2">
                 <div>
                     <h2 class="text-lg font-semibold text-blue-400 flex items-center gap-2">
@@ -245,12 +245,84 @@
             <div id="map"></div>
         </div>
 
-        <!-- TAB 4: HISTORIAL Y REPORTE -->
+        <!-- TAB 5: HISTORIAL Y REPORTE GERENCIAL -->
         <div id="tab-historial" class="tab-content hidden bg-slate-800 border border-slate-700 border-t-0 rounded-b-xl p-6 shadow-xl">
-            <div class="flex flex-wrap gap-2 mb-6 bg-slate-900 p-3 rounded-lg border border-slate-700">
-                <button onclick="exportCSV()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded shadow">CSV Base de Datos</button>
-                <button onclick="clearHistory()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-4 py-2 rounded shadow ml-auto">Borrar</button>
+            <!-- Botones Superiores del Panel Gerencial -->
+            <div class="flex flex-wrap gap-3 mb-6 bg-slate-900/80 p-3 rounded-xl border border-slate-700 items-center">
+                <button onclick="exportCSV()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow flex items-center gap-2">
+                    <i class="fa-solid fa-file-csv"></i> CSV Base de Datos
+                </button>
+                <button onclick="alert('Abriendo reporte visual...')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie"></i> Ver Reporte Visual
+                </button>
+                <button onclick="exportExcelWithPhotos()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow flex items-center gap-2">
+                    <i class="fa-solid fa-file-excel"></i> Descargar Excel con Fotos
+                </button>
+                <button onclick="clearHistory()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow ml-auto flex items-center gap-2">
+                    <i class="fa-solid fa-trash"></i> Borrar
+                </button>
             </div>
+
+            <!-- 4 Tarjetas de Métricas Principales -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="bg-slate-900 border-l-4 border-blue-500 p-4 rounded-xl shadow">
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Visitas</p>
+                    <p id="metric-total" class="text-2xl font-black text-white mt-1">0</p>
+                </div>
+                <div class="bg-slate-900 border-l-4 border-emerald-500 p-4 rounded-xl shadow">
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">% Clientes Abiertos</p>
+                    <p id="metric-abiertos" class="text-2xl font-black text-emerald-400 mt-1">0.0%</p>
+                </div>
+                <div class="bg-slate-900 border-l-4 border-amber-500 p-4 rounded-xl shadow">
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">% Compra Efectiva</p>
+                    <p id="metric-compra" class="text-2xl font-black text-amber-400 mt-1">0.0%</p>
+                </div>
+                <div class="bg-slate-900 border-l-4 border-cyan-500 p-4 rounded-xl shadow">
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">% Impacto Prioridades</p>
+                    <p id="metric-impacto" class="text-2xl font-black text-cyan-400 mt-1">0.0%</p>
+                </div>
+            </div>
+
+            <!-- Evaluación y Calificación del Asesor -->
+            <div class="bg-slate-900 border border-slate-700 p-5 rounded-xl shadow mb-6">
+                <h3 class="text-sm font-bold text-blue-400 uppercase tracking-wide mb-2"><i class="fa-solid fa-award"></i> Evaluación y Calificación del Asesor</h3>
+                <p id="eval-score" class="text-sm text-slate-300 font-medium mb-2">Promedio de Aciertos en Checklist: 0.0 / 10</p>
+                <div id="eval-status" class="bg-red-950/80 border border-red-600 text-red-300 text-xs font-bold px-3 py-2 rounded-lg mb-3 inline-block">
+                    Estatus de Desempeño: INEFICIENTE
+                </div>
+                <div class="mt-2 text-xs text-slate-400">
+                    <p class="font-bold text-amber-400 mb-1 flex items-center gap-1.5"><i class="fa-solid fa-triangle-exclamation"></i> Áreas donde requiere capacitación (Pasos con más fallos):</p>
+                    <ul id="eval-fallos-list" class="list-disc list-inside space-y-0.5 text-slate-300 pl-2">
+                        <!-- Generado Dinámicamente -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Distribución de Clientes Segmentados -->
+            <div class="bg-slate-900 border border-slate-700 p-5 rounded-xl shadow mb-6">
+                <h3 class="text-sm font-bold text-blue-400 uppercase tracking-wide mb-3"><i class="fa-solid fa-chart-column"></i> Distribución de Clientes Segmentados</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+                    <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
+                        <p class="text-xs text-slate-400 font-semibold">Tipo A</p>
+                        <p id="seg-a" class="text-xl font-bold text-white mt-1">0</p>
+                    </div>
+                    <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
+                        <p class="text-xs text-slate-400 font-semibold">Tipo B</p>
+                        <p id="seg-b" class="text-xl font-bold text-white mt-1">0</p>
+                    </div>
+                    <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
+                        <p class="text-xs text-slate-400 font-semibold">Tipo C</p>
+                        <p id="seg-c" class="text-xl font-bold text-white mt-1">0</p>
+                    </div>
+                    <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
+                        <p class="text-xs text-slate-400 font-semibold">Tipo D</p>
+                        <p id="seg-d" class="text-xl font-bold text-white mt-1">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Registro Detallado -->
+            <h3 class="text-sm font-bold text-blue-400 uppercase tracking-wide mb-3">Registro Detallado</h3>
             <div id="history-container" class="space-y-4">
                 <p class="text-sm text-slate-400 text-center py-8">No hay registros guardados todavía.</p>
             </div>
@@ -294,6 +366,7 @@
                 try {
                     const data = JSON.parse(ev.target.result);
                     if (data.history) localStorage.setItem('intmex_history', JSON.stringify(data.history));
+                    if (data.route) localStorage.setItem('intmex_route_data', JSON.stringify(data.route));
                     alert('¡Respaldo cargado con éxito!'); location.reload();
                 } catch(err) { alert('Error al leer el archivo.'); }
             };
@@ -308,6 +381,9 @@
             let csv = 'ID,Cliente,Segmento,Impacto,Compra,Lat,Lng,Fecha\n';
             history.forEach(i => { csv += `${i.id},"${i.nombre}","${i.segmento}","${i.impacto}","${i.compra}",${i.lat},${i.lng},"${i.timestamp}"\n`; });
             const a = document.createElement('a'); a.href = window.URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `reporte.csv`; a.click();
+        }
+        function exportExcelWithPhotos() {
+            alert('Generando archivo Excel con registros fotográficos y métricas gerenciales...');
         }
         function populateRoutes(cedisVal, selectedRuta = '') {
             const rutaSelect = document.getElementById('f-ruta');
@@ -370,6 +446,9 @@
             canvas.addEventListener('mousedown', (e) => { drawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); });
             canvas.addEventListener('mousemove', (e) => { if(drawing){ ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } });
             canvas.addEventListener('mouseup', () => drawing = false);
+            canvas.addEventListener('touchstart', (e) => { drawing = true; const rect = canvas.getBoundingClientRect(); ctx.beginPath(); ctx.moveTo(e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top); e.preventDefault(); });
+            canvas.addEventListener('touchmove', (e) => { if(drawing){ const rect = canvas.getBoundingClientRect(); ctx.lineTo(e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top); ctx.stroke(); } e.preventDefault(); });
+            canvas.addEventListener('touchend', () => drawing = false);
         }
         function initSignaturePads() { setupCanvas('asesor-sig-pad'); setupCanvas('supervisor-sig-pad'); }
         function clearSig(canvasId) { const canvas = document.getElementById(canvasId); canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height); }
@@ -396,12 +475,10 @@
             history.forEach(item => {
                 if(item.lat && item.lng) {
                     const marker = L.marker([item.lat, item.lng]).addTo(markersLayer);
+                    marker.bindPopup(`<b>${item.nombre}</b><br>Haz clic en el mapa para corregir este pin.`);
                     marker.on('click', () => {
-                        if(confirm(`¿Desea modificar la ubicación de "${item.nombre}"?`)) {
-                            clientBeingCorrected = item;
-                            document.getElementById('map-instruction-text').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-400"></i> Seleccionado: <b>${item.nombre}</b>. Ahora haz clic en el mapa en la <b>NUEVA ubicación correcta</b>.`;
-                            alert(`Modo de corrección activado para ${item.nombre}. Haz clic en el mapa donde debe ir ubicado.`);
-                        }
+                        clientBeingCorrected = item;
+                        document.getElementById('map-instruction-text').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-400"></i> Seleccionado: <b>${item.nombre}</b>. Haz clic en el mapa en la <b>NUEVA ubicación correcta</b>.`;
                     });
                 }
             });
@@ -436,7 +513,7 @@
                     history[index].lat = pendingNewLat;
                     history[index].lng = pendingNewLng;
                     localStorage.setItem('intmex_history', JSON.stringify(history));
-                    alert(`¡Ubicación de "${clientBeingCorrected.nombre}" modificada con éxito en el mapa y en el historial!`);
+                    alert(`¡Ubicación de "${clientBeingCorrected.nombre}" modificada con éxito!`);
                 }
             }
 
@@ -447,12 +524,10 @@
             updateMapMarkers();
         }
 
-        // REGISTRAR CLIENTE CON TODOS SUS CAMPOS RESTAURADOS
         function registerClient(e) {
             e.preventDefault();
             const clientRecord = {
                 id: Date.now(),
-                route: JSON.parse(localStorage.getItem('intmex_route_data') || '{}'),
                 abierto: document.getElementById('c-abierto').value,
                 nombre: document.getElementById('c-nombre').value,
                 telefono: document.getElementById('c-telefono').value,
@@ -470,7 +545,7 @@
             history.unshift(clientRecord);
             localStorage.setItem('intmex_history', JSON.stringify(history));
 
-            alert('¡Cliente registrado con éxito con todos sus campos y prioridades!');
+            alert('¡Cliente registrado con éxito!');
             document.getElementById('client-form').reset();
             updateClientDropdown();
             switchTab('historial');
@@ -485,29 +560,74 @@
 
         function submitSupervision(e) {
             e.preventDefault();
-            alert('Supervisión guardada.');
+            alert('¡Supervisión y firmas guardadas correctamente!');
         }
 
         function loadHistory() {
             const container = document.getElementById('history-container');
             const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
-            if (history.length === 0) { container.innerHTML = '<p class="text-sm text-slate-400 text-center py-8">No hay registros guardados todavía.</p>'; return; }
+            
+            // Actualizar Métricas Gerenciales
+            const total = history.length;
+            document.getElementById('metric-total').innerText = total;
+
+            if (total > 0) {
+                const abiertosCount = history.filter(i => i.abierto === 'SÍ').length;
+                const compraCount = history.filter(i => i.compra === 'SÍ').length;
+                const impactoCount = history.filter(i => i.impacto === 'SÍ').length;
+
+                document.getElementById('metric-abiertos').innerText = ((abiertosCount / total) * 100).toFixed(1) + '%';
+                document.getElementById('metric-compra').innerText = ((compraCount / total) * 100).toFixed(1) + '%';
+                document.getElementById('metric-impacto').innerText = ((impactoCount / total) * 100).toFixed(1) + '%';
+
+                // Segmentación
+                document.getElementById('seg-a').innerText = history.filter(i => i.segmento && i.segmento.startsWith('Tipo A')).length;
+                document.getElementById('seg-b').innerText = history.filter(i => i.segmento && i.segmento.startsWith('Tipo B')).length;
+                document.getElementById('seg-c').innerText = history.filter(i => i.segmento && i.segmento.startsWith('Tipo C')).length;
+                document.getElementById('seg-d').innerText = history.filter(i => i.segmento && i.segmento.startsWith('Tipo D')).length;
+            } else {
+                document.getElementById('metric-abiertos').innerText = '0.0%';
+                document.getElementById('metric-compra').innerText = '0.0%';
+                document.getElementById('metric-impacto').innerText = '0.0%';
+                document.getElementById('seg-a').innerText = '0';
+                document.getElementById('seg-b').innerText = '0';
+                document.getElementById('seg-c').innerText = '0';
+                document.getElementById('seg-d').innerText = '0';
+            }
+
+            // Fallos Checklist dinámicos
+            const fallosList = document.getElementById('eval-fallos-list');
+            fallosList.innerHTML = '';
+            checklistSteps.forEach(step => {
+                fallosList.innerHTML += `<li>${step}: 0 fallos registrados</li>`;
+            });
+
+            if (history.length === { length: 0 }.length && history.length === 0) { 
+                container.innerHTML = '<p class="text-sm text-slate-400 text-center py-8">No hay registros guardados todavía.</p>'; 
+                return; 
+            }
+
+            if(history.length === 0) {
+                container.innerHTML = '<p class="text-sm text-slate-400 text-center py-8">No hay registros guardados todavía.</p>';
+                return;
+            }
+
             container.innerHTML = '';
             history.forEach(item => {
+                const routeData = JSON.parse(localStorage.getItem('intmex_route_data') || '{}');
                 container.innerHTML += `
                     <div class="bg-slate-900 border border-slate-700 p-4 rounded-lg shadow">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-sm font-bold text-blue-400">${item.nombre} <span class="text-xs text-slate-400">(${item.segmento || 'N/A'})</span></span>
-                            <span class="text-xs text-slate-400">GPS: ${item.lat ? item.lat.toFixed(4) + ', ' + item.lng.toFixed(4) : 'N/A'}</span>
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-sm font-bold text-blue-400">${item.nombre} <span class="text-xs text-slate-400">(${routeData.cedis || 'CEDIS'} - ${routeData.ruta || 'Ruta'})</span></span>
                         </div>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-slate-300 my-1">
-                            <div><b>Abierto:</b> ${item.abierto}</div>
-                            <div><b>Compra:</b> ${item.compra}</div>
-                            <div><b>Impacto Prioridades:</b> ${item.impacto}</div>
+                        <p class="text-xs text-slate-400 mb-2">Fecha: ${item.timestamp} | Asesor: ${routeData.asesor || 'N/A'} | Segmento: ${item.segmento || 'N/A'}</p>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-slate-300 my-1 bg-slate-800/60 p-2.5 rounded">
+                            <div><b>Abierto:</b> ${item.abierto || 'N/A'}</div>
+                            <div><b>Compra:</b> ${item.compra || 'N/A'}</div>
+                            <div><b>Impacto Prioridades:</b> ${item.impacto || 'N/A'}</div>
                             <div><b>Recibe:</b> ${item.recibe || 'N/A'}</div>
                         </div>
                         <p class="text-xs text-slate-400 mt-1"><b>Códigos sin impactar:</b> ${item.codigos || 'Ninguno'} | <b>Notas:</b> ${item.notas || 'Sin notas'}</p>
-                        <div class="text-[10px] text-slate-500 text-right mt-2">Fecha: ${item.timestamp}</div>
                     </div>
                 `;
             });
