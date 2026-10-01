@@ -2,636 +2,123 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supervisión INTMEX - Panel Ejecutivo Gerencial</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Leaflet CSS & JS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Checklist de Inducción de Supervisores</title>
     <style>
-        #map { height: 450px; border-radius: 0.5rem; cursor: crosshair; }
-        .signature-pad { border: 2px dashed #4b5563; background: #1f2937; border-radius: 0.5rem; cursor: crosshair; touch-action: none; }
+        body { font-family: Arial, sans-serif; color: #000; margin: 20px; font-size: 14px; }
+        .header { display: flex; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+        .logo { width: 50px; height: 50px; border-radius: 50%; background: #2563eb; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px; border: 2px solid #1d4ed8; margin-right: 15px; flex-shrink: 0; }
+        .header-text h1 { font-size: 18px; margin: 0; text-transform: uppercase; }
+        .header-text p { font-size: 12px; margin: 3px 0 0 0; color: #4b5563; }
+        .info-box { border: 1px solid #000; padding: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; flex-wrap: wrap; }
+        .info-field { width: 48%; margin-bottom: 8px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+        th, td { border: 1px solid #000; padding: 8px 12px; text-align: left; }
+        th { background-color: #f2f2f2; font-size: 13px; }
+        .text-center { text-align: center; }
+        .signatures { display: flex; justify-content: space-between; margin-top: 50px; }
+        .sig-box { width: 40%; text-align: center; border-top: 1px solid #000; padding-top: 5px; }
+        @media print {
+            body { margin: 10mm; }
+        }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans min-h-screen pb-16">
+<body>
 
-    <!-- Header -->
-    <header class="bg-slate-800 border-b border-slate-700 py-3 px-6 shadow-md">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow border-2 border-blue-400">INT</div>
-                <div>
-                    <h1 class="text-xl font-bold tracking-wide text-blue-400">PANEL EJECUTIVO GERENCIAL DE SUPERVISIÓN</h1>
-                    <p class="text-xs text-slate-400">INTMEX | Control de Campo y Auditoría</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-2 mt-2 md:mt-0 flex-wrap">
-                <button onclick="toggleRescuePanel()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1.5">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> Panel de Rescate
-                </button>
-                <div id="gps-status" class="bg-emerald-900/60 border border-emerald-500 text-emerald-300 text-xs px-3 py-1.5 rounded-full flex items-center gap-2">
-                    <i class="fa-solid fa-location-dot animate-pulse"></i>
-                    <span id="gps-text">GPS Activo</span>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- PANEL DE RESCATE -->
-    <div id="rescue-panel" class="max-w-7xl mx-auto px-4 mt-4 hidden">
-        <div class="bg-amber-950/80 border border-amber-600 rounded-xl p-4 shadow-xl">
-            <h3 class="text-sm font-bold text-amber-300 mb-2 flex items-center gap-2">
-                <i class="fa-solid fa-triangle-exclamation"></i> Centro de Recuperación de Datos
-            </h3>
-            <div class="flex flex-wrap gap-2">
-                <button onclick="exportBackup()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-2 rounded font-medium">
-                    <i class="fa-solid fa-download"></i> Descargar Respaldo JSON
-                </button>
-                <label class="bg-purple-600 hover:bg-purple-700 text-white text-xs px-3 py-2 rounded font-medium cursor-pointer">
-                    <i class="fa-solid fa-upload"></i> Cargar Respaldo JSON <input type="file" accept=".json" onchange="importBackup(event)" class="hidden">
-                </label>
-            </div>
+    <div class="header">
+        <div class="logo">INT</div>
+        <div class="header-text">
+            <h1>Control Operativo - Inducción de Supervisores</h1>
+            <p>Evaluación y Seguimiento de Procesos en CEDIS / Campo</p>
         </div>
     </div>
 
-    <!-- 1. DATOS DE RUTA Y ASESOR -->
-    <section class="max-w-7xl mx-auto px-4 mt-6">
-        <div class="bg-slate-800/90 border border-slate-700 rounded-xl p-4 shadow-lg">
-            <div class="flex justify-between items-center mb-3 border-b border-slate-700 pb-2">
-                <h2 class="text-sm font-semibold text-blue-300 uppercase tracking-wider flex items-center gap-2">
-                    <i class="fa-solid fa-id-card"></i> 1. Datos de Ruta y Asesor (Fijos en Jornada)
-                </h2>
-                <span class="text-xs text-slate-400 bg-slate-700 px-2 py-0.5 rounded">Autoguardado activo</span>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">CEDIS</label>
-                    <select id="f-cedis" onchange="onCedisChange()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none">
-                        <option value="">Seleccione CEDIS</option>
-                        <option value="TIJ">TIJUANA</option>
-                        <option value="MXLI">MEXICALI</option>
-                        <option value="HILLO">HERMOSILLO</option>
-                        <option value="MOC">MOCHIS</option>
-                        <option value="CUL">CULIACAN</option>
-                        <option value="MZT">MAZATLAN</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">Ruta</label>
-                    <select id="f-ruta" onchange="saveRouteData()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none">
-                        <option value="">Primero seleccione un CEDIS</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">Nombre del Asesor</label>
-                    <input type="text" id="f-asesor" placeholder="Ej. Carlos Gutiérrez" oninput="saveRouteData()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">Tipo de Ruta</label>
-                    <select id="f-tipo-ruta" onchange="saveRouteData()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none">
-                        <option value="Ruta Activa">Ruta Activa</option>
-                        <option value="Ruta Nueva">Ruta Nueva</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs text-slate-400 mb-1">Objetivo de Supervisión</label>
-                    <select id="f-objetivo" onchange="saveRouteData()" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-sm text-slate-200 outline-none">
-                        <option value="">Seleccione Objetivo</option>
-                        <option value="Venta">Venta</option>
-                        <option value="Capacitación">Capacitación</option>
-                        <option value="Territorio">Territorio</option>
-                    </select>
-                </div>
-            </div>
+    <div class="info-box">
+        <div class="info-field"><b>Nombre del Supervisor en Inducción:</b> ___________________________</div>
+        <div class="info-field"><b>Fecha:</b> ____ / ____ / ________</div>
+        <div class="info-field"><b>CEDIS / Zona:</b> ___________________________</div>
+        <div class="info-field"><b>Nombre del Evaluador / Mentor:</b> ___________________________</div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 70%;">Paso / Proceso Operativo</th>
+                <th class="text-center" style="width: 10%;">Cumple</th>
+                <th class="text-center" style="width: 10%;">No Cumple</th>
+                <th class="text-center" style="width: 10%;">N/A</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1. Salida a Campo Reparto[cite: 6]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+            </tr>
+            <tr>
+                <td>2. Preparar Area Pick[cite: 6]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+            </tr>
+            <tr>
+                <td>3. Llegada de Surtidor y comienzo de Operacion[cite: 6]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+            </tr>
+            <tr>
+                <td>4. Comunicado de Info Pedidos HR[cite: 6]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+            </tr>
+            <tr>
+                <td>5. Comunicado Inventarios y Agotados[cite: 6]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+            </tr>
+            <tr>
+                <td>6. Comunicado de Cierre de Rutas (Locales / Foráneas)[cite: 6]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+            </tr>
+            <tr>
+                <td>7. Back Order[cite: 6]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+            </tr>
+            <tr>
+                <td>8. Recepcion Repartos[cite: 6]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+            </tr>
+            <tr>
+                <td>9. Validacion y Carga[cite: 6]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+                <td class="text-center">[ &nbsp; ]</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div style="border: 1px solid #000; padding: 10px; height: 80px; margin-bottom: 40px;">
+        <b>Observaciones / Comentarios de Retroalimentación:</b>
+        <br><br>
+    </div>
+
+    <div class="signatures">
+        <div class="sig-box">
+            Firma del Supervisor en Inducción
         </div>
-    </section>
-
-    <!-- Navigation Tabs -->
-    <main class="max-w-7xl mx-auto px-4 mt-6">
-        <div class="flex border-b border-slate-700 space-x-2 overflow-x-auto">
-            <button onclick="switchTab('clientes')" id="btn-tab-clientes" class="tab-btn px-4 py-2.5 font-medium text-sm rounded-t-lg bg-blue-600 text-white transition">
-                <i class="fa-solid fa-store mr-2"></i> 2. Registro de Clientes
-            </button>
-            <button onclick="switchTab('supervision')" id="btn-tab-supervision" class="tab-btn px-4 py-2.5 font-medium text-sm rounded-t-lg bg-slate-800 text-slate-400 hover:text-white transition">
-                <i class="fa-solid fa-clipboard-check mr-2"></i> 3. Supervisión / Checklist
-            </button>
-            <button onclick="switchTab('mapa')" id="btn-tab-mapa" class="tab-btn px-4 py-2.5 font-medium text-sm rounded-t-lg bg-slate-800 text-slate-400 hover:text-white transition">
-                <i class="fa-solid fa-map-location-dot mr-2"></i> 4. Mapa Interactivo (GPS)
-            </button>
-            <button onclick="switchTab('historial')" id="btn-tab-historial" class="tab-btn px-4 py-2.5 font-medium text-sm rounded-t-lg bg-slate-800 text-slate-400 hover:text-white transition">
-                <i class="fa-solid fa-chart-line mr-2"></i> 5. Reporte Ejecutivo y Panel Gerencial
-            </button>
+        <div class="sig-box">
+            Firma del Evaluador / Instructor
         </div>
+    </div>
 
-        <!-- TAB 2: REGISTRO DE CLIENTES -->
-        <div id="tab-clientes" class="tab-content bg-slate-800 border border-slate-700 border-t-0 rounded-b-xl p-6 shadow-xl">
-            <h2 class="text-lg font-semibold text-blue-400 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-user-plus"></i> Alta de Cliente en Base de Datos
-            </h2>
-            <form id="client-form" onsubmit="registerClient(event)" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">¿Cliente Abierto?</label>
-                        <select id="c-abierto" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
-                            <option value="SÍ">SÍ</option>
-                            <option value="NO">NO</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">Nombre del Cliente</label>
-                        <input type="text" id="c-nombre" required placeholder="Ej. Mini Super Alex" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">Teléfono</label>
-                        <input type="tel" id="c-telefono" placeholder="Ej. 6641234567" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">¿Quién Recibe?</label>
-                        <input type="text" id="c-recibe" placeholder="Persona que atiende" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">Segmento de Cliente</label>
-                        <select id="c-segmento" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
-                            <option value="Tipo A">Tipo A: Cobro, pasillos, refis y carnicería</option>
-                            <option value="Tipo B">Tipo B: Pasillos y refrigeradores</option>
-                            <option value="Tipo C">Tipo C: Solo exhibición básica</option>
-                            <option value="Tipo D">Tipo D: Fuera de ruta / Otro</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">Impacto de Prioridades</label>
-                        <select id="c-impacto" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
-                            <option value="SÍ">SÍ</option>
-                            <option value="NO">NO</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">¿Compra Efectiva?</label>
-                        <select id="c-compra" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
-                            <option value="SÍ">SÍ</option>
-                            <option value="NO">NO</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">Códigos sin Impactar / Comentarios</label>
-                        <textarea id="c-codigos" rows="2" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">Ninguno</textarea>
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">Notas de Auditoría</label>
-                        <textarea id="c-notas" rows="2" placeholder="Observaciones adicionales..." class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200"></textarea>
-                    </div>
-                </div>
-
-                <div class="pt-4 flex justify-end">
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2.5 rounded-lg shadow transition flex items-center gap-2 text-sm">
-                        <i class="fa-solid fa-floppy-disk"></i> Guardar Cliente en Reporte Ejecutivo
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <!-- TAB 3: SUPERVISION -->
-        <div id="tab-supervision" class="tab-content hidden bg-slate-800 border border-slate-700 border-t-0 rounded-b-xl p-6 shadow-xl">
-            <h2 class="text-lg font-semibold text-blue-400 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-clipboard-list"></i> 3. Supervisión y Evaluación
-            </h2>
-            <div class="mb-6 p-4 bg-slate-900 border border-slate-700 rounded-lg">
-                <label class="block text-xs text-slate-400 mb-2 font-semibold uppercase">Seleccionar Cliente:</label>
-                <select id="supervision-client-select" class="w-full bg-slate-800 border border-slate-600 rounded p-2.5 text-sm text-slate-200">
-                    <option value="">-- Seleccione un cliente --</option>
-                </select>
-            </div>
-            <form id="supervision-form" onsubmit="submitSupervision(event)" class="space-y-4">
-                <div id="checklist-container" class="space-y-2"></div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-700 mt-4">
-                    <div>
-                        <label class="block text-xs text-slate-300 mb-1 font-semibold">Firma Asesor</label>
-                        <canvas id="asesor-sig-pad" class="signature-pad w-full h-32"></canvas>
-                        <button type="button" onclick="clearSig('asesor-sig-pad')" class="mt-1 text-xs text-red-400 hover:underline">Borrar</button>
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-300 mb-1 font-semibold">Firma Supervisor</label>
-                        <canvas id="supervisor-sig-pad" class="signature-pad w-full h-32"></canvas>
-                        <button type="button" onclick="clearSig('supervisor-sig-pad')" class="mt-1 text-xs text-red-400 hover:underline">Borrar</button>
-                    </div>
-                </div>
-                <div class="pt-6 flex justify-end">
-                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-6 py-2.5 rounded-lg shadow transition text-sm">Finalizar Supervisión</button>
-                </div>
-            </form>
-        </div>
-
-        <!-- TAB 4: MAPA INTERACTIVO -->
-        <div id="tab-mapa" class="tab-content hidden bg-slate-800 border border-slate-700 border-t-0 rounded-b-xl p-6 shadow-xl relative">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2">
-                <div>
-                    <h2 class="text-lg font-semibold text-blue-400 flex items-center gap-2">
-                        <i class="fa-solid fa-map"></i> Mapa Interactivo - Corrección de Pines de Clientes
-                    </h2>
-                    <p class="text-xs text-slate-400">Haz clic sobre el pin desfasado de un cliente registrado en el mapa para iniciar la corrección.</p>
-                </div>
-            </div>
-            
-            <div id="map-notice" class="bg-blue-950/80 border border-blue-500 text-blue-200 text-xs p-3 rounded-lg mb-3 flex items-center justify-between">
-                <span id="map-instruction-text"><i class="fa-solid fa-circle-info"></i> Haz clic en el pin del cliente que deseas modificar.</span>
-            </div>
-
-            <div id="map"></div>
-        </div>
-
-        <!-- TAB 5: HISTORIAL Y REPORTE GERENCIAL -->
-        <div id="tab-historial" class="tab-content hidden bg-slate-800 border border-slate-700 border-t-0 rounded-b-xl p-6 shadow-xl">
-            <!-- Botones Superiores del Panel Gerencial -->
-            <div class="flex flex-wrap gap-3 mb-6 bg-slate-900/80 p-3 rounded-xl border border-slate-700 items-center">
-                <button onclick="exportCSV()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow flex items-center gap-2">
-                    <i class="fa-solid fa-file-csv"></i> CSV Base de Datos
-                </button>
-                <button onclick="alert('Abriendo reporte visual...')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow flex items-center gap-2">
-                    <i class="fa-solid fa-chart-pie"></i> Ver Reporte Visual
-                </button>
-                <button onclick="exportExcelWithPhotos()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow flex items-center gap-2">
-                    <i class="fa-solid fa-file-excel"></i> Descargar Excel con Fotos
-                </button>
-                <button onclick="clearHistory()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow ml-auto flex items-center gap-2">
-                    <i class="fa-solid fa-trash"></i> Borrar
-                </button>
-            </div>
-
-            <!-- 4 Tarjetas de Métricas Principales -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div class="bg-slate-900 border-l-4 border-blue-500 p-4 rounded-xl shadow">
-                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Visitas</p>
-                    <p id="metric-total" class="text-2xl font-black text-white mt-1">0</p>
-                </div>
-                <div class="bg-slate-900 border-l-4 border-emerald-500 p-4 rounded-xl shadow">
-                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">% Clientes Abiertos</p>
-                    <p id="metric-abiertos" class="text-2xl font-black text-emerald-400 mt-1">0.0%</p>
-                </div>
-                <div class="bg-slate-900 border-l-4 border-amber-500 p-4 rounded-xl shadow">
-                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">% Compra Efectiva</p>
-                    <p id="metric-compra" class="text-2xl font-black text-amber-400 mt-1">0.0%</p>
-                </div>
-                <div class="bg-slate-900 border-l-4 border-cyan-500 p-4 rounded-xl shadow">
-                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">% Impacto Prioridades</p>
-                    <p id="metric-impacto" class="text-2xl font-black text-cyan-400 mt-1">0.0%</p>
-                </div>
-            </div>
-
-            <!-- Evaluación y Calificación del Asesor -->
-            <div class="bg-slate-900 border border-slate-700 p-5 rounded-xl shadow mb-6">
-                <h3 class="text-sm font-bold text-blue-400 uppercase tracking-wide mb-2"><i class="fa-solid fa-award"></i> Evaluación y Calificación del Asesor</h3>
-                <p id="eval-score" class="text-sm text-slate-300 font-medium mb-2">Promedio de Aciertos en Checklist: 0.0 / 10</p>
-                <div id="eval-status" class="bg-red-950/80 border border-red-600 text-red-300 text-xs font-bold px-3 py-2 rounded-lg mb-3 inline-block">
-                    Estatus de Desempeño: INEFICIENTE
-                </div>
-                <div class="mt-2 text-xs text-slate-400">
-                    <p class="font-bold text-amber-400 mb-1 flex items-center gap-1.5"><i class="fa-solid fa-triangle-exclamation"></i> Áreas donde requiere capacitación (Pasos con más fallos):</p>
-                    <ul id="eval-fallos-list" class="list-disc list-inside space-y-0.5 text-slate-300 pl-2">
-                        <!-- Generado Dinámicamente -->
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Distribución de Clientes Segmentados -->
-            <div class="bg-slate-900 border border-slate-700 p-5 rounded-xl shadow mb-6">
-                <h3 class="text-sm font-bold text-blue-400 uppercase tracking-wide mb-3"><i class="fa-solid fa-chart-column"></i> Distribución de Clientes Segmentados</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
-                    <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
-                        <p class="text-xs text-slate-400 font-semibold">Tipo A</p>
-                        <p id="seg-a" class="text-xl font-bold text-white mt-1">0</p>
-                    </div>
-                    <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
-                        <p class="text-xs text-slate-400 font-semibold">Tipo B</p>
-                        <p id="seg-b" class="text-xl font-bold text-white mt-1">0</p>
-                    </div>
-                    <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
-                        <p class="text-xs text-slate-400 font-semibold">Tipo C</p>
-                        <p id="seg-c" class="text-xl font-bold text-white mt-1">0</p>
-                    </div>
-                    <div class="bg-slate-800 p-3 rounded-lg border border-slate-700">
-                        <p class="text-xs text-slate-400 font-semibold">Tipo D</p>
-                        <p id="seg-d" class="text-xl font-bold text-white mt-1">0</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Registro Detallado -->
-            <h3 class="text-sm font-bold text-blue-400 uppercase tracking-wide mb-3">Registro Detallado</h3>
-            <div id="history-container" class="space-y-4">
-                <p class="text-sm text-slate-400 text-center py-8">No hay registros guardados todavía.</p>
-            </div>
-        </div>
-    </main>
-
-    <!-- Script Principal -->
-    <script>
-        let currentLat = 32.47027;
-        let currentLng = -116.83785;
-        let map, markersLayer;
-        let clientBeingCorrected = null; 
-        let pendingNewLat = null, pendingNewLng = null;
-
-        const checklistSteps = [
-            "1. ID Cliente en Base de Datos", "2. Saludo a Cliente", "3. ID Nuestras Marcas",
-            "4. ID Stock", "5. Revisión de Caducidades", "6. Impulso de Variantes",
-            "7. Cierre Promos", "8. Comunicar Venta a Cliente", "9. Manejo de Objeciones", "10. Despedida"
-        ];
-
-        window.addEventListener('DOMContentLoaded', () => {
-            loadRouteData();
-            initGPS();
-            initChecklist();
-            initSignaturePads();
-            initMap();
-            loadHistory();
-            updateClientDropdown();
-        });
-
-        function toggleRescuePanel() { document.getElementById('rescue-panel').classList.toggle('hidden'); }
-        function exportBackup() {
-            const backupData = { history: JSON.parse(localStorage.getItem('intmex_history') || '[]'), route: JSON.parse(localStorage.getItem('intmex_route_data') || '{}') };
-            const blob = new Blob([JSON.stringify(backupData, null, 2)], {type: 'application/json'});
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `respaldo_intmex.json`; a.click();
-        }
-        function importBackup(e) {
-            const file = e.target.files[0]; if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(ev) {
-                try {
-                    const data = JSON.parse(ev.target.result);
-                    if (data.history) localStorage.setItem('intmex_history', JSON.stringify(data.history));
-                    if (data.route) localStorage.setItem('intmex_route_data', JSON.stringify(data.route));
-                    alert('¡Respaldo cargado con éxito!'); location.reload();
-                } catch(err) { alert('Error al leer el archivo.'); }
-            };
-            reader.readAsText(file);
-        }
-        function clearHistory() {
-            if(confirm('¿Vaciar todo el historial?')) { localStorage.removeItem('intmex_history'); loadHistory(); updateClientDropdown(); updateMapMarkers(); }
-        }
-        function exportCSV() {
-            const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
-            if(history.length === 0) { alert('No hay datos.'); return; }
-            let csv = 'ID,Cliente,Segmento,Impacto,Compra,Lat,Lng,Fecha\n';
-            history.forEach(i => { csv += `${i.id},"${i.nombre}","${i.segmento}","${i.impacto}","${i.compra}",${i.lat},${i.lng},"${i.timestamp}"\n`; });
-            const a = document.createElement('a'); a.href = window.URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `reporte.csv`; a.click();
-        }
-        function exportExcelWithPhotos() {
-            alert('Generando archivo Excel con registros fotográficos y métricas gerenciales...');
-        }
-        function populateRoutes(cedisVal, selectedRuta = '') {
-            const rutaSelect = document.getElementById('f-ruta');
-            rutaSelect.innerHTML = '<option value="">Seleccione Ruta</option>';
-            if (!cedisVal) return;
-            for (let i = 1; i <= 18; i++) {
-                const num = i < 10 ? '0' + i : i; const val = `${cedisVal}${num}`;
-                rutaSelect.innerHTML += `<option value="${val}" ${val===selectedRuta?'selected':''}>${val}</option>`;
-            }
-        }
-        function onCedisChange() { populateRoutes(document.getElementById('f-cedis').value); saveRouteData(); }
-        function saveRouteData() {
-            localStorage.setItem('intmex_route_data', JSON.stringify({
-                cedis: document.getElementById('f-cedis').value, ruta: document.getElementById('f-ruta').value,
-                asesor: document.getElementById('f-asesor').value, tipoRuta: document.getElementById('f-tipo-ruta').value, objetivo: document.getElementById('f-objetivo').value
-            }));
-        }
-        function loadRouteData() {
-            const saved = localStorage.getItem('intmex_route_data');
-            if (saved) {
-                const data = JSON.parse(saved);
-                document.getElementById('f-cedis').value = data.cedis || '';
-                if(data.cedis) populateRoutes(data.cedis, data.ruta);
-                document.getElementById('f-asesor').value = data.asesor || '';
-                document.getElementById('f-tipo-ruta').value = data.tipoRuta || 'Ruta Activa';
-                document.getElementById('f-objetivo').value = data.objetivo || '';
-            }
-        }
-        function initGPS() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition((pos) => {
-                    currentLat = pos.coords.latitude; currentLng = pos.coords.longitude;
-                    if (map) map.setView([currentLat, currentLng], 16);
-                }, () => {});
-            }
-        }
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(btn => { btn.classList.remove('bg-blue-600', 'text-white'); btn.classList.add('bg-slate-800', 'text-slate-400'); });
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            const activeBtn = document.getElementById(`btn-tab-${tabId}`);
-            activeBtn.classList.remove('bg-slate-800', 'text-slate-400'); activeBtn.classList.add('bg-blue-600', 'text-white');
-            if(tabId === 'mapa' && map) { setTimeout(() => map.invalidateSize(), 200); updateMapMarkers(); }
-            if(tabId === 'historial') loadHistory();
-        }
-        function initChecklist() {
-            const container = document.getElementById('checklist-container'); container.innerHTML = '';
-            checklistSteps.forEach((step, idx) => {
-                container.innerHTML += `<div class="flex items-center justify-between bg-slate-900 border border-slate-700/60 p-3 rounded-lg"><span class="text-sm font-medium text-slate-200">${step}</span><div class="flex gap-2"><button type="button" onclick="setCheck(${idx}, 'SÍ')" id="chk-${idx}-si" class="px-4 py-1.5 text-xs font-bold rounded bg-slate-800 text-slate-300 border border-slate-600">SÍ</button><button type="button" onclick="setCheck(${idx}, 'NO')" id="chk-${idx}-no" class="px-4 py-1.5 text-xs font-bold rounded bg-slate-800 text-slate-300 border border-slate-600">NO</button></div></div>`;
-            });
-        }
-        const checkValues = {};
-        function setCheck(idx, val) {
-            checkValues[idx] = val;
-            document.getElementById(`chk-${idx}-si`).className = val === 'SÍ' ? "px-4 py-1.5 text-xs font-bold rounded bg-emerald-600 text-white" : "px-4 py-1.5 text-xs font-bold rounded bg-slate-800 text-slate-300 border border-slate-600";
-            document.getElementById(`chk-${idx}-no`).className = val === 'NO' ? "px-4 py-1.5 text-xs font-bold rounded bg-red-600 text-white" : "px-4 py-1.5 text-xs font-bold rounded bg-slate-800 text-slate-300 border border-slate-600";
-        }
-        function setupCanvas(canvasId) {
-            const canvas = document.getElementById(canvasId), ctx = canvas.getContext('2d'); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2; let drawing = false;
-            canvas.addEventListener('mousedown', (e) => { drawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); });
-            canvas.addEventListener('mousemove', (e) => { if(drawing){ ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } });
-            canvas.addEventListener('mouseup', () => drawing = false);
-            canvas.addEventListener('touchstart', (e) => { drawing = true; const rect = canvas.getBoundingClientRect(); ctx.beginPath(); ctx.moveTo(e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top); e.preventDefault(); });
-            canvas.addEventListener('touchmove', (e) => { if(drawing){ const rect = canvas.getBoundingClientRect(); ctx.lineTo(e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top); ctx.stroke(); } e.preventDefault(); });
-            canvas.addEventListener('touchend', () => drawing = false);
-        }
-        function initSignaturePads() { setupCanvas('asesor-sig-pad'); setupCanvas('supervisor-sig-pad'); }
-        function clearSig(canvasId) { const canvas = document.getElementById(canvasId); canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height); }
-
-        function initMap() {
-            map = L.map('map').setView([currentLat, currentLng], 16);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
-            markersLayer = L.layerGroup().addTo(map);
-            updateMapMarkers();
-
-            map.on('click', function(e) {
-                if (clientBeingCorrected) {
-                    pendingNewLat = e.latlng.lat;
-                    pendingNewLng = e.latlng.lng;
-                    showFloatingConfirmButton(`¿Es correcta la ubicación de ${clientBeingCorrected.nombre}?`);
-                }
-            });
-        }
-
-        function updateMapMarkers() {
-            if(!markersLayer) return;
-            markersLayer.clearLayers();
-            const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
-            history.forEach(item => {
-                if(item.lat && item.lng) {
-                    const marker = L.marker([item.lat, item.lng]).addTo(markersLayer);
-                    marker.bindPopup(`<b>${item.nombre}</b><br>Haz clic en el mapa para corregir este pin.`);
-                    marker.on('click', () => {
-                        clientBeingCorrected = item;
-                        document.getElementById('map-instruction-text').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-400"></i> Seleccionado: <b>${item.nombre}</b>. Haz clic en el mapa en la <b>NUEVA ubicación correcta</b>.`;
-                    });
-                }
-            });
-        }
-
-        function showFloatingConfirmButton(text) {
-            let existing = document.getElementById('floating-confirm-box');
-            if(existing) existing.remove();
-
-            const div = document.createElement('div');
-            div.id = 'floating-confirm-box';
-            div.className = "absolute bottom-6 left-1/2 transform -translate-x-1/2 z-[1000] bg-slate-900 border-2 border-emerald-500 p-4 rounded-xl shadow-2xl flex flex-col items-center gap-3";
-            div.innerHTML = `
-                <p class="text-sm font-bold text-emerald-300">${text}</p>
-                <div class="flex gap-3">
-                    <button onclick="confirmClientLocationUpdate(true)" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-5 py-2 rounded-lg shadow">SÍ</button>
-                    <button onclick="confirmClientLocationUpdate(false)" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-5 py-2 rounded-lg shadow">NO</button>
-                </div>
-            `;
-            document.getElementById('tab-mapa').appendChild(div);
-        }
-
-        function confirmClientLocationUpdate(isYes) {
-            let box = document.getElementById('floating-confirm-box');
-            if(box) box.remove();
-
-            if(isYes && clientBeingCorrected && pendingNewLat !== null) {
-                let history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
-                let index = history.findIndex(h => h.id == clientBeingCorrected.id);
-
-                if(index !== -1) {
-                    history[index].lat = pendingNewLat;
-                    history[index].lng = pendingNewLng;
-                    localStorage.setItem('intmex_history', JSON.stringify(history));
-                    alert(`¡Ubicación de "${clientBeingCorrected.nombre}" modificada con éxito!`);
-                }
-            }
-
-            clientBeingCorrected = null;
-            pendingNewLat = null;
-            pendingNewLng = null;
-            document.getElementById('map-instruction-text').innerHTML = `<i class="fa-solid fa-circle-info"></i> Haz clic en el pin del cliente que deseas modificar.`;
-            updateMapMarkers();
-        }
-
-        function registerClient(e) {
-            e.preventDefault();
-            const clientRecord = {
-                id: Date.now(),
-                abierto: document.getElementById('c-abierto').value,
-                nombre: document.getElementById('c-nombre').value,
-                telefono: document.getElementById('c-telefono').value,
-                recibe: document.getElementById('c-recibe').value,
-                segmento: document.getElementById('c-segmento').value,
-                impacto: document.getElementById('c-impacto').value,
-                compra: document.getElementById('c-compra').value,
-                codigos: document.getElementById('c-codigos').value,
-                notas: document.getElementById('c-notas').value,
-                lat: currentLat, lng: currentLng,
-                timestamp: new Date().toLocaleString()
-            };
-
-            let history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
-            history.unshift(clientRecord);
-            localStorage.setItem('intmex_history', JSON.stringify(history));
-
-            alert('¡Cliente registrado con éxito!');
-            document.getElementById('client-form').reset();
-            updateClientDropdown();
-            switchTab('historial');
-        }
-
-        function updateClientDropdown() {
-            const select = document.getElementById('supervision-client-select');
-            const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
-            select.innerHTML = '<option value="">-- Seleccione un cliente --</option>';
-            history.forEach(c => select.innerHTML += `<option value="${c.id}">${c.nombre} (${c.segmento || 'General'})</option>`);
-        }
-
-        function submitSupervision(e) {
-            e.preventDefault();
-            alert('¡Supervisión y firmas guardadas correctamente!');
-        }
-
-        function loadHistory() {
-            const container = document.getElementById('history-container');
-            const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
-            
-            // Actualizar Métricas Gerenciales
-            const total = history.length;
-            document.getElementById('metric-total').innerText = total;
-
-            if (total > 0) {
-                const abiertosCount = history.filter(i => i.abierto === 'SÍ').length;
-                const compraCount = history.filter(i => i.compra === 'SÍ').length;
-                const impactoCount = history.filter(i => i.impacto === 'SÍ').length;
-
-                document.getElementById('metric-abiertos').innerText = ((abiertosCount / total) * 100).toFixed(1) + '%';
-                document.getElementById('metric-compra').innerText = ((compraCount / total) * 100).toFixed(1) + '%';
-                document.getElementById('metric-impacto').innerText = ((impactoCount / total) * 100).toFixed(1) + '%';
-
-                // Segmentación
-                document.getElementById('seg-a').innerText = history.filter(i => i.segmento && i.segmento.startsWith('Tipo A')).length;
-                document.getElementById('seg-b').innerText = history.filter(i => i.segmento && i.segmento.startsWith('Tipo B')).length;
-                document.getElementById('seg-c').innerText = history.filter(i => i.segmento && i.segmento.startsWith('Tipo C')).length;
-                document.getElementById('seg-d').innerText = history.filter(i => i.segmento && i.segmento.startsWith('Tipo D')).length;
-            } else {
-                document.getElementById('metric-abiertos').innerText = '0.0%';
-                document.getElementById('metric-compra').innerText = '0.0%';
-                document.getElementById('metric-impacto').innerText = '0.0%';
-                document.getElementById('seg-a').innerText = '0';
-                document.getElementById('seg-b').innerText = '0';
-                document.getElementById('seg-c').innerText = '0';
-                document.getElementById('seg-d').innerText = '0';
-            }
-
-            // Fallos Checklist dinámicos
-            const fallosList = document.getElementById('eval-fallos-list');
-            fallosList.innerHTML = '';
-            checklistSteps.forEach(step => {
-                fallosList.innerHTML += `<li>${step}: 0 fallos registrados</li>`;
-            });
-
-            if (history.length === { length: 0 }.length && history.length === 0) { 
-                container.innerHTML = '<p class="text-sm text-slate-400 text-center py-8">No hay registros guardados todavía.</p>'; 
-                return; 
-            }
-
-            if(history.length === 0) {
-                container.innerHTML = '<p class="text-sm text-slate-400 text-center py-8">No hay registros guardados todavía.</p>';
-                return;
-            }
-
-            container.innerHTML = '';
-            history.forEach(item => {
-                const routeData = JSON.parse(localStorage.getItem('intmex_route_data') || '{}');
-                container.innerHTML += `
-                    <div class="bg-slate-900 border border-slate-700 p-4 rounded-lg shadow">
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-sm font-bold text-blue-400">${item.nombre} <span class="text-xs text-slate-400">(${routeData.cedis || 'CEDIS'} - ${routeData.ruta || 'Ruta'})</span></span>
-                        </div>
-                        <p class="text-xs text-slate-400 mb-2">Fecha: ${item.timestamp} | Asesor: ${routeData.asesor || 'N/A'} | Segmento: ${item.segmento || 'N/A'}</p>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-slate-300 my-1 bg-slate-800/60 p-2.5 rounded">
-                            <div><b>Abierto:</b> ${item.abierto || 'N/A'}</div>
-                            <div><b>Compra:</b> ${item.compra || 'N/A'}</div>
-                            <div><b>Impacto Prioridades:</b> ${item.impacto || 'N/A'}</div>
-                            <div><b>Recibe:</b> ${item.recibe || 'N/A'}</div>
-                        </div>
-                        <p class="text-xs text-slate-400 mt-1"><b>Códigos sin impactar:</b> ${item.codigos || 'Ninguno'} | <b>Notas:</b> ${item.notas || 'Sin notas'}</p>
-                    </div>
-                `;
-            });
-        }
-    </script>
 </body>
 </html>
