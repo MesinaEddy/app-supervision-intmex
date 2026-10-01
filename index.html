@@ -12,8 +12,8 @@
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        #map { height: 400px; border-radius: 0.5rem; }
-        .signature-pad { border: 2px dashed #4b5563; background: #1f2937; border-radius: 0.5rem; cursor: crosshair; }
+        #map { height: 450px; border-radius: 0.5rem; cursor: crosshair; }
+        .signature-pad { border: 2px dashed #4b5563; background: #1f2937; border-radius: 0.5rem; cursor: crosshair; touch-action: none; }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen pb-12">
@@ -22,13 +22,13 @@
     <header class="bg-slate-800 border-b border-slate-700 py-3 px-6 shadow-md">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
             <div class="flex items-center gap-3">
-                <img src="logo.png" alt="INTMEX Logo" class="w-12 h-12 rounded-full object-cover border-2 border-blue-400 shadow">
+                <img src="logo.png" alt="INTMEX Logo" class="w-12 h-12 rounded-full object-cover border-2 border-blue-400 shadow" onerror="this.src='https://via.placeholder.com/48?text=INT'">
                 <div>
                     <h1 class="text-xl font-bold tracking-wide text-blue-400">SUPERVISIÓN INTMEX</h1>
                     <p class="text-xs text-slate-400">Directo a tu tienda | Control de Campo</p>
                 </div>
             </div>
-            <!-- Botones de Rescate de Emergencia -->
+            <!-- Botones de Rescate y Estado GPS -->
             <div class="flex items-center gap-2 mt-2 md:mt-0 flex-wrap">
                 <button onclick="toggleRescuePanel()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1.5">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> Panel de Rescate
@@ -41,16 +41,16 @@
         </div>
     </header>
 
-    <!-- PANEL DE RESCATE PROFUNDO (OCULTO POR DEFECTO) -->
+    <!-- PANEL DE RESCATE PROFUNDO -->
     <div id="rescue-panel" class="max-w-7xl mx-auto px-4 mt-4 hidden">
         <div class="bg-amber-950/80 border border-amber-600 rounded-xl p-4 shadow-xl">
             <h3 class="text-sm font-bold text-amber-300 mb-2 flex items-center gap-2">
-                <i class="fa-solid fa-triangle-exclamation"></i> Centro de Recuperación de Datos del Navegador
+                <i class="fa-solid fa-triangle-exclamation"></i> Centro de Recuperación de Datos
             </h3>
-            <p class="text-xs text-amber-200 mb-3">Si tus registros están en otra memoria o versión anterior, usa estas opciones para buscarlos o respaldarlos:</p>
+            <p class="text-xs text-amber-200 mb-3">Opciones para respaldar o recuperar registros guardados:</p>
             <div class="flex flex-wrap gap-2">
                 <button onclick="forceDeepScan()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-2 rounded font-medium">
-                    <i class="fa-solid fa-magnifying-glass"></i> Escanear Todo el Almacenamiento
+                    <i class="fa-solid fa-magnifying-glass"></i> Escanear Almacenamiento
                 </button>
                 <button onclick="exportBackup()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-2 rounded font-medium">
                     <i class="fa-solid fa-download"></i> Descargar Respaldo JSON
@@ -59,7 +59,6 @@
                     <i class="fa-solid fa-upload"></i> Cargar Respaldo JSON <input type="file" accept=".json" onchange="importBackup(event)" class="hidden">
                 </label>
             </div>
-            <div id="scan-results" class="mt-3 text-xs text-slate-300 bg-slate-900 p-2 rounded max-h-32 overflow-y-auto hidden"></div>
         </div>
     </div>
 
@@ -125,18 +124,24 @@
                 <i class="fa-solid fa-clipboard-check mr-2"></i> 3. Supervisión / Checklist
             </button>
             <button onclick="switchTab('mapa')" id="btn-tab-mapa" class="tab-btn px-4 py-2.5 font-medium text-sm rounded-t-lg bg-slate-800 text-slate-400 hover:text-white transition">
-                <i class="fa-solid fa-map-location-dot mr-2"></i> 4. Mapa Interactivo
+                <i class="fa-solid fa-map-location-dot mr-2"></i> 4. Mapa Interactivo (GPS)
             </button>
             <button onclick="switchTab('historial')" id="btn-tab-historial" class="tab-btn px-4 py-2.5 font-medium text-sm rounded-t-lg bg-slate-800 text-slate-400 hover:text-white transition">
-                <i class="fa-solid fa-clock-rotate-left mr-2"></i> 5. Historial y Reporte
+                <i class="fa-solid fa-clock-rotate-left mr-2"></i> 5. Historial y Reporte Ejecutivo
             </button>
         </div>
 
         <!-- TAB 1: REGISTRO DE CLIENTES -->
         <div id="tab-clientes" class="tab-content bg-slate-800 border border-slate-700 border-t-0 rounded-b-xl p-6 shadow-xl">
-            <h2 class="text-lg font-semibold text-blue-400 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-user-plus"></i> Alta de Cliente en Base de Datos Real
-            </h2>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-blue-400 flex items-center gap-2">
+                    <i class="fa-solid fa-user-plus"></i> Alta de Cliente en Base de Datos (Va directo al Reporte)
+                </h2>
+                <div id="current-coords-badge" class="text-xs bg-slate-900 border border-slate-700 px-3 py-1.5 rounded text-blue-300">
+                    <i class="fa-solid fa-location-crosshairs"></i> Coordenadas activas: <span id="badge-lat-lng">Cargando...</span>
+                </div>
+            </div>
+            
             <form id="client-form" onsubmit="registerClient(event)" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div>
@@ -193,69 +198,88 @@
                     </div>
                 </div>
 
-                <!-- Foto Fachada y Firma del Cliente -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-700">
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">Foto de Fachada / Negocio</label>
-                        <input type="file" id="c-foto" accept="image/*" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">Firma del Cliente de Conformidad</label>
-                        <canvas id="client-sig-pad" class="signature-pad w-full h-28"></canvas>
-                        <button type="button" onclick="clearClientSig()" class="mt-1 text-xs text-red-400 hover:underline"><i class="fa-solid fa-eraser"></i> Borrar Firma</button>
-                    </div>
-                </div>
-
                 <div class="pt-4 flex justify-end">
                     <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2.5 rounded-lg shadow transition flex items-center gap-2 text-sm">
-                        <i class="fa-solid fa-floppy-disk"></i> Guardar Cliente y Continuar
+                        <i class="fa-solid fa-floppy-disk"></i> Guardar Cliente en Historial
                     </button>
                 </div>
             </form>
         </div>
 
-        <!-- TAB 2: SUPERVISION / CHECKLIST -->
+        <!-- TAB 2: SUPERVISION / CHECKLIST Y FIRMAS -->
         <div id="tab-supervision" class="tab-content hidden bg-slate-800 border border-slate-700 border-t-0 rounded-b-xl p-6 shadow-xl">
             <h2 class="text-lg font-semibold text-blue-400 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-clipboard-list"></i> 3. Pasos de la Visita (Checklist de Supervisión)
+                <i class="fa-solid fa-clipboard-list"></i> 3. Supervisión y Evaluación (Opcional por Cliente)
             </h2>
             
             <div class="mb-6 p-4 bg-slate-900 border border-slate-700 rounded-lg">
-                <label class="block text-xs text-slate-400 mb-2 font-semibold uppercase">Seleccionar Cliente Registrado para Auditar:</label>
+                <label class="block text-xs text-slate-400 mb-2 font-semibold uppercase">Seleccionar Cliente Registrado para Aplicar Supervisión:</label>
                 <select id="supervision-client-select" class="w-full bg-slate-800 border border-slate-600 rounded p-2.5 text-sm text-slate-200">
-                    <option value="">-- Primero registre o seleccione un cliente --</option>
+                    <option value="">-- Seleccione un cliente --</option>
                 </select>
             </div>
 
-            <form id="supervision-form" onsubmit="submitSupervision(event)" class="space-y-3">
+            <form id="supervision-form" onsubmit="submitSupervision(event)" class="space-y-4">
                 <div id="checklist-container" class="space-y-2"></div>
+
+                <!-- Sección de Firmas de Supervisión -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-700 mt-4">
+                    <div>
+                        <label class="block text-xs text-slate-300 mb-1 font-semibold"><i class="fa-solid fa-signature"></i> Firma del Asesor</label>
+                        <canvas id="asesor-sig-pad" class="signature-pad w-full h-32"></canvas>
+                        <button type="button" onclick="clearSig('asesor-sig-pad')" class="mt-1 text-xs text-red-400 hover:underline"><i class="fa-solid fa-eraser"></i> Borrar Firma Asesor</button>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-300 mb-1 font-semibold"><i class="fa-solid fa-signature"></i> Firma del Supervisor</label>
+                        <canvas id="supervisor-sig-pad" class="signature-pad w-full h-32"></canvas>
+                        <button type="button" onclick="clearSig('supervisor-sig-pad')" class="mt-1 text-xs text-red-400 hover:underline"><i class="fa-solid fa-eraser"></i> Borrar Firma Supervisor</button>
+                    </div>
+                </div>
 
                 <div class="pt-6 flex justify-end">
                     <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-6 py-2.5 rounded-lg shadow transition flex items-center gap-2 text-sm">
-                        <i class="fa-solid fa-circle-check"></i> Finalizar Auditoría y Generar Reporte
+                        <i class="fa-solid fa-circle-check"></i> Finalizar Supervisión y Actualizar Reporte
                     </button>
                 </div>
             </form>
         </div>
 
-        <!-- TAB 3: MAPA INTERACTIVO -->
+        <!-- TAB 3: MAPA INTERACTIVO CON CORRECCIÓN MANUAL -->
         <div id="tab-mapa" class="tab-content hidden bg-slate-800 border border-slate-700 border-t-0 rounded-b-xl p-6 shadow-xl">
-            <h2 class="text-lg font-semibold text-blue-400 mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-map"></i> Ubicaciones Registradas en Ruta
-            </h2>
-            <p class="text-xs text-slate-400 mb-4">Visualice geográficamente los puntos visitados y auditados durante la jornada actual.</p>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-2">
+                <div>
+                    <h2 class="text-lg font-semibold text-blue-400 flex items-center gap-2">
+                        <i class="fa-solid fa-map"></i> Mapa Interactivo y Corrección de GPS
+                    </h2>
+                    <p class="text-xs text-slate-400">Si el GPS está desfasado, <b>haz clic exactamente sobre la ubicación del negocio en el mapa</b> para corregir las coordenadas.</p>
+                </div>
+                <button onclick="resetGpsToDevice()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-2 rounded-lg font-medium shadow flex items-center gap-1.5">
+                    <i class="fa-solid fa-location-crosshairs"></i> Volver a mi GPS Actual
+                </button>
+            </div>
+            
+            <div id="map-notice" class="bg-blue-950/80 border border-blue-500 text-blue-200 text-xs p-2.5 rounded-lg mb-3 flex items-center justify-between">
+                <span><i class="fa-solid fa-circle-info"></i> Coordenadas seleccionadas: <strong id="selected-coords-text">Cargando...</strong></span>
+                <span class="text-slate-400 italic">Haz clic en el mapa para ajustar el pin</span>
+            </div>
+
             <div id="map"></div>
         </div>
 
-        <!-- TAB 4: HISTORIAL Y REPORTES -->
+        <!-- TAB 4: HISTORIAL Y REPORTE EJECUTIVO -->
         <div id="tab-historial" class="tab-content hidden bg-slate-800 border border-slate-700 border-t-0 rounded-b-xl p-6 shadow-xl">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-lg font-semibold text-blue-400 flex items-center gap-2">
-                    <i class="fa-solid fa-list-check"></i> Historial Consolidado de Visitas
+                    <i class="fa-solid fa-list-check"></i> Historial y Reporte Ejecutivo Consolidado
                 </h2>
-                <button onclick="loadHistory()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-3 py-1.5 rounded-lg">
-                    <i class="fa-solid fa-rotate"></i> Actualizar Lista
-                </button>
+                <div class="flex gap-2">
+                    <button onclick="clearHistory()" class="bg-red-900/60 hover:bg-red-900 text-red-200 text-xs px-3 py-1.5 rounded-lg border border-red-600">
+                        <i class="fa-solid fa-trash"></i> Limpiar Historial
+                    </button>
+                    <button onclick="loadHistory()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs px-3 py-1.5 rounded-lg">
+                        <i class="fa-solid fa-rotate"></i> Actualizar
+                    </button>
+                </div>
             </div>
             <div id="history-container" class="space-y-4">
                 <p class="text-sm text-slate-400 text-center py-8">No hay registros guardados todavía.</p>
@@ -263,11 +287,11 @@
         </div>
     </main>
 
-    <!-- Script de Rescate y Funcionalidad -->
+    <!-- Script de Funcionalidad -->
     <script>
         let currentLat = 32.47027;
-        let lng = -116.83785;
-        let map, markersLayer;
+        let currentLng = -116.83785;
+        let map, markersLayer, tempMarker = null;
 
         const checklistSteps = [
             "1. ID Cliente en Base de Datos", "2. Saludo a Cliente", "3. ID Nuestras Marcas",
@@ -276,61 +300,21 @@
         ];
 
         window.addEventListener('DOMContentLoaded', () => {
-            forceDeepScan();
             loadRouteData();
             initGPS();
             initChecklist();
-            initSignaturePad();
+            initSignaturePads();
             initMap();
             loadHistory();
             updateClientDropdown();
         });
 
         function toggleRescuePanel() {
-            const panel = document.getElementById('rescue-panel');
-            panel.classList.toggle('hidden');
-        }
-
-        // Inspecciona TODO el navegador para encontrar cualquier dato guardado previamente
-        function forceDeepScan() {
-            let foundClients = JSON.parse(localStorage.getItem('intmex_clients') || '[]');
-            let foundHistory = JSON.parse(localStorage.getItem('intmex_history') || '[]');
-            let scanLog = [];
-
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                const val = localStorage.getItem(key);
-                scanLog.push(`Llave: <b>${key}</b>`);
-                try {
-                    const parsed = JSON.parse(val);
-                    if (Array.isArray(parsed)) {
-                        parsed.forEach(item => {
-                            if (item.nombre && !foundClients.some(c => c.nombre === item.nombre)) {
-                                foundClients.push(item);
-                            }
-                            if (item.checklist && !foundHistory.some(h => h.timestamp === item.timestamp)) {
-                                foundHistory.push(item);
-                            }
-                        });
-                    }
-                } catch(e) {}
-            }
-
-            localStorage.setItem('intmex_clients', JSON.stringify(foundClients));
-            localStorage.setItem('intmex_history', JSON.stringify(foundHistory));
-
-            const resDiv = document.getElementById('scan-results');
-            resDiv.classList.remove('hidden');
-            resDiv.innerHTML = `<b>Escaneo completado:</b> ${foundClients.length} clientes y ${foundHistory.length} auditorías encontradas.<br>` + scanLog.join('<br>');
-            
-            loadHistory();
-            updateClientDropdown();
-            updateMapMarkers();
+            document.getElementById('rescue-panel').classList.toggle('hidden');
         }
 
         function exportBackup() {
             const backupData = {
-                clients: JSON.parse(localStorage.getItem('intmex_clients') || '[]'),
                 history: JSON.parse(localStorage.getItem('intmex_history') || '[]'),
                 route: JSON.parse(localStorage.getItem('intmex_route_data') || '{}'),
                 date: new Date().toISOString()
@@ -338,8 +322,7 @@
             const blob = new Blob([JSON.stringify(backupData, null, 2)], {type: 'application/json'});
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url;
-            a.download = `respaldo_intmex_${new Date().toISOString().slice(0,10)}.json`;
+            a.href = url; a.download = `respaldo_intmex_${new Date().toISOString().slice(0,10)}.json`;
             a.click();
         }
 
@@ -350,16 +333,22 @@
             reader.onload = function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
-                    if (data.clients) localStorage.setItem('intmex_clients', JSON.stringify(data.clients));
                     if (data.history) localStorage.setItem('intmex_history', JSON.stringify(data.history));
                     if (data.route) localStorage.setItem('intmex_route_data', JSON.stringify(data.route));
                     alert('¡Respaldo cargado con éxito!');
                     location.reload();
-                } catch(err) {
-                    alert('Error al leer el archivo JSON.');
-                }
+                } catch(err) { alert('Error al leer el archivo JSON.'); }
             };
             reader.readAsText(file);
+        }
+
+        function clearHistory() {
+            if(confirm('¿Desea vaciar todo el historial y reportes?')) {
+                localStorage.removeItem('intmex_history');
+                loadHistory();
+                updateClientDropdown();
+                updateMapMarkers();
+            }
         }
 
         function populateRoutes(cedisVal, selectedRuta = '') {
@@ -411,17 +400,43 @@
             }
         }
 
+        let originalDeviceLat = null, originalDeviceLng = null;
+
         function initGPS() {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     (pos) => {
-                        currentLat = pos.coords.latitude;
-                        lng = pos.coords.longitude;
-                        document.getElementById('gps-text').innerText = `GPS Activo: ${currentLat.toFixed(4)}, ${lng.toFixed(4)}`;
+                        originalDeviceLat = pos.coords.latitude;
+                        originalDeviceLng = pos.coords.longitude;
+                        currentLat = originalDeviceLat;
+                        currentLng = originalDeviceLng;
+                        updateCoordsDisplay();
+                        if (map) { map.setView([currentLat, currentLng], 16); updateTempMarker(); }
                     },
-                    () => { document.getElementById('gps-text').innerText = `GPS por defecto activo`; }
+                    () => { document.getElementById('gps-text').innerText = `GPS por defecto activo`; updateCoordsDisplay(); },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
                 );
             }
+        }
+
+        function resetGpsToDevice() {
+            if (originalDeviceLat && originalDeviceLng) {
+                currentLat = originalDeviceLat;
+                currentLng = originalDeviceLng;
+                map.setView([currentLat, currentLng], 17);
+                updateTempMarker();
+                alert('¡Ubicación restablecida a tu GPS real!');
+            } else {
+                initGPS();
+                alert('Buscando señal GPS...');
+            }
+        }
+
+        function updateCoordsDisplay() {
+            const txt = `${currentLat.toFixed(5)}, ${currentLng.toFixed(5)}`;
+            document.getElementById('gps-text').innerText = `GPS Activo (Ajustable)`;
+            document.getElementById('badge-lat-lng').innerText = txt;
+            document.getElementById('selected-coords-text').innerText = txt;
         }
 
         function switchTab(tabId) {
@@ -437,6 +452,7 @@
 
             if(tabId === 'mapa' && map) setTimeout(() => map.invalidateSize(), 200);
             if(tabId === 'historial') loadHistory();
+            if(tabId === 'supervision') updateClientDropdown();
         }
 
         function initChecklist() {
@@ -469,41 +485,91 @@
             }
         }
 
-        let isDrawing = false;
-        function initSignaturePad() {
-            const canvas = document.getElementById('client-sig-pad');
+        function setupCanvas(canvasId) {
+            const canvas = document.getElementById(canvasId);
             const ctx = canvas.getContext('2d');
             ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2;
-            canvas.addEventListener('mousedown', (e) => { isDrawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); });
-            canvas.addEventListener('mousemove', (e) => { if(isDrawing){ ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } });
-            canvas.addEventListener('mouseup', () => isDrawing = false);
+            let drawing = false;
+
+            canvas.addEventListener('mousedown', (e) => { drawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); });
+            canvas.addEventListener('mousemove', (e) => { if(drawing){ ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } });
+            canvas.addEventListener('mouseup', () => drawing = false);
+            canvas.addEventListener('mouseleave', () => drawing = false);
+
+            canvas.addEventListener('touchstart', (e) => {
+                drawing = true;
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches[0];
+                ctx.beginPath();
+                ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+                e.preventDefault();
+            });
+            canvas.addEventListener('touchmove', (e) => {
+                if(!drawing) return;
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches[0];
+                ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+                ctx.stroke();
+                e.preventDefault();
+            });
+            canvas.addEventListener('touchend', () => drawing = false);
         }
 
-        function clearClientSig() {
-            const canvas = document.getElementById('client-sig-pad');
+        function initSignaturePads() {
+            setupCanvas('asesor-sig-pad');
+            setupCanvas('supervisor-sig-pad');
+        }
+
+        function clearSig(canvasId) {
+            const canvas = document.getElementById(canvasId);
             canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
         }
 
         function initMap() {
-            map = L.map('map').setView([currentLat, lng], 14);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            map = L.map('map').setView([currentLat, currentLng], 16);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
             markersLayer = L.layerGroup().addTo(map);
             updateMapMarkers();
+            updateTempMarker();
+
+            map.on('click', function(e) {
+                currentLat = e.latlng.lat;
+                currentLng = e.latlng.lng;
+                updateCoordsDisplay();
+                updateTempMarker();
+            });
+        }
+
+        function updateTempMarker() {
+            if (!map) return;
+            if (tempMarker) map.removeLayer(tempMarker);
+            const customIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: `<div style="background-color: #3b82f6; width: 22px; height: 22px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.5);"></div>`,
+                iconSize: [22, 22], iconAnchor: [11, 11]
+            });
+            tempMarker = L.marker([currentLat, currentLng], {icon: customIcon}).addTo(map);
+            tempMarker.bindPopup("<b>📍 Ubicación Seleccionada</b><br>Haz clic en otro punto del mapa para mover el pin.").openPopup();
         }
 
         function updateMapMarkers() {
             if(!markersLayer) return;
             markersLayer.clearLayers();
-            const clients = JSON.parse(localStorage.getItem('intmex_clients') || '[]');
-            clients.forEach(c => {
-                if(c.lat && c.lng) L.marker([c.lat, c.lng]).addTo(markersLayer).bindPopup(`<b>${c.nombre}</b>`);
+            const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
+            history.forEach(item => {
+                if(item.lat && item.lng) {
+                    L.marker([item.lat, item.lng]).addTo(markersLayer).bindPopup(`<b>${item.nombre}</b><br><span class="text-xs text-slate-400">Segmento: ${item.segmento || 'N/A'}</span>`);
+                }
             });
         }
 
+        // REGISTRAR CLIENTE: Va directo al Historial / Reporte Ejecutivo
         function registerClient(e) {
             e.preventDefault();
-            const clientData = {
+            const clientRecord = {
                 id: Date.now(),
+                tipoRegistro: 'CLIENTE',
+                route: JSON.parse(localStorage.getItem('intmex_route_data') || '{}'),
                 abierto: document.getElementById('c-abierto').value,
                 nombre: document.getElementById('c-nombre').value,
                 telefono: document.getElementById('c-telefono').value,
@@ -513,49 +579,73 @@
                 compra: document.getElementById('c-compra').value,
                 codigos: document.getElementById('c-codigos').value,
                 notas: document.getElementById('c-notas').value,
-                lat: currentLat, lng: lng,
+                lat: currentLat, lng: currentLng,
+                supervision: null, // Opcional por ahora
                 timestamp: new Date().toLocaleString()
             };
-            let clients = JSON.parse(localStorage.getItem('intmex_clients') || '[]');
-            clients.push(clientData);
-            localStorage.setItem('intmex_clients', JSON.stringify(clients));
-            alert('¡Cliente registrado con éxito!');
+
+            let history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
+            history.unshift(clientRecord);
+            localStorage.setItem('intmex_history', JSON.stringify(history));
+
+            alert('¡Cliente registrado con éxito y agregado al Reporte Ejecutivo!');
             document.getElementById('client-form').reset();
-            clearClientSig();
             updateClientDropdown();
             updateMapMarkers();
-            switchTab('supervision');
+            switchTab('historial');
         }
 
         function updateClientDropdown() {
             const select = document.getElementById('supervision-client-select');
-            const clients = JSON.parse(localStorage.getItem('intmex_clients') || '[]');
+            const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
+            const clientsOnly = history.filter(h => h.nombre);
             select.innerHTML = '<option value="">-- Seleccione un cliente registrado --</option>';
-            clients.forEach(c => select.innerHTML += `<option value="${c.id}">${c.nombre} (${c.segmento})</option>`);
+            clientsOnly.forEach(c => select.innerHTML += `<option value="${c.id}">${c.nombre} (${c.segmento || 'General'})</option>`);
         }
 
+        // FINALIZAR SUPERVISIÓN: Agrega calificación y firmas al registro existente
         function submitSupervision(e) {
             e.preventDefault();
-            const clientId = document.getElementById('supervision-client-select').value;
-            if(!clientId) { alert('Seleccione un cliente.'); return; }
-            const record = {
-                id: Date.now(),
-                route: JSON.parse(localStorage.getItem('intmex_route_data') || '{}'),
-                client: JSON.parse(localStorage.getItem('intmex_clients') || '[]').find(c => c.id == clientId),
-                checklist: { ...checkValues },
-                timestamp: new Date().toLocaleString()
-            };
+            const recordId = document.getElementById('supervision-client-select').value;
+            if(!recordId) { alert('Seleccione un cliente registrado.'); return; }
+
+            // Calcular calificación
+            let totalSteps = checklistSteps.length;
+            let affirmativeCount = 0;
+            for(let i = 0; i < totalSteps; i++) {
+                if(checkValues[i] === 'SÍ') affirmativeCount++;
+            }
+            let score = Math.round((affirmativeCount / totalSteps) * 100);
+
+            // Obtener firmas en Base64
+            const asesorSigData = document.getElementById('asesor-sig-pad').toDataURL();
+            const supervisorSigData = document.getElementById('supervisor-sig-pad').toDataURL();
+
             let history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
-            history.unshift(record);
-            localStorage.setItem('intmex_history', JSON.stringify(history));
-            alert('¡Auditoría guardada!');
-            document.getElementById('supervision-form').reset();
-            for (let k in checkValues) delete checkValues[k];
-            initChecklist();
-            loadHistory();
-            switchTab('historial');
+            const index = history.findIndex(h => h.id == recordId);
+
+            if(index !== -1) {
+                history[index].supervision = {
+                    checklist: { ...checkValues },
+                    score: score,
+                    asesorFirma: asesorSigData,
+                    supervisorFirma: supervisorSigData,
+                    fechaSupervision: new Date().toLocaleString()
+                };
+                localStorage.setItem('intmex_history', JSON.stringify(history));
+                alert(`¡Supervisión guardada! Calificación obtenida: ${score}%`);
+                document.getElementById('supervision-form').reset();
+                clearSig('asesor-sig-pad');
+                clearSig('supervisor-sig-pad');
+                for (let k in checkValues) delete checkValues[k];
+                initChecklist();
+                switchTab('historial');
+            } else {
+                alert('No se encontró el registro del cliente.');
+            }
         }
 
+        // CARGAR HISTORIAL Y REPORTE EJECUTIVO
         function loadHistory() {
             const container = document.getElementById('history-container');
             const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
@@ -565,13 +655,47 @@
             }
             container.innerHTML = '';
             history.forEach(item => {
-                container.innerHTML += `
-                    <div class="bg-slate-900 border border-slate-700 p-4 rounded-lg">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-bold text-blue-400">${item.client ? item.client.nombre : 'Cliente Desconocido'}</span>
-                            <span class="text-xs text-slate-400">${item.timestamp}</span>
+                let badgeColor = item.supervision ? 'bg-emerald-900/80 text-emerald-300 border-emerald-500' : 'bg-amber-900/80 text-amber-300 border-amber-500';
+                let statusText = item.supervision ? `Supervisado (${item.supervision.score}% Calificación)` : `Registrado (Sin supervisión aplicada)`;
+
+                let supHTML = '';
+                if(item.supervision) {
+                    supHTML = `
+                        <div class="mt-3 pt-3 border-t border-slate-700 bg-slate-950/50 p-3 rounded">
+                            <h4 class="text-xs font-bold text-emerald-400 mb-2"><i class="fa-solid fa-clipboard-check"></i> Auditoría de Supervisión</h4>
+                            <p class="text-xs text-slate-300 mb-2"><b>Calificación Final:</b> <span class="text-emerald-300 font-bold">${item.supervision.score}%</span></p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                                <div>
+                                    <p class="text-[10px] text-slate-400 mb-1">Firma Asesor:</p>
+                                    <img src="${item.supervision.asesorFirma}" class="bg-slate-900 border border-slate-700 rounded h-16 w-full object-contain">
+                                </div>
+                                <div>
+                                    <p class="text-[10px] text-slate-400 mb-1">Firma Supervisor:</p>
+                                    <img src="${item.supervision.supervisorFirma}" class="bg-slate-900 border border-slate-700 rounded h-16 w-full object-contain">
+                                </div>
+                            </div>
                         </div>
-                        <p class="text-xs text-slate-300"><b>Ruta:</b> ${item.route ? item.route.ruta : 'N/A'} | <b>Asesor:</b> ${item.route ? item.route.asesor : 'N/A'}</p>
+                    `;
+                }
+
+                container.innerHTML += `
+                    <div class="bg-slate-900 border border-slate-700 p-4 rounded-lg shadow">
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-2 gap-1">
+                            <div>
+                                <span class="text-sm font-bold text-blue-400">${item.nombre}</span>
+                                <span class="text-xs text-slate-400 ml-2">(${item.segmento || 'General'})</span>
+                            </div>
+                            <span class="text-xs px-2.5 py-1 rounded-full border ${badgeColor}">${statusText}</span>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-slate-300 my-2">
+                            <div><b>Ruta:</b> ${item.route ? item.route.ruta : 'N/A'}</div>
+                            <div><b>Asesor:</b> ${item.route ? item.route.asesor : 'N/A'}</div>
+                            <div><b>Abierto:</b> ${item.abierto}</div>
+                            <div><b>Compra:</b> ${item.compra}</div>
+                        </div>
+                        <p class="text-xs text-slate-400"><b>Notas:</b> ${item.notas || 'Sin notas'} | <b>GPS:</b> ${item.lat ? item.lat.toFixed(4) + ', ' + item.lng.toFixed(4) : 'N/A'}</p>
+                        ${supHTML}
+                        <div class="text-[10px] text-slate-500 mt-2 text-right">${item.timestamp}</div>
                     </div>
                 `;
             });
