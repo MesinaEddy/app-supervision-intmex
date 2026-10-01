@@ -555,6 +555,14 @@
             loadHistory();
             switchTab('historial');
         }
+        <!-- Sección de Respalduos -->
+        <div class="section-title">Respaldo de Datos</div>
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button type="button" class="btn-submit" style="margin-top:0; background: #10b981; color: white;" onclick="exportarDatos()">📥 Exportar Respaldo</button>
+            <label class="btn-submit" style="margin-top:0; background: #64748b; color: white; text-align: center; cursor: pointer; display: inline-block; padding: 14px;">
+                📤 Importar Respaldo <input type="file" id="file-import" accept=".json" style="display: none;" onchange="importarDatos(event)">
+            </label>
+        </div>
 
         function loadHistory() {
             const container = document.getElementById('history-container');
