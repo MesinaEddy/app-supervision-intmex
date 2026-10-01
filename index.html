@@ -18,12 +18,17 @@
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen pb-12">
 
-    <!-- Header -->
+    <!-- Header con el estilo original de INTMEX -->
     <header class="bg-slate-800 border-b border-slate-700 py-4 px-6 shadow-md">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
-            <div>
-                <h1 class="text-2xl font-bold tracking-wide text-blue-400">SUPERVISIÓN INTMEX</h1>
-                <p class="text-xs text-slate-400">Control de Campo y Auditoría en Tiempo Real</p>
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 p-2.5 rounded-lg text-white shadow">
+                    <i class="fa-solid fa-chart-line text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold tracking-wide text-blue-400">SUPERVISIÓN INTMEX</h1>
+                    <p class="text-xs text-slate-400">Control de Campo y Auditoría en Tiempo Real</p>
+                </div>
             </div>
             <!-- GPS Status Banner -->
             <div id="gps-status" class="mt-2 md:mt-0 bg-emerald-900/60 border border-emerald-500 text-emerald-300 text-xs px-3 py-1.5 rounded-full flex items-center gap-2">
@@ -228,7 +233,7 @@
         </div>
     </main>
 
-    <!-- Script de lógica con migración y rescate automático oculto -->
+    <!-- Script con recuperador profundo para Android -->
     <script>
         let currentLat = 32.47027;
         let lng = -116.83785;
@@ -241,8 +246,8 @@
         ];
 
         window.addEventListener('DOMContentLoaded', () => {
-            // SCRIPT OCULTO DE RECUPERACIÓN AUTOMÁTICA DESDE ANDROID
-            autoRecoverPreviousData();
+            // RECUPERACIÓN PROFUNDA DE DATOS EN ANDROID
+            deepRecoverData();
 
             loadRouteData();
             initGPS();
@@ -253,20 +258,20 @@
             updateClientDropdown();
         });
 
-        // Función interna que rescata datos guardados en versiones anteriores de localStorage
-        function autoRecoverPreviousData() {
+        function deepRecoverData() {
             try {
-                // Si ya existen datos nuevos, no sobreescribir innecesariamente, pero si faltan, rescatar de llaves antiguas
-                if (!localStorage.getItem('intmex_clients')) {
-                    const oldClients = localStorage.getItem('clients') || localStorage.getItem('clientes');
-                    if (oldClients) localStorage.setItem('intmex_clients', oldClients);
+                // Si la llave principal de clientes está vacía, buscamos en cualquier otra posible llave antigua
+                if (!localStorage.getItem('intmex_clients') || localStorage.getItem('intmex_clients') === '[]') {
+                    const found = localStorage.getItem('clients') || localStorage.getItem('clientes');
+                    if (found) localStorage.setItem('intmex_clients', found);
                 }
-                if (!localStorage.getItem('intmex_history')) {
-                    const oldHistory = localStorage.getItem('history') || localStorage.getItem('historial');
-                    if (oldHistory) localStorage.setItem('intmex_history', oldHistory);
+                // Si la llave principal de historial está vacía, buscamos en llaves pasadas
+                if (!localStorage.getItem('intmex_history') || localStorage.getItem('intmex_history') === '[]') {
+                    const foundHist = localStorage.getItem('history') || localStorage.getItem('historial');
+                    if (foundHist) localStorage.setItem('intmex_history', foundHist);
                 }
             } catch (e) {
-                console.error("Error en recuperación automática", e);
+                console.error("Error al rescatar datos", e);
             }
         }
 
