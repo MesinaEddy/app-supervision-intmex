@@ -555,43 +555,23 @@
             loadHistory();
             switchTab('historial');
         }
-        <!-- Sección de Respalduos -->
-        <div class="section-title">Respaldo de Datos</div>
-        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-            <button type="button" class="btn-submit" style="margin-top:0; background: #10b981; color: white;" onclick="exportarDatos()">📥 Exportar Respaldo</button>
-            <label class="btn-submit" style="margin-top:0; background: #64748b; color: white; text-align: center; cursor: pointer; display: inline-block; padding: 14px;">
-                📤 Importar Respaldo <input type="file" id="file-import" accept=".json" style="display: none;" onchange="importarDatos(event)">
-            </label>
-        </div>
 
         function loadHistory() {
             const container = document.getElementById('history-container');
             const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
-            if(history.length === 0) {
-                container.innerHTML = `<p class="text-sm text-slate-400 text-center py-8">No hay registros guardados todavía. Toca el botón superior <b class="text-amber-400">"Panel de Rescate"</b> para buscar en el navegador.</p>`;
+            if (history.length === 0) {
+                container.innerHTML = '<p class="text-sm text-slate-400 text-center py-8">No hay registros guardados todavía.</p>';
                 return;
             }
             container.innerHTML = '';
             history.forEach(item => {
-                let checklistHtml = '<ul class="grid grid-cols-1 md:grid-cols-2 gap-1 text-xs text-slate-300 mt-2">';
-                checklistSteps.forEach((step, idx) => {
-                    const ans = item.checklist && item.checklist[idx] ? item.checklist[idx] : 'N/A';
-                    const color = ans === 'SÍ' ? 'text-emerald-400 font-bold' : 'text-red-400 font-bold';
-                    checklistHtml += `<li>${step}: <span class="${color}">${ans}</span></li>`;
-                });
-                checklistHtml += '</ul>';
-
                 container.innerHTML += `
-                    <div class="bg-slate-900 border border-slate-700 rounded-lg p-4 shadow">
-                        <div class="flex justify-between items-start border-b border-slate-800 pb-2 mb-2">
-                            <div>
-                                <span class="text-xs bg-blue-900 text-blue-300 px-2 py-0.5 rounded font-semibold">Ruta: ${item.route && item.route.ruta ? item.route.ruta : 'N/D'}</span>
-                                <h3 class="text-base font-bold text-white mt-1">${item.client ? item.client.nombre : 'Cliente Desconocido'}</h3>
-                                <p class="text-xs text-slate-400">Asesor: ${item.route && item.route.asesor ? item.route.asesor : 'N/D'} | Segmento: ${item.client ? item.client.segmento : 'N/D'}</p>
-                            </div>
+                    <div class="bg-slate-900 border border-slate-700 p-4 rounded-lg">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold text-blue-400">${item.client ? item.client.nombre : 'Cliente Desconocido'}</span>
                             <span class="text-xs text-slate-400">${item.timestamp}</span>
                         </div>
-                        <div class="mt-2"><p class="text-xs font-semibold text-blue-300 uppercase">Checklist:</p>${checklistHtml}</div>
+                        <p class="text-xs text-slate-300"><b>Ruta:</b> ${item.route ? item.route.ruta : 'N/A'} | <b>Asesor:</b> ${item.route ? item.route.asesor : 'N/A'}</p>
                     </div>
                 `;
             });
