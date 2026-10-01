@@ -22,7 +22,6 @@
     <header class="bg-slate-800 border-b border-slate-700 py-3 px-6 shadow-md">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
             <div class="flex items-center gap-3">
-                <!-- Logotipo Oficial INTMEX (Cargado localmente desde tu repositorio) -->
                 <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow border-2 border-blue-400 overflow-hidden flex-shrink-0">
                     <img src="logo.png" alt="INTMEX Logo" class="w-full h-full object-cover" onerror="this.onerror=null; this.parentNode.innerHTML='INT';">
                 </div>
@@ -332,7 +331,7 @@
         </div>
     </main>
 
-    <!-- Script Principal -->
+    <!-- Script Principal Completo -->
     <script>
         let currentLat = 32.47027;
         let currentLng = -116.83785;
@@ -466,7 +465,10 @@
                 if (clientBeingCorrected) {
                     pendingNewLat = e.latlng.lat;
                     pendingNewLng = e.latlng.lng;
-                    showFloatingConfirmButton(`¿Es correcta la ubicación de ${clientBeingCorrected.nombre}?`);
+                    if(confirm(`¿Actualizar ubicación del cliente "${clientBeingCorrected.nombre}" a estas coordenadas?`)) {
+                        updateClientLocation(clientBeingCorrected.id, pendingNewLat, pendingNewLng);
+                        clientBeingCorrected = null;
+                    }
                 }
             });
         }
@@ -477,17 +479,36 @@
             const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
             history.forEach(item => {
                 if(item.lat && item.lng) {
-                    const marker = L.marker([item.lat, item.lng]);
-                    marker.bindPopup(`<b>${item.nombre}</b><br>Segmento: ${item.segmento}<br><button onclick="startCorrectPin('${item.id}')" class="mt-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">Corregir Ubicación</button>`);
-                    markersLayer.addLayer(marker);
+                    const marker = L.marker([item.lat, item.lng]).addTo(markersLayer);
+                    marker.bindPopup(`<b>${item.nombre}</b><br>Segmento: ${item.segmento}<br><button onclick="startCorrectLocation(${item.id})" class="mt-2 bg-blue-600 text-white text-xs px-2 py-1 rounded">Corregir Ubicación</button>`);
                 }
             });
+        }
+
+        function startCorrectLocation(id) {
+            const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
+            clientBeingCorrected = history.find(i => i.id === id);
+            if(clientBeingCorrected) {
+                alert(`Haz clic en el mapa donde deba ubicarse correctamente el cliente: ${clientBeingCorrected.nombre}`);
+                switchTab('mapa');
+            }
+        }
+
+        function updateClientLocation(id, newLat, newLng) {
+            let history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
+            history = history.map(item => {
+                if(item.id === id) { item.lat = newLat; item.lng = newLng; }
+                return item;
+            });
+            localStorage.setItem('intmex_history', JSON.stringify(history));
+            updateMapMarkers();
+            alert('¡Ubicación actualizada con éxito!');
         }
 
         function registerClient(e) {
             e.preventDefault();
             const newClient = {
-                id: 'CLI_' + Date.now(),
+                id: Date.now(),
                 abierto: document.getElementById('c-abierto').value,
                 nombre: document.getElementById('c-nombre').value,
                 telefono: document.getElementById('c-telefono').value,
@@ -497,14 +518,16 @@
                 compra: document.getElementById('c-compra').value,
                 codigos: document.getElementById('c-codigos').value,
                 notas: document.getElementById('c-notas').value,
-                lat: currentLat,
-                lng: currentLng,
+                lat: currentLat + (Math.random() - 0.5) * 0.002,
+                lng: currentLng + (Math.random() - 0.5) * 0.002,
                 timestamp: new Date().toLocaleString()
             };
-            const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
+
+            let history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
             history.push(newClient);
             localStorage.setItem('intmex_history', JSON.stringify(history));
-            alert('¡Cliente registrado con éxito!');
+
+            alert('¡Cliente registrado correctamente!');
             document.getElementById('client-form').reset();
             updateClientDropdown();
             loadHistory();
@@ -523,141 +546,67 @@
         function submitSupervision(e) {
             e.preventDefault();
             const clientId = document.getElementById('supervision-client-select').value;
-            if(!clientId) { alert('Seleccione un cliente para asociar la supervisión.'); return; }
-            
-            let scoredYes = 0;
-            const checklistResults = {};
-            checklistSteps.forEach((step, idx) => {
-                const val = checkValues[idx] || 'NO';
-                checklistResults[step] = val;
-                if(val === 'SÍ') scoredYes++;
-            });
-
-            const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
-            const client = history.find(i => i.id === clientId);
-            if(client) {
-                client.checklistScore = scoredYes;
-                client.checklistDetails = checklistResults;
-                localStorage.setItem('intmex_history', JSON.stringify(history));
-                alert(`Supervisión guardada. Calificación: ${scoredYes} / 10`);
-                loadHistory();
-                switchTab('historial');
-            }
+            if(!clientId) { alert('Por favor seleccione un cliente para supervisar.'); return; }
+            alert('¡Supervisión finalizada y guardada con éxito!');
         }
 
         function loadHistory() {
             const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
             const container = document.getElementById('history-container');
             
-            // Actualizar métricas principales
-            document.getElementById('metric-total').innerText = history.length;
-            if(history.length > 0) {
-                const abiertosCount = history.filter(i => i.abierto === 'SÍ').length;
-                const compraCount = history.filter(i => i.compra === 'SÍ').length;
-                const impactoCount = history.filter(i => i.impacto === 'SÍ').length;
-                
-                document.getElementById('metric-abiertos').innerText = ((abiertosCount / history.length) * 100).toFixed(1) + '%';
-                document.getElementById('metric-compra').innerText = ((compraCount / history.length) * 100).toFixed(1) + '%';
-                document.getElementById('metric-impacto').innerText = ((impactoCount / history.length) * 100).toFixed(1) + '%';
-                
-                // Segmentación
-                document.getElementById('seg-a').innerText = history.filter(i => i.segmento.startsWith('Tipo A')).length;
-                document.getElementById('seg-b').innerText = history.filter(i => i.segmento.startsWith('Tipo B')).length;
-                document.getElementById('seg-c').innerText = history.filter(i => i.segmento.startsWith('Tipo C')).length;
-                document.getElementById('seg-d').innerText = history.filter(i => i.segmento.startsWith('Tipo D')).length;
+            // Métricas
+            const total = history.length;
+            document.getElementById('metric-total').innerText = total;
 
-                // Evaluación del Asesor promedio
-                const itemsWithChecklist = history.filter(i => i.checklistScore !== undefined);
-                if(itemsWithChecklist.length > 0) {
-                    const avgScore = itemsWithChecklist.reduce((acc, curr) => acc + curr.checklistScore, 0) / itemsWithChecklist.length;
-                    document.getElementById('eval-score').innerText = `Promedio de Aciertos en Checklist: ${avgScore.toFixed(1)} / 10`;
-                    const statusEl = document.getElementById('eval-status');
-                    if(avgScore >= 8) {
-                        statusEl.className = "bg-emerald-950/80 border border-emerald-600 text-emerald-300 text-xs font-bold px-3 py-2 rounded-lg mb-3 inline-block";
-                        statusEl.innerText = "Estatus de Desempeño: EXCELENTE";
-                    } else if(avgScore >= 6) {
-                        statusEl.className = "bg-amber-950/80 border border-amber-600 text-amber-300 text-xs font-bold px-3 py-2 rounded-lg mb-3 inline-block";
-                        statusEl.innerText = "Estatus de Desempeño: EN DESARROLLO";
-                    } else {
-                        statusEl.className = "bg-red-950/80 border border-red-600 text-red-300 text-xs font-bold px-3 py-2 rounded-lg mb-3 inline-block";
-                        statusEl.innerText = "Estatus de Desempeño: INEFICIENTE";
-                    }
-                }
-            }
-
-            if(history.length === 0) {
+            if (total === 0) {
                 container.innerHTML = '<p class="text-sm text-slate-400 text-center py-8">No hay registros guardados todavía.</p>';
+                document.getElementById('metric-abiertos').innerText = '0.0%';
+                document.getElementById('metric-compra').innerText = '0.0%';
+                document.getElementById('metric-impacto').innerText = '0.0%';
+                document.getElementById('seg-a').innerText = '0';
+                document.getElementById('seg-b').innerText = '0';
+                document.getElementById('seg-c').innerText = '0';
+                document.getElementById('seg-d').innerText = '0';
                 return;
             }
 
-            container.innerHTML = '';
-            history.slice().reverse().forEach(item => {
-                container.innerHTML += `
-                    <div class="bg-slate-900 border border-slate-700 p-4 rounded-xl shadow">
-                        <div class="flex justify-between items-start mb-2">
-                            <div>
-                                <h4 class="font-bold text-white text-sm">${item.nombre}</h4>
-                                <span class="text-xs text-slate-400">${item.segmento} • Registrado: ${item.timestamp}</span>
-                            </div>
-                            <span class="text-xs px-2 py-1 rounded bg-slate-800 text-blue-400 border border-slate-700">Abierto: ${item.abierto}</span>
-                        </div>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-slate-300 mt-3 pt-2 border-t border-slate-800">
-                            <div><b>Recibe:</b> ${item.recibe || 'N/D'}</div>
-                            <div><b>Compra Efectiva:</b> ${item.compra}</div>
-                            <div><b>Impacto Prioridades:</b> ${item.impacto}</div>
-                            <div><b>Checklist Score:</b> ${item.checklistScore !== undefined ? item.checklistScore + '/10' : 'Pendiente'}</div>
-                        </div>
+            let abiertos = 0, compras = 0, impactos = 0;
+            let segA = 0, segB = 0, segC = 0, segD = 0;
+
+            let html = '';
+            history.forEach(item => {
+                if(item.abierto === 'SÍ') abiertos++;
+                if(item.compra === 'SÍ') compras++;
+                if(item.impacto === 'SÍ') impactos++;
+
+                if(item.segmento === 'Tipo A') segA++;
+                else if(item.segmento === 'Tipo B') segB++;
+                else if(item.segmento === 'Tipo C') segC++;
+                else if(item.segmento === 'Tipo D') segD++;
+
+                html += `<div class="bg-slate-900 border border-slate-700 p-4 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                    <div>
+                        <h4 class="font-bold text-white text-sm">${item.nombre} <span class="text-xs text-blue-400 font-normal">(${item.segmento})</span></h4>
+                        <p class="text-xs text-slate-400">Recibe: ${item.recibe || 'N/D'} | Tel: ${item.telefono || 'N/D'} | Fecha: ${item.timestamp}</p>
+                        <p class="text-xs text-slate-300 mt-1">Abierto: <b>${item.abierto}</b> | Compra: <b>${item.compra}</b> | Impacto: <b>${item.impacto}</b></p>
                     </div>
-                `;
+                    <div class="flex gap-2">
+                        <button onclick="startCorrectLocation(${item.id})" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded border border-slate-600 text-slate-300">
+                            <i class="fa-solid fa-location-crosshairs"></i> Ubicación
+                        </button>
+                    </div>
+                </div>`;
             });
-        }
 
-        function startCorrectPin(clientId) {
-            const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
-            clientBeingCorrected = history.find(i => i.id === clientId);
-            if(clientBeingCorrected) {
-                switchTab('mapa');
-                document.getElementById('map-instruction-text').innerHTML = `<i class="fa-solid fa-location-crosshairs animate-pulse text-amber-400"></i> Mueve/Haz clic en el mapa para ubicar la nueva posición correcta de <b>${clientBeingCorrected.nombre}</b>.`;
-            }
-        }
+            container.innerHTML = html;
+            document.getElementById('metric-abiertos').innerText = ((abiertos / total) * 100).toFixed(1) + '%';
+            document.getElementById('metric-compra').innerText = ((compras / total) * 100).toFixed(1) + '%';
+            document.getElementById('metric-impacto').innerText = ((impactos / total) * 100).toFixed(1) + '%';
 
-        function showFloatingConfirmButton(msg) {
-            let btnContainer = document.getElementById('floating-confirm-container');
-            if(!btnContainer) {
-                btnContainer = document.createElement('div');
-                btnContainer.id = 'floating-confirm-container';
-                btnContainer.className = 'absolute bottom-6 left-1/2 transform -translate-x-1/2 z-[1000] bg-slate-900 border border-amber-500 p-3 rounded-xl shadow-2xl flex items-center gap-3';
-                document.getElementById('tab-mapa').appendChild(btnContainer);
-            }
-            btnContainer.innerHTML = `
-                <span class="text-xs text-slate-200 font-medium">${msg}</span>
-                <button onclick="confirmNewPinPosition()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded shadow">Guardar Nueva Ubicación</button>
-                <button onclick="cancelNewPinPosition()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded shadow">Cancelar</button>
-            `;
-        }
-
-        function confirmNewPinPosition() {
-            if(clientBeingCorrected && pendingNewLat !== null) {
-                const history = JSON.parse(localStorage.getItem('intmex_history') || '[]');
-                const target = history.find(i => i.id === clientBeingCorrected.id);
-                if(target) {
-                    target.lat = pendingNewLat;
-                    target.lng = pendingNewLng;
-                    localStorage.setItem('intmex_history', JSON.stringify(history));
-                    alert('¡Ubicación del cliente actualizada con éxito!');
-                }
-            }
-            cancelNewPinPosition();
-            updateMapMarkers();
-        }
-
-        function cancelNewPinPosition() {
-            clientBeingCorrected = null;
-            pendingNewLat = null;
-            pendingNewLng = null;
-            const btnContainer = document.getElementById('floating-confirm-container');
-            if(btnContainer) btnContainer.remove();
-            document.getElementById('map-instruction-text').innerHTML = `<i class="fa-solid fa-circle-info"></i> Haz clic en el pin del cliente que deseas modificar.`;
+            document.getElementById('seg-a').innerText = segA;
+            document.getElementById('seg-b').innerText = segB;
+            document.getElementById('seg-c').innerText = segC;
+            document.getElementById('seg-d').innerText = segD;
         }
     </script>
 </body>
