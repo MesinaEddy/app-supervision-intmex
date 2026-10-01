@@ -130,6 +130,55 @@ document.addEventListener('DOMContentLoaded', () => {
             if (modalFirma) modalFirma.style.display = 'none';
         });
     }
+    // Función para Exportar todos los datos del localStorage a un archivo .json
+    function exportarDatos() {
+        const backup = {
+            intmex_bloque1: localStorage.getItem("intmex_bloque1"),
+            intmex_clients: localStorage.getItem("intmex_clients"),
+            intmex_history: localStorage.getItem("intmex_history"),
+            intmex_route_data: localStorage.getItem("intmex_route_data"),
+            registros_supervision: localStorage.getItem("registros_supervision")
+        };
+
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    
+    // Nombre del archivo con fecha actual
+    const fechaIso = new Date().toISOString().slice(0, 10);
+    downloadAnchor.setAttribute("download", `respaldo_intmex_${fechaIso}.json`);
+    
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+}
+
+// Función para Importar un archivo de respaldo y cargarlo en el dispositivo
+function importarDatos(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const backup = JSON.parse(e.target.result);
+            
+            // Restaurar cada clave en el localStorage si existe en el archivo
+            if (backup.intmex_bloque1) localStorage.setItem("intmex_bloque1", backup.intmex_bloque1);
+            if (backup.intmex_clients) localStorage.setItem("intmex_clients", backup.intmex_clients);
+            if (backup.intmex_history) localStorage.setItem("intmex_history", backup.intmex_history);
+            if (backup.intmex_route_data) localStorage.setItem("intmex_route_data", backup.intmex_route_data);
+            if (backup.registros_supervision) localStorage.setItem("registros_supervision", backup.registros_supervision);
+
+            alert("¡Respaldo importado con éxito! La página se recargará para aplicar los datos.");
+            location.reload();
+        } catch (error) {
+            alert("⚠️ El archivo seleccionado no es válido o está corrupto.");
+            console.error(error);
+        }
+    };
+    reader.readAsText(file);
+}
 
     // --- 5. NAVEGACIÓN DE PESTAÑAS (REGISTRO / HISTORIAL / MAPA) ---
     const tabRegistro = document.getElementById('tab-registro');
