@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supervisión INTMEX - Panel Ejecutivo Gerencial</title>
+    <title>SUPERVISION INTMEX - </title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Leaflet CSS & JS -->
@@ -148,6 +148,10 @@
                         </select>
                     </div>
                     <div>
+                        <label class="block text-xs text-amber-400 mb-1 font-bold">Tipo Cierre (Si está cerrado)</label>
+                        <input type="text" id="c-tipo-cierre" placeholder="Ej. Solo esta visita / Vacaciones" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
+                    </div>
+                    <div>
                         <label class="block text-xs text-slate-400 mb-1">Nombre del Cliente</label>
                         <input type="text" id="c-nombre" required placeholder="Ej. Mini Super Alex" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
                     </div>
@@ -181,6 +185,10 @@
                             <option value="SÍ">SÍ</option>
                             <option value="NO">NO</option>
                         </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-amber-400 mb-1 font-bold">Motivo No Compra (Si aplica)</label>
+                        <input type="text" id="c-motivo-no-compra" placeholder="Ej. Inventario alto / Falta de liquidez" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 text-sm text-slate-200">
                     </div>
                 </div>
 
