@@ -209,7 +209,7 @@
                     <label class="block text-xs text-amber-400 mb-1 font-bold">
                         <i class="fa-solid fa-camera"></i> Foto de Fachada o Negocio (Abre Cámara Directa)
                     </label>
-                    <input type="file" id="c-foto" accept="image/*" capture="environment" onchange="previewImage(event)" class="w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+                    <input type="file" accept="image/*" capture="environment" id="fotoFachada">
                     <div id="foto-preview-container" class="mt-2 hidden">
                         <img id="foto-preview" class="w-32 h-32 object-cover rounded border border-slate-600" alt="Vista previa">
                     </div>
@@ -379,6 +379,9 @@
             updateClientDropdown();
             toggleClientFields();
         });
+
+        <label for="fotoFachada" class="btn-camara">Tomar Evidencia de Fachada</label>
+        <input type="file" accept="image/*" capture="environment" id="fotoFachada" style="display:none;">
 
         function toggleClientFields() {
             const abierto = document.getElementById('c-abierto').value;
